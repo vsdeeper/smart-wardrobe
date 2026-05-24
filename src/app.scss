@@ -1,0 +1,52 @@
+// 主题变量覆盖（必须在任何 NutUI 样式之前引入）
+@import './styles/theme.scss';
+
+// 全局字体（DESIGN.md 字体排印）
+// Plus Jakarta Sans → 标题，Be Vietnam Pro → 正文
+page {
+  font-family: 'Be Vietnam Pro', 'Plus Jakarta Sans', PingFang SC, Microsoft YaHei,
+    Helvetica, Hiragino Sans GB, SimSun, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  color: #0e1d26; // DESIGN.md on-background
+  background-color: #f5faff; // DESIGN.md background
+}
+
+// 标题使用 Plus Jakarta Sans
+h1, h2, h3, h4 {
+  font-family: 'Plus Jakarta Sans', PingFang SC, Microsoft YaHei, sans-serif;
+}
+
+// 全局卡片预设样式（DESIGN.md 组件-卡片）
+// 无边框 + 大圆角 + 环境阴影
+.card {
+  border: none;
+  border-radius: 24px;                   // DESIGN.md rounded-xl
+  background: #ffffff;
+  box-shadow: 0 0 30px 0 rgba(176, 196, 222, 0.08); // 钢蓝色环境阴影
+}
+
+// 胶囊形态 Chip（DESIGN.md 组件-标签）
+.chip {
+  border-radius: 9999px;                 // DESIGN.md rounded-full
+  border: 1px solid #c1cab4;            // DESIGN.md outline-variant
+  background: #cde1fc;                  // DESIGN.md secondary-container
+  color: #51647b;                       // DESIGN.md on-secondary-container
+  padding: 4px 12px;
+  font-size: 13px;                       // DESIGN.md label-sm
+  font-weight: 500;
+}
+
+// 输入框预设（DESIGN.md 组件-输入框）
+// 柔和石板色背景，无边框
+.input-field {
+  border: none;
+  border-radius: 8px;                    // DESIGN.md rounded-DEFAULT
+  background: #daeaf7;                  // DESIGN.md surface-container-high
+  color: #0e1d26;                        // on-background
+  padding: 12px 16px;
+  font-size: 16px;                       // body-md
+
+  &:focus {
+    background: #e0f0fd;                // 聚焦时变亮 — surface-container
+  }
+}
