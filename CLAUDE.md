@@ -55,7 +55,8 @@ types/
 - 页面级配置通过 `definePageConfig` 导出（导航栏标题等）
 
 ### 组件与样式
-- 使用 NutUI React Taro 组件（`@nutui/nutui-react-taro`），按需加载已通过 `vite-plugin-imp` 配置
+- **页面开发默认使用 NutUI React Taro 组件**（`@nutui/nutui-react-taro`），优先选用已有组件而非自行实现
+- NutUI 按需加载已通过 `vite-plugin-imp` 配置，可直接 import 使用
 - 样式文件命名为 `*.scss`，与组件同目录
 - px 单位会自动转换为小程序 rpx（NutUI 的 `nut-` 前缀选择器被排除）
 
