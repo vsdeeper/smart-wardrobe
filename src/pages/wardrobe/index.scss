@@ -1,34 +1,39 @@
 // ============================================================
-// 衣橱页面样式 — 基于 Botanica & Steel 设计体系
-// 与 NutUI 组件配合，复用 theme.scss 变量
+// 衣橱页面 — 对齐 Botanica 设计稿
 // ============================================================
 
 .wardrobe-page {
   min-height: 100vh;
   background-color: var(--nutui-gray-3);
+  display: flex;
+  flex-direction: column;
 }
 
-// ========== 顶部导航栏（NutUI Navbar 定制） ==========
+// ========== 顶部导航 ==========
 .wardrobe-navbar {
   margin-top: 27px;
+  background: transparent;
+  padding: 0 var(--nutui-spacing-7);
+  box-shadow: var(--sw-shadow-card);
+
+  .nut-navbar {
+    background: transparent;
+    box-shadow: none;
+  }
 }
 
 .navbar-brand {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 
   &__avatar {
-    border: 2px solid var(--nutui-brand-6);
-    border-radius: 9999px;
+    border: 2px solid var(--nutui-brand-5);
+    border-radius: var(--sw-radius-pill);
   }
 
   &__title {
-    font-family:
-      "Plus Jakarta Sans",
-      PingFang SC,
-      Microsoft YaHei,
-      sans-serif;
+    font-family: var(--sw-font-heading);
     font-size: var(--nutui-font-size-4);
     font-weight: var(--nutui-font-weight-bold);
     color: var(--nutui-gray-7);
@@ -37,80 +42,111 @@
 }
 
 .navbar-notify {
-  font-size: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+
+  &__icon {
+    font-size: 22px;
+    line-height: 1;
+    filter: hue-rotate(-20deg) saturate(1.4);
+  }
 }
 
-// ========== 主内容区 ==========
+// ========== 主内容 ==========
 .wardrobe-main {
-  min-height: 100vh;
-  padding: 0 20px 160px;
+  flex: 1;
+  height: 0;
+  padding: 0 var(--nutui-spacing-7) 90px;
   box-sizing: border-box;
 }
 
-// ========== AI 状态指示器 ==========
+// ========== AI 状态条 ==========
 .ai-status {
   margin-bottom: var(--nutui-spacing-8);
-  padding: var(--nutui-spacing-5);
+  padding: 14px var(--nutui-spacing-5);
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: var(--nutui-spacing-5);
   background: var(--nutui-gray-2);
-  border-radius: 12px;
-  box-shadow: 0 0 30px 0 rgba(176, 196, 222, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: var(--nutui-radius-6);
+  box-shadow: var(--sw-shadow-card);
+  border: 1px solid rgba(255, 255, 255, 0.65);
 
   &__content {
     display: flex;
     align-items: center;
-    gap: var(--nutui-spacing-5);
-    flex-shrink: 0;
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
   }
 
   &__icon-wrap {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--nutui-radius-4);
+    background: var(--nutui-gray-1);
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
   }
 
   &__icon {
-    font-size: 28px;
+    font-size: 22px;
+    line-height: 1;
   }
 
   &__text {
     display: flex;
     flex-direction: column;
+    gap: 2px;
+    min-width: 0;
   }
 
   &__label {
+    font-family: var(--sw-font-body);
     font-size: var(--nutui-font-size-2);
     font-weight: 500;
-    color: var(--nutui-brand-6);
-    letter-spacing: 0.1em;
+    color: var(--sw-color-accent);
+    letter-spacing: 0.08em;
     text-transform: uppercase;
   }
 
   &__desc {
+    font-family: var(--sw-font-body);
     font-size: var(--nutui-font-size-4);
-    color: var(--nutui-gray-5);
+    font-weight: 500;
+    color: var(--nutui-gray-7);
+    line-height: 1.4;
   }
 
   &__progress {
-    width: 128px;
+    width: 112px;
     flex-shrink: 0;
+  }
+
+  .nut-progress-outer {
+    height: 8px !important;
+    border-radius: var(--sw-radius-pill) !important;
+    background: #d5e8f7 !important;
+  }
+
+  .nut-progress-inner {
+    border-radius: var(--sw-radius-pill) !important;
   }
 }
 
-// ========== 页面标题 & 季节筛选（NutUI Tabs 定制） ==========
+// ========== 标题 & 季节筛选 ==========
 .page-header {
   margin-bottom: var(--nutui-spacing-10);
   text-align: center;
 
   &__title {
-    font-family:
-      "Plus Jakarta Sans",
-      PingFang SC,
-      Microsoft YaHei,
-      sans-serif;
+    font-family: var(--sw-font-heading);
     font-size: var(--nutui-font-size-10);
     font-weight: var(--nutui-font-weight-bold);
     color: var(--nutui-gray-7);
@@ -121,34 +157,10 @@
   }
 }
 
+// 季节筛选：变量见 theme.scss；NutUI 覆写见 app.scss；此处仅隐藏 TabPane
 .season-tabs {
-  display: flex;
-  justify-content: center;
-
-  // NutUI Tabs button 类型定制 — 匹配胶囊设计
-  :global {
-    .nut-tabs__titles {
-      background: transparent;
-    }
-
-    .nut-tabs__titles-item {
-      border-radius: 9999px !important;
-      border: 1px solid var(--nutui-gray-4) !important;
-      background: transparent !important;
-      color: var(--nutui-gray-5) !important;
-      padding: 8px 24px !important;
-      font-size: var(--nutui-font-size-2) !important;
-      font-weight: 500 !important;
-      margin: 0 4px !important;
-      flex-shrink: 0;
-    }
-
-    .nut-tabs__titles-item--active {
-      background: var(--nutui-brand-6) !important;
-      border-color: var(--nutui-brand-6) !important;
-      color: #ffffff !important;
-      box-shadow: 0 4px 12px rgba(123, 192, 67, 0.2);
-    }
+  .nut-tabs-content-wrap {
+    display: none;
   }
 }
 
@@ -160,10 +172,8 @@
 }
 
 .wardrobe-card {
-  &--large {
-    grid-column: span 2;
-  }
-
+  &--large,
+  &--wide,
   &--cta {
     grid-column: span 2;
   }
@@ -171,12 +181,16 @@
   &__inner {
     height: 100%;
     overflow: hidden;
+    background: var(--nutui-gray-1);
+    border-radius: var(--sw-radius-card);
+    box-shadow: var(--sw-shadow-card);
   }
 
   &__image-wrap {
     position: relative;
     overflow: hidden;
     aspect-ratio: 1 / 1;
+    background: #f0f4f8;
 
     &--large {
       aspect-ratio: 4 / 5;
@@ -186,165 +200,204 @@
   &__image {
     width: 100%;
     height: 100%;
+    display: block;
   }
 
   &__badge {
     position: absolute;
-    top: 16px;
-    right: 16px;
-    background: rgba(255, 255, 255, 0.8);
-    padding: 4px 12px;
-    border-radius: 9999px;
+    top: 14px;
+    right: 14px;
+    background: rgba(255, 255, 255, 0.88);
+    backdrop-filter: blur(4px);
+    padding: 4px 10px;
+    border-radius: var(--sw-radius-pill);
     display: flex;
     align-items: center;
     gap: 4px;
   }
 
   &__badge-icon {
-    font-size: 12px;
+    font-size: 11px;
+    line-height: 1;
   }
 
   &__badge-text {
+    font-family: var(--sw-font-body);
     font-size: 10px;
-    color: var(--nutui-gray-7);
-    text-transform: uppercase;
+    font-weight: 500;
+    color: var(--nutui-gray-6);
+    letter-spacing: 0.02em;
   }
 
   &__body {
-    padding: var(--nutui-spacing-8);
+    padding: var(--nutui-spacing-5) var(--nutui-spacing-5) 18px;
+  }
+
+  &--large &__body {
+    padding: var(--nutui-spacing-5) var(--nutui-spacing-8) 20px;
   }
 
   &__category {
+    font-family: var(--sw-font-body);
     font-size: var(--nutui-font-size-2);
     font-weight: 500;
-    color: var(--nutui-gray-6);
-    text-transform: uppercase;
-    letter-spacing: -0.01em;
+    color: var(--nutui-gray-5);
+    letter-spacing: 0.04em;
     display: block;
   }
 
   &__name {
-    font-family:
-      "Plus Jakarta Sans",
-      PingFang SC,
-      Microsoft YaHei,
-      sans-serif;
-    font-size: var(--nutui-font-size-6);
-    font-weight: 500;
+    font-family: var(--sw-font-heading);
+    font-size: var(--nutui-font-size-4);
+    font-weight: var(--nutui-font-weight-bold);
     color: var(--nutui-gray-7);
-    line-height: 1.4;
+    line-height: 1.35;
     display: block;
-    margin-top: var(--nutui-spacing-1);
+    margin-top: 4px;
+
+    &--large {
+      font-size: var(--nutui-font-size-6);
+      font-weight: 500;
+    }
   }
 
   &__tags {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--nutui-spacing-1);
-    margin-top: var(--nutui-spacing-5);
+    gap: 6px;
+    margin-top: 10px;
+  }
+
+  &__tag {
+    font-size: var(--nutui-font-size-2) !important;
+    padding: 2px 10px !important;
   }
 }
 
-// 标准卡片 body 间距稍小
-.wardrobe-card:not(.wardrobe-card--large):not(.wardrobe-card--cta) {
-  .wardrobe-card__body {
-    padding: var(--nutui-spacing-5);
-  }
-
-  .wardrobe-card__name {
-    font-size: var(--nutui-font-size-6);
-  }
-}
-
-// ========== AI 搭配建议卡片 ==========
+// ========== AI 搭配 CTA ==========
 .wardrobe-cta {
-  background: var(--nutui-brand-6);
-  color: #ffffff;
-  border-radius: 24px;
-  padding: var(--nutui-spacing-10);
   position: relative;
+  background: var(--nutui-brand-6);
+  color: #fff;
+  border-radius: var(--sw-radius-card);
+  padding: 28px 24px 32px;
+  min-height: 188px;
   overflow: hidden;
-  min-height: 200px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+
+  &__pattern {
+    position: absolute;
+    right: -8px;
+    bottom: -16px;
+    width: 140px;
+    height: 140px;
+    opacity: 0.12;
+    background-image:
+      linear-gradient(90deg, rgba(255, 255, 255, 0.5) 2px, transparent 2px),
+      linear-gradient(rgba(255, 255, 255, 0.5) 2px, transparent 2px);
+    background-size: 18px 18px;
+    transform: rotate(-8deg);
+    pointer-events: none;
+  }
 
   &__content {
     position: relative;
     z-index: 1;
+    max-width: 72%;
   }
 
   &__title {
-    font-family:
-      "Plus Jakarta Sans",
-      PingFang SC,
-      Microsoft YaHei,
-      sans-serif;
+    font-family: var(--sw-font-heading);
     font-size: var(--nutui-font-size-8);
     font-weight: var(--nutui-font-weight-bold);
     line-height: 1.3;
     display: block;
-    margin-bottom: var(--nutui-spacing-5);
   }
 
   &__desc {
+    font-family: var(--sw-font-body);
     font-size: var(--nutui-font-size-4);
-    opacity: 0.9;
+    line-height: 1.55;
+    opacity: 0.92;
     display: block;
-    max-width: 320px;
-    line-height: 1.6;
+    margin-top: 8px;
   }
 
   &__btn {
-    margin-top: var(--nutui-spacing-8);
+    margin-top: 18px !important;
     color: var(--nutui-brand-6) !important;
-    background: #ffffff !important;
-    border-radius: 9999px !important;
+    background: #fff !important;
+    border: none !important;
+    border-radius: var(--sw-radius-pill) !important;
+    font-family: var(--sw-font-body) !important;
     font-size: var(--nutui-font-size-2) !important;
-    font-weight: 500 !important;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    padding: 12px 32px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.06em;
+    padding: 10px 28px !important;
     height: auto !important;
+    line-height: 1.2 !important;
   }
 
-  &__decor {
-    position: absolute;
-    bottom: -40px;
-    right: -40px;
-    font-size: 200px;
-    opacity: 0.1;
-    pointer-events: none;
+  &__fab {
+    position: absolute !important;
+    right: 20px !important;
+    bottom: 20px !important;
+    z-index: 2;
+    width: 52px !important;
+    height: 52px !important;
+    min-width: 52px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    border-radius: var(--sw-radius-pill) !important;
+    background: var(--nutui-brand-6) !important;
+    color: #fff !important;
+    font-size: 28px !important;
+    font-weight: 300 !important;
+    line-height: 52px !important;
+    box-shadow: 0 6px 20px rgba(54, 107, 0, 0.35) !important;
   }
 }
 
-// ========== 底部导航栏（NutUI Tabbar 定制） ==========
+// ========== 底部导航 ==========
 .wardrobe-tabbar {
-  border-radius: 32px 32px 0 0 !important;
-  box-shadow: 0 -10px 40px rgba(176, 196, 222, 0.15) !important;
+  background: var(--nutui-gray-1) !important;
+  border-radius: 24px 24px 0 0 !important;
+  box-shadow: var(--sw-shadow-tabbar) !important;
   border-top: 1px solid var(--nutui-gray-2) !important;
-  padding: 8px 0 !important;
+  padding: 6px 8px 4px !important;
+
+  .nut-tabbar-item {
+    flex: 1;
+  }
+
+  .nut-tabbar-item__icon {
+    margin-bottom: 2px;
+  }
+
+  .nut-tabbar-item--active .nut-tabbar-item__icon {
+    width: 44px;
+    height: 32px;
+    margin: 0 auto 2px;
+    border-radius: var(--sw-radius-pill);
+    background: var(--nutui-brand-1);
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .nut-tabbar-item--active .tabbar-icon {
+    font-size: 20px;
+  }
+
+  .nut-tabbar-item__text {
+    font-family: var(--sw-font-body);
+    font-size: 11px !important;
+    font-weight: 500;
+  }
 }
 
 .tabbar-icon {
-  font-size: 22px;
+  font-size: 20px;
+  line-height: 1;
   display: block;
-}
-
-// ========== 悬浮添加按钮（NutUI Button 定制） ==========
-.fab {
-  position: fixed !important;
-  bottom: 120px !important;
-  right: 24px !important;
-  width: 56px !important;
-  height: 56px !important;
-  border-radius: 9999px !important;
-  min-width: 56px !important;
-  padding: 0 !important;
-  display: flex !important;
-  align-items: center;
-  justify-content: center;
-  z-index: 40;
-  font-size: 28px !important;
-  font-weight: 400 !important;
 }

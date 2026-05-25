@@ -14,8 +14,8 @@ page {
     SimSun,
     sans-serif;
   -webkit-font-smoothing: antialiased;
-  color: #0e1d26; // DESIGN.md on-background
-  background-color: #f5faff; // DESIGN.md background
+  color: var(--nutui-gray-7);
+  background-color: var(--nutui-gray-3);
 }
 
 // 标题使用 Plus Jakarta Sans
@@ -34,17 +34,17 @@ h4 {
 // 无边框 + 大圆角 + 环境阴影
 .card {
   border: none;
-  border-radius: 24px; // DESIGN.md rounded-xl
-  background: #ffffff;
-  box-shadow: 0 0 30px 0 rgba(176, 196, 222, 0.08); // 钢蓝色环境阴影
+  border-radius: var(--sw-radius-card);
+  background: var(--nutui-gray-1);
+  box-shadow: var(--sw-shadow-card);
 }
 
 // 胶囊形态 Chip（DESIGN.md 组件-标签）
 .chip {
-  border-radius: 9999px; // DESIGN.md rounded-full
-  border: 1px solid #c1cab4; // DESIGN.md outline-variant
-  background: #cde1fc; // DESIGN.md secondary-container
-  color: #51647b; // DESIGN.md on-secondary-container
+  border-radius: var(--sw-radius-pill);
+  border: 1px solid var(--nutui-gray-4);
+  background: var(--sw-color-secondary-container);
+  color: var(--nutui-secondary-1);
   padding: 4px 12px;
   font-size: 13px; // DESIGN.md label-sm
   font-weight: 500;
@@ -62,5 +62,76 @@ h4 {
 
   &:focus {
     background: #e0f0fd; // 聚焦时变亮 — surface-container
+  }
+}
+
+// ========== NutUI Tabs 全局覆写（变量见 theme.scss --nutui-tabs-*） ==========
+// button 类型季节筛选：未选中白底灰边胶囊（NutUI 无对应变量）
+page {
+  .nut-tabs-titles-button {
+    height: auto;
+    min-height: var(--nutui-tabs-titles-height);
+    padding: 0;
+    background: var(--nutui-tabs-titles-background-color);
+
+    .nut-tabs-list {
+      justify-content: center;
+      gap: var(--nutui-tabs-titles-gap);
+    }
+
+    .nut-tabs-titles-item {
+      flex: 0 0 auto;
+      height: auto;
+      min-width: var(--nutui-tabs-titles-item-min-width);
+      padding: 0;
+      line-height: 1.2;
+      font-size: var(--nutui-tabs-titles-font-size);
+      color: var(--nutui-tabs-titles-item-color);
+    }
+
+    .nut-tabs-titles-item-line,
+    .nut-tabs-titles-item-smile {
+      display: none;
+    }
+
+    .nut-tabs-titles-item-text {
+      height: auto;
+      min-height: 32px;
+      padding: var(--sw-tabs-title-padding);
+      line-height: 1.2;
+      font-family: var(--sw-font-body);
+      font-size: var(--nutui-tabs-titles-font-size);
+      font-weight: 500;
+      box-sizing: border-box;
+    }
+
+    .nut-tabs-titles-item:not(.nut-tabs-titles-item-active) .nut-tabs-titles-item-text {
+      background: var(--sw-tabs-title-inactive-bg);
+      border: 1px solid var(--sw-tabs-title-inactive-border);
+      color: var(--sw-tabs-title-inactive-color);
+      border-radius: var(--nutui-tabs-button-border-radius);
+    }
+
+    .nut-tabs-titles-item-active .nut-tabs-titles-item-text {
+      color: var(--sw-tabs-title-active-color);
+      background: var(--sw-tabs-title-active-bg);
+      border: var(--nutui-tabs-button-active-border);
+      border-radius: var(--nutui-tabs-button-border-radius);
+      box-shadow: var(--sw-shadow-tab-active);
+      font-weight: var(--nutui-tabs-titles-item-active-font-weight);
+    }
+  }
+
+  .nut-tabs-titles-line,
+  .nut-tabs-titles-smile,
+  .nut-tabs-titles-card {
+    .nut-tabs-titles-item-active {
+      color: var(--nutui-brand-6);
+
+      .nut-tabs-titles-item-text {
+        color: var(--nutui-brand-6);
+        font-weight: var(--nutui-tabs-titles-item-active-font-weight);
+      }
+    }
   }
 }
