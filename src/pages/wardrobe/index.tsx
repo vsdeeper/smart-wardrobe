@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { View, Text, ScrollView } from "@tarojs/components";
 import Taro from "@tarojs/taro";
+import { Add } from "@nutui/icons-react-taro";
 import {
   NavBar,
   Avatar,
@@ -8,9 +9,10 @@ import {
   Tabs,
   Tag,
   Image,
-  Button,
   Tabbar,
 } from "@nutui/nutui-react-taro";
+import magicWandIcon from "@/assets/icons/magic-wand.svg";
+import magicWandLargeIcon from "@/assets/icons/magic-wand-large.svg";
 import "./index.scss";
 
 /** 季节筛选 */
@@ -152,12 +154,17 @@ function WardrobePage() {
     Taro.showToast({ title: "AI 正在搭配中...", icon: "none" });
   };
 
-  const handleNotify = () => {
-    Taro.showToast({ title: "暂无新通知", icon: "none" });
-  };
+  const { statusBarHeight, screenHeight, safeArea } = Taro.getWindowInfo();
+  const safeAreaBottom = safeArea ? screenHeight - safeArea.bottom : 0;
 
   return (
-    <View className="wardrobe-page">
+    <View
+      className="wardrobe-page"
+      style={{
+        ["--sw-status-bar-height" as string]: `${statusBarHeight ?? 0}px`,
+        ["--sw-safe-area-bottom" as string]: `${safeAreaBottom}px`,
+      }}
+    >
       <NavBar
         safeAreaInsetTop
         className="wardrobe-navbar"
@@ -171,11 +178,6 @@ function WardrobePage() {
             <Text className="navbar-brand__title">Botanica</Text>
           </View>
         }
-        right={
-          <View className="navbar-notify" onClick={handleNotify}>
-            <Text className="navbar-notify__icon">🔔</Text>
-          </View>
-        }
       />
 
       <ScrollView
@@ -187,7 +189,11 @@ function WardrobePage() {
         <View className="ai-status">
           <View className="ai-status__content">
             <View className="ai-status__icon-wrap">
-              <Text className="ai-status__icon">🪄</Text>
+              <Image
+                className="ai-status__icon"
+                src={magicWandIcon}
+                mode="aspectFit"
+              />
             </View>
             <View className="ai-status__text">
               <Text className="ai-status__label">AI 智能分类</Text>
@@ -195,10 +201,10 @@ function WardrobePage() {
             </View>
           </View>
           <Progress
-            percent={65}
+            percent={70}
             className="ai-status__progress"
             color="var(--sw-color-accent)"
-            background="#d5e8f7"
+            background="var(--sw-color-progress-track)"
             showText={false}
           />
         </View>
@@ -224,33 +230,30 @@ function WardrobePage() {
 
           <View className="wardrobe-card wardrobe-card--cta">
             <View className="wardrobe-cta">
-              <View className="wardrobe-cta__pattern" aria-hidden />
+              <View className="wardrobe-cta__pattern" aria-hidden>
+                <Image
+                  className="wardrobe-cta__pattern-icon"
+                  src={magicWandLargeIcon}
+                  mode="aspectFit"
+                />
+              </View>
               <View className="wardrobe-cta__content">
                 <Text className="wardrobe-cta__title">需要搭配建议吗？</Text>
                 <Text className="wardrobe-cta__desc">
                   AI 已根据您的秋季收藏为您准备了 5 套全新搭配。
                 </Text>
-                <Button
-                  type="default"
-                  shape="round"
-                  className="wardrobe-cta__btn"
-                  onClick={handleAIStyling}
-                >
-                  开始搭配
-                </Button>
+                <View className="wardrobe-cta__btn" onClick={handleAIStyling}>
+                  <Text className="wardrobe-cta__btn-text">开始搭配</Text>
+                </View>
               </View>
-              <Button
-                type="primary"
-                shape="round"
-                className="wardrobe-cta__fab"
-                onClick={handleAddItem}
-              >
-                +
-              </Button>
             </View>
           </View>
         </View>
       </ScrollView>
+
+      <View className="wardrobe-fab" onClick={handleAddItem}>
+        <Add className="wardrobe-fab__icon" color="#ffffff" size={30} />
+      </View>
 
       <Tabbar
         fixed

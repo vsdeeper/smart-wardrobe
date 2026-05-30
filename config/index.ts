@@ -2,6 +2,10 @@ import { defineConfig, type UserConfigExport } from "@tarojs/cli";
 import devConfig from "./dev";
 import prodConfig from "./prod";
 import vitePluginImp from "vite-plugin-imp";
+import path from "path";
+
+const srcPath = path.resolve(__dirname, "..", "src");
+
 // https://taro-docs.jd.com/docs/next/config#defineconfig-辅助函数
 export default defineConfig<"vite">(async (merge, { command, mode }) => {
   const baseConfig: UserConfigExport<"vite"> = {
@@ -18,6 +22,10 @@ export default defineConfig<"vite">(async (merge, { command, mode }) => {
     outputRoot: "dist",
     plugins: ["@tarojs/plugin-html"],
     defineConstants: {},
+    // 目录别名，与 tsconfig paths @/* 对应
+    alias: {
+      "@": srcPath,
+    },
     copy: {
       patterns: [],
       options: {},

@@ -143,6 +143,9 @@ page {
   --nutui-tabs-tabpane-background-color: transparent;
   --nutui-tabs-tabpane-backgroundColor: transparent; // 兼容旧 camelCase
 
+  // 顶部导航栏
+  --nutui-navbar-height: 32px;
+
   // ========== 应用语义令牌（页面样式优先使用） ==========
   --sw-font-heading:
     "Plus Jakarta Sans", "PingFang SC", "Microsoft YaHei", sans-serif;
@@ -165,13 +168,21 @@ page {
   --sw-color-tag-bg: #e8f2ff;
   --sw-color-tag-text: #5b9bd5;
 
-  --sw-radius-card: 24px; // rounded-xl — 衣橱卡片/CTA
+  --sw-color-ai-label: var(--nutui-brand-5); // AI 状态条标签 / 进度填充叶绿
+  --sw-color-progress-track: #d5e5f1; // surface-container-highest — 进度轨道
+  --sw-color-cta-border: #ffffff; // CTA 卡片白边
+
+  --sw-radius-card: var(--nutui-radius-7); // rounded-xl — 衣橱卡片/CTA
   --sw-radius-banner: 16px;
   --sw-radius-pill: 9999px;
 
   --sw-shadow-card: var(--nutui-shadow-light);
   --sw-shadow-tabbar: 0 -10px 40px rgba(176, 196, 222, 0.15);
   --sw-shadow-tab-active: 0 4px 12px rgba(54, 107, 0, 0.2);
+  --sw-shadow-fab: 0 8px 24px rgba(54, 107, 0, 0.3); // 页面 FAB 主色阴影
+
+  --sw-status-bar-height: 0px; // 运行时由页面覆盖
+  --sw-safe-area-bottom: 0px; // 运行时由页面覆盖
 
   // Tabs 语义别名（页面可引用）
   --sw-tabs-title-inactive-bg: var(--nutui-gray-1);
