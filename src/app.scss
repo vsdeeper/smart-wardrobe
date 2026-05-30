@@ -1,5 +1,7 @@
 // 主题变量覆盖（必须在任何 NutUI 样式之前引入）
 @use "./styles/theme.scss";
+// 图标字体
+@use "./styles/iconfont.scss";
 
 // 全局字体（DESIGN.md 字体排印）
 // Plus Jakarta Sans → 标题，Be Vietnam Pro → 正文
@@ -105,7 +107,8 @@ page {
       box-sizing: border-box;
     }
 
-    .nut-tabs-titles-item:not(.nut-tabs-titles-item-active) .nut-tabs-titles-item-text {
+    .nut-tabs-titles-item:not(.nut-tabs-titles-item-active)
+      .nut-tabs-titles-item-text {
       background: var(--sw-tabs-title-inactive-bg);
       border: 1px solid var(--sw-tabs-title-inactive-border);
       color: var(--sw-tabs-title-inactive-color);
@@ -149,10 +152,16 @@ page {
 
 .nut-safe-area-position-bottom {
   padding-bottom: constant(safe-area-inset-bottom);
-  padding-bottom: max(env(safe-area-inset-bottom), var(--sw-safe-area-bottom, 0px));
+  padding-bottom: max(
+    env(safe-area-inset-bottom),
+    var(--sw-safe-area-bottom, 0px)
+  );
 }
 
 .nut-tabbar-safe-area {
   padding-bottom: constant(safe-area-inset-bottom);
-  padding-bottom: max(env(safe-area-inset-bottom), var(--sw-safe-area-bottom, 0px));
+  padding-bottom: max(
+    env(safe-area-inset-bottom),
+    var(--sw-safe-area-bottom, 0px)
+  );
 }

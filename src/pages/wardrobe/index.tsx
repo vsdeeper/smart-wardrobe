@@ -11,8 +11,6 @@ import {
   Image,
   Tabbar,
 } from "@nutui/nutui-react-taro";
-import magicWandIcon from "@/assets/icons/magic-wand.svg";
-import magicWandLargeIcon from "@/assets/icons/magic-wand-large.svg";
 import "./index.scss";
 
 /** 季节筛选 */
@@ -67,11 +65,11 @@ const WARDROBE_ITEMS: WardrobeItem[] = [
 
 /** 底部导航 — 对齐设计稿 */
 const BOTTOM_TABS = [
-  { key: "wardrobe", label: "衣橱", icon: "👔" },
-  { key: "outfit", label: "穿搭", icon: "🧥" },
-  { key: "discover", label: "发现", icon: "🧭" },
-  { key: "profile", label: "我的", icon: "👤" },
-];
+  { key: "wardrobe", label: "衣橱", iconClass: "icon-wardrobe" },
+  { key: "outfit", label: "试穿", iconClass: "icon-outfit" },
+  { key: "discover", label: "搭配", iconClass: "icon-magic-wand" },
+  { key: "profile", label: "我的", iconClass: "icon-profile" },
+] as const;
 
 function WardrobeItemCard({ item }: { item: WardrobeItem }) {
   const isLarge = item.layout === "large";
@@ -189,11 +187,7 @@ function WardrobePage() {
         <View className="ai-status">
           <View className="ai-status__content">
             <View className="ai-status__icon-wrap">
-              <Image
-                className="ai-status__icon"
-                src={magicWandIcon}
-                mode="aspectFit"
-              />
+              <Text className="iconfont icon-magic-wand ai-status__icon" />
             </View>
             <View className="ai-status__text">
               <Text className="ai-status__label">AI 智能分类</Text>
@@ -231,11 +225,7 @@ function WardrobePage() {
           <View className="wardrobe-card wardrobe-card--cta">
             <View className="wardrobe-cta">
               <View className="wardrobe-cta__pattern" aria-hidden>
-                <Image
-                  className="wardrobe-cta__pattern-icon"
-                  src={magicWandLargeIcon}
-                  mode="aspectFit"
-                />
+                <Text className="iconfont icon-magic-wand wardrobe-cta__pattern-icon" />
               </View>
               <View className="wardrobe-cta__content">
                 <Text className="wardrobe-cta__title">需要搭配建议吗？</Text>
@@ -254,7 +244,6 @@ function WardrobePage() {
       <View className="wardrobe-fab" onClick={handleAddItem}>
         <Add className="wardrobe-fab__icon" color="#ffffff" size={30} />
       </View>
-
       <Tabbar
         fixed
         safeArea
@@ -269,7 +258,11 @@ function WardrobePage() {
             key={tab.key}
             title={tab.label}
             value={idx}
-            icon={<Text className="tabbar-icon">{tab.icon}</Text>}
+            icon={
+              <View className="tabbar-icon">
+                <Text className={`iconfont ${tab.iconClass}`} />
+              </View>
+            }
           />
         ))}
       </Tabbar>
