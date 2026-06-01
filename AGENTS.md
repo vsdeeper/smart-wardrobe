@@ -75,6 +75,13 @@ types/
 - NutUI 按需加载已由 `vite-plugin-imp` 配置，直接 `import` 即可。
 - 样式文件：`*.scss`，与组件同目录；`px` 会转为小程序 `rpx`（`nut-` 前缀选择器排除转换）。
 
+#### 自定义按钮
+
+- **页面 CTA、卡片操作按钮等需自定义样式的可点击按钮**，优先使用 Taro `View` + `Text` + `onClick`，**不使用** NutUI `Button`。
+- 原因：NutUI `Button` 在小程序端编译为原生 `button`，在 `ScrollView` 内易出现布局异常；自定义样式需大量覆盖 NutUI 默认样式（渐变背景、圆角、尺寸变量等），维护成本高。
+- 参考实现：[`src/pages/wardrobe/index.tsx`](src/pages/wardrobe/index.tsx) 中 `wardrobe-cta__btn`（样式见同目录 `index.scss`）。
+- **例外**：标准 NutUI 风格的功能按钮（如表单「提交」、对话框确认）可使用 NutUI `Button`；若样式异常，检查 `vite-plugin-imp` 是否引入组件 CSS，并用 `.nut-button` 组合选择器覆盖，勿仅用页面级 class。
+
 #### 组件目录命名
 
 - **布局组件**（`src/layouts/`）：目录名**大驼峰**，与 default export 组件名一致。示例：`src/layouts/Main/index.tsx` + `index.scss`；引入 `import Main from "@/layouts/Main"`。
@@ -122,6 +129,7 @@ types/
 - 不要添加无意义的注释、过度抽象或无关重构。
 - 不要在未要求时执行 `git commit` / `git push`。
 - 不要在 `theme.scss` 中写全局选择器或 NutUI 类名覆写；应放在 `app.scss`。
+- 不要用 NutUI `Button` 实现高度定制的页面 CTA；应使用 `View` + `Text`（见「自定义按钮」）。
 
 ## Safety & Guardrails
 

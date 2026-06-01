@@ -1,6 +1,7 @@
 export default defineAppConfig({
   pages: [
-    'pages/wardrobe/index'
+    'pages/wardrobe/index',
+    'pages/try-on/index',
   ],
   window: {
     backgroundTextStyle: 'light',

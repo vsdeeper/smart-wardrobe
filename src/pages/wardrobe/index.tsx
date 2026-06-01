@@ -2,15 +2,10 @@ import { useState } from "react";
 import { View, Text } from "@tarojs/components";
 import Taro from "@tarojs/taro";
 import { Add } from "@nutui/icons-react-taro";
-import {
-  NavBar,
-  Avatar,
-  Progress,
-  Tabs,
-  Tag,
-  Image,
-} from "@nutui/nutui-react-taro";
+import { Progress, Tabs, Tag, Image } from "@nutui/nutui-react-taro";
+import AppNavbar from "@/components/AppNavbar";
 import Main from "@/layouts/Main";
+import { useMainTabNavigation } from "@/utils/tabNavigation";
 import "./index.scss";
 
 /** 季节筛选 */
@@ -134,6 +129,7 @@ function WardrobeItemCard({ item }: { item: WardrobeItem }) {
 
 function WardrobePage() {
   const [activeSeason, setActiveSeason] = useState(2);
+  const { activeTab, onTabChange } = useMainTabNavigation(0);
 
   const handleAddItem = () => {
     Taro.showToast({ title: "添加单品", icon: "none" });
@@ -145,22 +141,9 @@ function WardrobePage() {
 
   return (
     <Main
-      header={
-        <NavBar
-          safeAreaInsetTop
-          className="wardrobe-navbar"
-          left={
-            <View className="navbar-brand">
-              <Avatar
-                size="small"
-                className="navbar-brand__avatar"
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuBmCTpivEznOkTWFXT6ny24Bt4QwsEslThRHoTF3RkrALjTbgZzGbpc3V4flHjljeuTvq5i5QxaIPMlmb0G9_TPT9f2I7BnbDvqnKqxOPoIHy0OAz3Ls3GXUEr6WhvsA0UxKDzFSA29uUCV7Zma7f3z96lapYURF8Kezt-f2_g0aGCyv9IB-K3kT6fSorQ0xb9YZahQP04u65Zl6HSNso_PXGEickO2pOsnanBzx2QAS6lqBmwXC5c7OAnvagtGtCxfrLx7u2V3HQe-"
-              />
-              <Text className="navbar-brand__title">Botanica</Text>
-            </View>
-          }
-        />
-      }
+      activeTab={activeTab}
+      onTabChange={onTabChange}
+      header={<AppNavbar />}
     >
       <Main.Scroll>
         <View className="ai-status">

@@ -59,6 +59,7 @@ types/
 - NutUI 按需加载已通过 `vite-plugin-imp` 配置，可直接 import 使用
 - 样式文件命名为 `*.scss`，与组件同目录
 - px 单位会自动转换为小程序 rpx（NutUI 的 `nut-` 前缀选择器被排除）
+- **自定义按钮**：页面 CTA、卡片操作等需自定义样式的按钮，优先用 `View` + `Text` + `onClick`（参考 `src/pages/wardrobe` 中 `wardrobe-cta__btn`）；标准 NutUI 风格功能按钮（表单提交、对话框确认）可用 NutUI `Button`
 
 ### TypeScript
 - 严格空值检查开启（`strictNullChecks: true`）

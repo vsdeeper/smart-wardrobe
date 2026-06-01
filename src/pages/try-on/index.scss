@@ -1,0 +1,310 @@
+// ============================================================
+// 试穿页面 — 对齐 Botanica 设计稿
+// ============================================================
+
+// ========== 天气卡片 ==========
+.weather-card {
+  margin-bottom: var(--nutui-spacing-8);
+  padding: 14px var(--nutui-spacing-5);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--nutui-spacing-5);
+  background: var(--nutui-gray-2);
+  border-radius: var(--nutui-radius-6);
+  box-shadow: var(--sw-shadow-card);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+
+  &__main {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__icon {
+    font-size: 28px;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+
+  &__info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  &__location {
+    font-family: var(--sw-font-heading);
+    font-size: var(--nutui-font-size-4);
+    font-weight: var(--nutui-font-weight-bold);
+    color: var(--nutui-gray-7);
+  }
+
+  &__detail {
+    font-family: var(--sw-font-body);
+    font-size: var(--nutui-font-size-2);
+    color: var(--nutui-gray-5);
+  }
+
+  &__air {
+    flex-shrink: 0;
+    font-family: var(--sw-font-body);
+    font-size: var(--nutui-font-size-2);
+    font-weight: 500;
+    color: var(--nutui-brand-6);
+  }
+}
+
+// ========== 主推荐卡片 ==========
+.outfit-hero {
+  position: relative;
+  margin-bottom: var(--nutui-spacing-8);
+  border-radius: var(--sw-radius-card);
+  background: var(--nutui-gray-1);
+  box-shadow: var(--sw-shadow-card);
+  overflow: hidden;
+
+  &__badge {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    border-radius: var(--sw-radius-pill);
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 2px 8px rgba(54, 69, 79, 0.08);
+  }
+
+  &__badge-icon {
+    font-size: 14px;
+    color: var(--nutui-brand-5);
+    line-height: 1;
+  }
+
+  &__badge-text {
+    font-family: var(--sw-font-body);
+    font-size: var(--nutui-font-size-2);
+    font-weight: 500;
+    color: var(--nutui-brand-6);
+  }
+
+  &__visual {
+    height: 280px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--nutui-spacing-8) var(--nutui-spacing-5);
+    background: linear-gradient(180deg, #f5faff 0%, #e9f5ff 100%);
+  }
+
+  &__image {
+    width: 100%;
+    height: 100%;
+  }
+
+  &__overlay {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 48px var(--nutui-spacing-5) var(--nutui-spacing-5);
+    background: linear-gradient(
+      180deg,
+      rgba(54, 69, 79, 0) 0%,
+      rgba(54, 69, 79, 0.75) 55%,
+      rgba(54, 69, 79, 0.88) 100%
+    );
+  }
+
+  &__title {
+    display: block;
+    margin-bottom: 6px;
+    font-family: var(--sw-font-heading);
+    font-size: var(--nutui-font-size-6);
+    font-weight: var(--nutui-font-weight-bold);
+    color: #ffffff;
+    letter-spacing: -0.02em;
+  }
+
+  &__desc {
+    display: block;
+    font-family: var(--sw-font-body);
+    font-size: var(--nutui-font-size-3);
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.88);
+  }
+}
+
+// ========== 搭配清单 ==========
+.outfit-list {
+  margin-bottom: var(--nutui-spacing-8);
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--nutui-spacing-5);
+  }
+
+  &__title {
+    font-family: var(--sw-font-heading);
+    font-size: var(--nutui-font-size-5);
+    font-weight: var(--nutui-font-weight-bold);
+    color: var(--nutui-gray-7);
+  }
+
+  &__edit {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  &__edit-text {
+    font-family: var(--sw-font-body);
+    font-size: var(--nutui-font-size-2);
+    font-weight: 500;
+    color: var(--nutui-brand-6);
+  }
+
+  &__grid {
+    display: flex;
+    gap: var(--nutui-spacing-5);
+  }
+}
+
+.outfit-piece {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: var(--nutui-spacing-5);
+  border-radius: var(--nutui-radius-6);
+  background: var(--nutui-gray-1);
+  border: 1px solid var(--sw-color-progress-track);
+  box-shadow: var(--sw-shadow-card);
+  transition: transform 0.2s ease;
+
+  &__image-wrap {
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: var(--nutui-radius-4);
+    overflow: hidden;
+    background: var(--sw-color-surface-container);
+  }
+
+  &__image {
+    width: 100%;
+    height: 100%;
+  }
+
+  &__category {
+    display: block;
+    margin-bottom: 4px;
+    font-family: var(--sw-font-body);
+    font-size: var(--nutui-font-size-2);
+    font-weight: 500;
+    color: var(--nutui-gray-5);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  &__name {
+    display: block;
+    font-family: var(--sw-font-heading);
+    font-size: var(--nutui-font-size-4);
+    font-weight: 500;
+    color: var(--nutui-gray-7);
+    line-height: 1.4;
+  }
+
+  &--pressed,
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+// ========== 搭配小贴士 ==========
+.outfit-tips {
+  margin-bottom: var(--nutui-spacing-8);
+
+  &__title {
+    display: block;
+    margin-bottom: var(--nutui-spacing-5);
+    font-family: var(--sw-font-heading);
+    font-size: var(--nutui-font-size-5);
+    font-weight: var(--nutui-font-weight-bold);
+    color: var(--nutui-gray-7);
+  }
+
+  &__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--nutui-spacing-4);
+  }
+
+  &__tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 16px;
+    border-radius: var(--sw-radius-pill);
+    background: var(--nutui-gray-2);
+  }
+
+  &__tag-icon {
+    font-size: 14px;
+    line-height: 1;
+  }
+
+  &__tag-text {
+    font-family: var(--sw-font-body);
+    font-size: var(--nutui-font-size-2);
+    font-weight: 500;
+    color: var(--nutui-gray-7);
+    line-height: 1.2;
+  }
+}
+
+// ========== 试穿页滚动区（底部留白，避免按钮阴影被 TabBar 区域裁切） ==========
+.main-scroll--try-on {
+  padding-bottom: calc(75px + var(--sw-safe-area-bottom, 0px));
+}
+
+// ========== 主操作按钮 ==========
+.wear-btn-wrap {
+  padding: 0 20px 30px;
+  box-sizing: border-box;
+}
+
+.wear-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 52px;
+  margin-bottom: 0;
+  box-sizing: border-box;
+  border-radius: var(--sw-radius-pill);
+  background: var(--nutui-brand-6);
+  box-shadow: var(--sw-shadow-fab);
+
+  &__text {
+    font-family: var(--sw-font-heading);
+    font-size: var(--nutui-font-size-4);
+    font-weight: var(--nutui-font-weight-bold);
+    color: #ffffff;
+    line-height: 1.2;
+  }
+
+  &:active {
+    opacity: 0.92;
+    transform: scale(0.98);
+  }
+}
