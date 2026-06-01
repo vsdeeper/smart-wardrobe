@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, Text, ScrollView } from "@tarojs/components";
+import { View, Text } from "@tarojs/components";
 import Taro from "@tarojs/taro";
 import { Add } from "@nutui/icons-react-taro";
 import {
@@ -9,8 +9,8 @@ import {
   Tabs,
   Tag,
   Image,
-  Tabbar,
 } from "@nutui/nutui-react-taro";
+import Main from "@/layouts/Main";
 import "./index.scss";
 
 /** 季节筛选 */
@@ -62,14 +62,6 @@ const WARDROBE_ITEMS: WardrobeItem[] = [
     layout: "wide",
   },
 ];
-
-/** 底部导航 — 对齐设计稿 */
-const BOTTOM_TABS = [
-  { key: "wardrobe", label: "衣橱", iconClass: "icon-wardrobe" },
-  { key: "outfit", label: "试穿", iconClass: "icon-outfit" },
-  { key: "discover", label: "搭配", iconClass: "icon-magic-wand" },
-  { key: "profile", label: "我的", iconClass: "icon-profile" },
-] as const;
 
 function WardrobeItemCard({ item }: { item: WardrobeItem }) {
   const isLarge = item.layout === "large";
@@ -142,7 +134,6 @@ function WardrobeItemCard({ item }: { item: WardrobeItem }) {
 
 function WardrobePage() {
   const [activeSeason, setActiveSeason] = useState(2);
-  const [activeTab, setActiveTab] = useState(0);
 
   const handleAddItem = () => {
     Taro.showToast({ title: "添加单品", icon: "none" });
@@ -152,38 +143,26 @@ function WardrobePage() {
     Taro.showToast({ title: "AI 正在搭配中...", icon: "none" });
   };
 
-  const { statusBarHeight, screenHeight, safeArea } = Taro.getWindowInfo();
-  const safeAreaBottom = safeArea ? screenHeight - safeArea.bottom : 0;
-
   return (
-    <View
-      className="wardrobe-page"
-      style={{
-        ["--sw-status-bar-height" as string]: `${statusBarHeight ?? 0}px`,
-        ["--sw-safe-area-bottom" as string]: `${safeAreaBottom}px`,
-      }}
+    <Main
+      header={
+        <NavBar
+          safeAreaInsetTop
+          className="wardrobe-navbar"
+          left={
+            <View className="navbar-brand">
+              <Avatar
+                size="small"
+                className="navbar-brand__avatar"
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuBmCTpivEznOkTWFXT6ny24Bt4QwsEslThRHoTF3RkrALjTbgZzGbpc3V4flHjljeuTvq5i5QxaIPMlmb0G9_TPT9f2I7BnbDvqnKqxOPoIHy0OAz3Ls3GXUEr6WhvsA0UxKDzFSA29uUCV7Zma7f3z96lapYURF8Kezt-f2_g0aGCyv9IB-K3kT6fSorQ0xb9YZahQP04u65Zl6HSNso_PXGEickO2pOsnanBzx2QAS6lqBmwXC5c7OAnvagtGtCxfrLx7u2V3HQe-"
+              />
+              <Text className="navbar-brand__title">Botanica</Text>
+            </View>
+          }
+        />
+      }
     >
-      <NavBar
-        safeAreaInsetTop
-        className="wardrobe-navbar"
-        left={
-          <View className="navbar-brand">
-            <Avatar
-              size="small"
-              className="navbar-brand__avatar"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuBmCTpivEznOkTWFXT6ny24Bt4QwsEslThRHoTF3RkrALjTbgZzGbpc3V4flHjljeuTvq5i5QxaIPMlmb0G9_TPT9f2I7BnbDvqnKqxOPoIHy0OAz3Ls3GXUEr6WhvsA0UxKDzFSA29uUCV7Zma7f3z96lapYURF8Kezt-f2_g0aGCyv9IB-K3kT6fSorQ0xb9YZahQP04u65Zl6HSNso_PXGEickO2pOsnanBzx2QAS6lqBmwXC5c7OAnvagtGtCxfrLx7u2V3HQe-"
-            />
-            <Text className="navbar-brand__title">Botanica</Text>
-          </View>
-        }
-      />
-
-      <ScrollView
-        className="wardrobe-main"
-        scrollY
-        enhanced
-        showScrollbar={false}
-      >
+      <Main.Scroll>
         <View className="ai-status">
           <View className="ai-status__content">
             <View className="ai-status__icon-wrap">
@@ -239,34 +218,12 @@ function WardrobePage() {
             </View>
           </View>
         </View>
-      </ScrollView>
+      </Main.Scroll>
 
       <View className="wardrobe-fab" onClick={handleAddItem}>
         <Add className="wardrobe-fab__icon" color="#ffffff" size={30} />
       </View>
-      <Tabbar
-        fixed
-        safeArea
-        value={activeTab}
-        activeColor="var(--nutui-brand-6)"
-        inactiveColor="var(--nutui-gray-5)"
-        className="wardrobe-tabbar"
-        onSwitch={(v) => setActiveTab(v as number)}
-      >
-        {BOTTOM_TABS.map((tab, idx) => (
-          <Tabbar.Item
-            key={tab.key}
-            title={tab.label}
-            value={idx}
-            icon={
-              <View className="tabbar-icon">
-                <Text className={`iconfont ${tab.iconClass}`} />
-              </View>
-            }
-          />
-        ))}
-      </Tabbar>
-    </View>
+    </Main>
   );
 }
 

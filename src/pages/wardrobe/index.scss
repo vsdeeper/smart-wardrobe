@@ -13,13 +13,6 @@
   }
 }
 
-.wardrobe-page {
-  min-height: 100vh;
-  background-color: var(--nutui-gray-3);
-  display: flex;
-  flex-direction: column;
-}
-
 // ========== 顶部导航 ==========
 .wardrobe-navbar {
   background: transparent;
@@ -50,14 +43,6 @@
     color: var(--nutui-gray-7);
     letter-spacing: -0.02em;
   }
-}
-
-// ========== 主内容 ==========
-.wardrobe-main {
-  flex: 1;
-  height: 0;
-  padding: 0 var(--nutui-spacing-7) calc(90px + var(--sw-safe-area-bottom, 0px));
-  box-sizing: border-box;
 }
 
 // ========== AI 状态条 ==========
@@ -365,54 +350,5 @@
 
   &:active {
     transform: scale(0.95);
-  }
-}
-
-// ========== 底部导航 ==========
-.wardrobe-tabbar {
-  background: var(--nutui-gray-1) !important;
-  border-radius: 24px 24px 0 0 !important;
-  box-shadow: var(--sw-shadow-tabbar) !important;
-  border-top: 1px solid var(--nutui-gray-2) !important;
-  padding: 6px 8px 4px !important;
-
-  .nut-tabbar-item {
-    flex: 1;
-  }
-
-  .nut-tabbar-item__icon {
-    margin-bottom: 2px;
-  }
-
-  .nut-tabbar-item--active .nut-tabbar-item__icon {
-    width: 44px;
-    height: 32px;
-    margin: 0 auto 2px;
-    border-radius: var(--sw-radius-pill);
-    background: var(--nutui-brand-1);
-    display: flex !important;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .nut-tabbar-item__text {
-    font-family: var(--sw-font-body);
-    font-size: 11px !important;
-    font-weight: 500;
-  }
-
-  .nut-tabbar-item--active .tabbar-icon .iconfont {
-    color: var(--nutui-brand-6);
-  }
-}
-
-.tabbar-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 1;
-
-  .iconfont {
-    font-size: 24px;
   }
 }

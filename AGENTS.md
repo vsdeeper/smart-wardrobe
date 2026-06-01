@@ -50,7 +50,10 @@ src/
   app.config.ts       # 应用配置（路由、窗口样式）
   app.scss            # 全局样式
   index.html          # H5 入口
-  pages/<page-name>/  # 每页一目录
+  pages/my-page/      # 页面，kebab-case（如 my-page、outfit-detail）
+  pages/wardrobe/     # 单词页面同样合法
+  layouts/Main/       # 布局组件，目录名大驼峰
+  components/WardrobeCard/  # 通用 UI 组件，目录名大驼峰
   styles/             # 全局主题等
 config/
   index.ts            # Taro 构建（designWidth: 375）
@@ -61,8 +64,9 @@ types/
 
 ### 页面组织
 
-- 页面目录：`src/pages/<page-name>/`（如 `wardrobe`）。
-- 必须在 `src/app.config.ts` 的 `pages` 数组中注册路径。
+- 页面目录：`src/pages/<page-name>/`，**目录名使用 kebab-case**（短横线连接，如 `my-page`、`outfit-detail`）；单词页面如 `wardrobe` 同样合法。
+- 每个页面目录包含 `index.tsx`、`index.config.ts`、`index.scss`。
+- 必须在 `src/app.config.ts` 的 `pages` 数组中注册路径（如 `'pages/my-page/index'`）。
 - 页面配置：同目录 `index.config.ts`，使用 `definePageConfig` 导出。
 
 ### 组件与样式
@@ -70,6 +74,12 @@ types/
 - 页面 UI **默认使用** `@nutui/nutui-react-taro`，优先复用 NutUI 组件，避免重复造轮子。
 - NutUI 按需加载已由 `vite-plugin-imp` 配置，直接 `import` 即可。
 - 样式文件：`*.scss`，与组件同目录；`px` 会转为小程序 `rpx`（`nut-` 前缀选择器排除转换）。
+
+#### 组件目录命名
+
+- **布局组件**（`src/layouts/`）：目录名**大驼峰**，与 default export 组件名一致。示例：`src/layouts/Main/index.tsx` + `index.scss`；引入 `import Main from "@/layouts/Main"`。
+- **通用组件**（`src/components/`）：同样大驼峰 + `index.tsx` / `index.scss`。示例：`src/components/WardrobeCard/index.tsx`；引入 `import WardrobeCard from "@/components/WardrobeCard"`。
+- 布局级外壳放 `layouts/`，可复用 UI 块放 `components/`，二者目录结构一致、父目录不同。
 
 ### 样式分层（必须遵守）
 
