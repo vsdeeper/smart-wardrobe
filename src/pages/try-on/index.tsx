@@ -68,18 +68,17 @@ function TryOnPage() {
         </View>
 
         <View className="outfit-hero">
+          <Image
+            className="outfit-hero__image"
+            src="https://lh3.googleusercontent.com/aida-public/AB6AXuA8K-x4y62yK7S3I0Q2U7xQ1P5iw8vcF3kYcE3JLKFKOHY9bcMe387S2mSv6_CQfpLm8kPlby4z0xKBqFjjaFFLdzGDrUwQJXz11SsbkIPxeQ-REFofqE0pPIM_Zdl4lQvG0gSRBl9cAmBoWZxsl7vsal8LGFJhp2kfNQZ7dHC_E-flSNvm0GMOBoO3yVFIQHm8InY21qHKOnkRLzacEczz5WaVparbMDByJ5Mlc8A9FMsxZEOxX-YekWysIeNTQabn6uVBdWvDQMS5"
+            mode="aspectFill"
+          />
+          <View className="outfit-hero__gradient" aria-hidden />
           <View className="outfit-hero__badge">
             <Text className="outfit-hero__badge-icon">★</Text>
             <Text className="outfit-hero__badge-text">匹配度 98%</Text>
           </View>
-          <View className="outfit-hero__visual">
-            <Image
-              className="outfit-hero__image"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuBw3Rt1LTR0iAus-pSvKJmmYMaa3JYqAWnhZniCfKtRIdTxgC7juZkWot5ARP89TL4Ky6WU_G7L6wzAriFkwHEeb5wlQFJkZFryzSnF1-yFBAi3kREEqsiwhMfzne18MOXf3mqn6ZiOR3C4yCRWcpJVfltGUjTFWPSLAI9q_ER4P3ajRk3ImutzpNM5YS27qD9MSUpBX61-KL6hA3ZOJ-NnrTRYvJpsjSZKEtpyvms_PN2tTLGfmmlry8dOOIkfjkYTP1IFdRlTvOf4"
-              mode="aspectFit"
-            />
-          </View>
-          <View className="outfit-hero__overlay">
+          <View className="outfit-hero__content">
             <Text className="outfit-hero__title">优雅亚麻</Text>
             <Text className="outfit-hero__desc">
               非常适合您下午两点的画廊开幕式，以及随后的微风晚宴。

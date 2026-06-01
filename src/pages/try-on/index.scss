@@ -61,83 +61,84 @@
 // ========== 主推荐卡片 ==========
 .outfit-hero {
   position: relative;
-  margin-bottom: var(--nutui-spacing-8);
-  border-radius: var(--sw-radius-card);
-  background: var(--nutui-gray-1);
-  box-shadow: var(--sw-shadow-card);
+  height: 480px;
+  margin-bottom: var(--nutui-spacing-10);
+  border-radius: 32px;
   overflow: hidden;
-
-  &__badge {
-    position: absolute;
-    top: 14px;
-    left: 14px;
-    z-index: 2;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    padding: 6px 12px;
-    border-radius: var(--sw-radius-pill);
-    background: rgba(255, 255, 255, 0.92);
-    box-shadow: 0 2px 8px rgba(54, 69, 79, 0.08);
-  }
-
-  &__badge-icon {
-    font-size: 14px;
-    color: var(--nutui-brand-5);
-    line-height: 1;
-  }
-
-  &__badge-text {
-    font-family: var(--sw-font-body);
-    font-size: var(--nutui-font-size-2);
-    font-weight: 500;
-    color: var(--nutui-brand-6);
-  }
-
-  &__visual {
-    height: 280px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: var(--nutui-spacing-8) var(--nutui-spacing-5);
-    background: linear-gradient(180deg, #f5faff 0%, #e9f5ff 100%);
-  }
+  box-shadow: 0 25px 50px -12px rgba(176, 196, 222, 0.25);
 
   &__image {
+    position: absolute;
+    inset: 0;
     width: 100%;
     height: 100%;
   }
 
-  &__overlay {
+  &__gradient {
     position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    padding: 48px var(--nutui-spacing-5) var(--nutui-spacing-5);
+    inset: 0;
     background: linear-gradient(
       180deg,
-      rgba(54, 69, 79, 0) 0%,
-      rgba(54, 69, 79, 0.75) 55%,
-      rgba(54, 69, 79, 0.88) 100%
+      rgba(0, 0, 0, 0) 0%,
+      rgba(0, 0, 0, 0) 45%,
+      rgba(0, 0, 0, 0.6) 100%
     );
+    pointer-events: none;
+  }
+
+  &__badge {
+    position: absolute;
+    top: 24px;
+    left: 24px;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: var(--sw-radius-pill);
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+  }
+
+  &__badge-icon {
+    font-size: 24px;
+    color: var(--nutui-brand-6);
+    line-height: 1;
+  }
+
+  &__badge-text {
+    font-family: var(--sw-font-heading);
+    font-size: var(--nutui-font-size-5);
+    font-weight: 500;
+    color: var(--nutui-brand-6);
+  }
+
+  &__content {
+    position: absolute;
+    left: 32px;
+    right: 32px;
+    bottom: 32px;
+    z-index: 2;
   }
 
   &__title {
     display: block;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
     font-family: var(--sw-font-heading);
-    font-size: var(--nutui-font-size-6);
+    font-size: var(--nutui-font-size-8);
     font-weight: var(--nutui-font-weight-bold);
     color: #ffffff;
     letter-spacing: -0.02em;
+    line-height: 1.3;
   }
 
   &__desc {
     display: block;
     font-family: var(--sw-font-body);
-    font-size: var(--nutui-font-size-3);
-    line-height: 1.5;
-    color: rgba(255, 255, 255, 0.88);
+    font-size: var(--nutui-font-size-4);
+    line-height: 1.6;
+    color: #ffffff;
+    opacity: 0.9;
   }
 }
 
