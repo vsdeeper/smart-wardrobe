@@ -15,8 +15,7 @@
 .main-scroll {
   flex: 1;
   height: 0;
-  padding: 0 var(--nutui-spacing-7)
-    calc(90px + var(--sw-safe-area-bottom, 0px));
+  padding: 0 var(--nutui-spacing-7) calc(90px + var(--sw-safe-area-bottom, 0px));
   box-sizing: border-box;
 }
 
@@ -26,6 +25,7 @@
   box-shadow: var(--sw-shadow-tabbar) !important;
   border-top: 1px solid var(--nutui-gray-2) !important;
   padding: 6px 8px 4px !important;
+  z-index: 100;
 
   .nut-tabbar-item {
     flex: 1;

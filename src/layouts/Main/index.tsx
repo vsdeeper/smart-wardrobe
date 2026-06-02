@@ -68,6 +68,7 @@ function Main({
       style={{
         ["--sw-status-bar-height" as string]: `${statusBarHeight ?? 0}px`,
         ["--sw-safe-area-bottom" as string]: `${safeAreaBottom}px`,
+        ["--sw-tabbar-offset" as string]: "56px",
       }}
     >
       {header}

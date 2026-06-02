@@ -27,7 +27,6 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--nutui-spacing-5);
-  margin-bottom: var(--nutui-spacing-8);
 }
 
 .match-card {
@@ -37,7 +36,9 @@
   border-radius: var(--sw-radius-card);
   box-shadow: var(--sw-shadow-card);
   border: 2px solid transparent;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 
   &--selected {
     border-color: var(--nutui-brand-6);
@@ -101,7 +102,9 @@
 
 // ========== 搭配页滚动区（为底部浮层留白） ==========
 .main-scroll--outfit {
-  padding-bottom: calc(260px + var(--sw-safe-area-bottom, 0px));
+  padding: 0 var(--nutui-spacing-7)
+    calc(var(--sw-outfit-panel-height, 298px) + var(--sw-bottom-inset));
+  box-sizing: border-box;
 }
 
 // ========== 当前搭配浮层 ==========
@@ -109,13 +112,15 @@
   position: fixed;
   left: 0;
   right: 0;
-  bottom: calc(90px + var(--sw-safe-area-bottom, 0px));
+  bottom: var(--sw-bottom-inset);
   z-index: 30;
   padding: 0 var(--nutui-spacing-7);
   box-sizing: border-box;
   pointer-events: none;
 
   &__card {
+    height: 268px;
+    box-sizing: border-box;
     pointer-events: auto;
     background: rgba(255, 255, 255, 0.8);
     backdrop-filter: blur(12px);
@@ -155,6 +160,7 @@
     font-size: var(--nutui-font-size-2);
     color: var(--nutui-secondary-1);
     line-height: 1.3;
+    white-space: nowrap;
   }
 
   &__save {
@@ -186,27 +192,33 @@
 
   &__thumbs {
     width: 100%;
-    overflow-x: auto;
+    overflow: visible;
   }
 
   &__thumbs-inner {
     display: flex;
+    flex-wrap: nowrap;
     gap: var(--nutui-spacing-5);
-    padding-top: 8px;
-    padding-bottom: 2px;
+    padding: 12px 12px 4px 4px;
+    overflow-x: auto;
   }
 }
 
 .outfit-thumb {
-  position: relative;
   flex-shrink: 0;
-  width: 88px;
-  height: 128px;
   overflow: visible;
 
+  &__box {
+    position: relative;
+    width: 88px;
+    padding: 12px 12px 0 0;
+    overflow: visible;
+    box-sizing: content-box;
+  }
+
   &__media {
-    width: 100%;
-    height: 100%;
+    width: 88px;
+    height: 128px;
     border-radius: var(--nutui-radius-6);
     overflow: hidden;
     background: var(--sw-color-surface-container);
@@ -221,9 +233,9 @@
 
   &__remove {
     position: absolute;
-    top: 4px;
-    right: 4px;
-    z-index: 1;
+    top: 8px;
+    right: 8px;
+    z-index: 2;
     width: 24px;
     height: 24px;
     border-radius: var(--sw-radius-pill);
@@ -232,6 +244,7 @@
     align-items: center;
     justify-content: center;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    transform: translate(25%, -25%);
   }
 
   &__remove-icon {
@@ -239,6 +252,7 @@
     line-height: 1;
     color: #ffffff;
     font-weight: 600;
+    margin-top: -2px;
   }
 
   &--add {
@@ -247,6 +261,9 @@
     align-items: center;
     justify-content: center;
     gap: 6px;
+    width: 88px;
+    height: 128px;
+    margin-top: 12px;
     border-radius: var(--nutui-radius-6);
     border: 2px dashed var(--nutui-gray-4);
     background: transparent;

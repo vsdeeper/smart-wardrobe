@@ -183,6 +183,12 @@ page {
 
   --sw-status-bar-height: 0px; // 运行时由页面覆盖
   --sw-safe-area-bottom: 0px; // 运行时由页面覆盖
+  --sw-tabbar-offset: 56px; // 运行时由 Main 覆盖；TabBar 内容区高度
+  --sw-outfit-panel-height: 298px; // 搭配浮层内容区预估高度
+  --sw-bottom-inset: calc(
+    var(--sw-tabbar-offset, 56px) +
+      max(env(safe-area-inset-bottom, 0px), var(--sw-safe-area-bottom, 0px))
+  );
 
   // Tabs 语义别名（页面可引用）
   --sw-tabs-title-inactive-bg: var(--nutui-gray-1);

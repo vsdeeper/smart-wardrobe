@@ -237,18 +237,23 @@ function OutfitPage() {
             <View className="outfit-panel__thumbs-inner">
               {outfitPieces.map((piece) => (
                 <View key={piece.id} className="outfit-thumb">
-                  <View className="outfit-thumb__media">
-                    <Image
-                      className="outfit-thumb__image"
-                      src={piece.image}
-                      mode="aspectFill"
-                    />
-                  </View>
-                  <View
-                    className="outfit-thumb__remove"
-                    onClick={() => handleRemovePiece(piece)}
-                  >
-                    <Text className="outfit-thumb__remove-icon">×</Text>
+                  <View className="outfit-thumb__box">
+                    <View className="outfit-thumb__media">
+                      <Image
+                        className="outfit-thumb__image"
+                        src={piece.image}
+                        mode="aspectFill"
+                      />
+                    </View>
+                    <View
+                      className="outfit-thumb__remove"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRemovePiece(piece);
+                      }}
+                    >
+                      <Text className="outfit-thumb__remove-icon">×</Text>
+                    </View>
                   </View>
                 </View>
               ))}
