@@ -4,7 +4,7 @@ import Taro from "@tarojs/taro";
 const TAB_ROUTES: (string | null)[] = [
   "/pages/wardrobe/index",
   "/pages/try-on/index",
-  null,
+  "/pages/outfit/index",
   null,
 ];
 

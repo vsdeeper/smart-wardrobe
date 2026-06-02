@@ -1,0 +1,267 @@
+// ============================================================
+// 搭配页面 — 对齐 Botanica 设计稿
+// ============================================================
+
+// ========== 分类筛选（NutUI Tabs button 类型） ==========
+.category-tabs {
+  margin-bottom: var(--nutui-spacing-8);
+
+  .nut-tabs-content-wrap {
+    display: none;
+  }
+
+  .nut-tabs-list {
+    justify-content: flex-start;
+  }
+
+  .nut-tabs-titles-item:not(.nut-tabs-titles-item-active)
+    .nut-tabs-titles-item-text {
+    background: #daeaf7;
+    border: none;
+    color: var(--nutui-secondary-1);
+  }
+}
+
+// ========== 单品网格 ==========
+.match-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--nutui-spacing-5);
+  margin-bottom: var(--nutui-spacing-8);
+}
+
+.match-card {
+  position: relative;
+  overflow: hidden;
+  background: var(--nutui-gray-1);
+  border-radius: var(--sw-radius-card);
+  box-shadow: var(--sw-shadow-card);
+  border: 2px solid transparent;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+  &--selected {
+    border-color: var(--nutui-brand-6);
+    box-shadow: var(--sw-shadow-tab-active);
+  }
+
+  &__image-wrap {
+    position: relative;
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+    background: var(--nutui-gray-2);
+  }
+
+  &__image {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  &__check {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 24px;
+    height: 24px;
+    border-radius: var(--sw-radius-pill);
+    background: var(--nutui-brand-6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &__body {
+    padding: var(--nutui-spacing-5);
+  }
+
+  &__series {
+    display: block;
+    font-family: var(--sw-font-body);
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--nutui-gray-5);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  &__name {
+    display: block;
+    margin-top: 4px;
+    font-family: var(--sw-font-heading);
+    font-size: var(--nutui-font-size-4);
+    font-weight: 500;
+    color: var(--nutui-gray-7);
+    line-height: 1.4;
+  }
+
+  &:active {
+    opacity: 0.96;
+  }
+}
+
+// ========== 搭配页滚动区（为底部浮层留白） ==========
+.main-scroll--outfit {
+  padding-bottom: calc(260px + var(--sw-safe-area-bottom, 0px));
+}
+
+// ========== 当前搭配浮层 ==========
+.outfit-panel {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(90px + var(--sw-safe-area-bottom, 0px));
+  z-index: 30;
+  padding: 0 var(--nutui-spacing-7);
+  box-sizing: border-box;
+  pointer-events: none;
+
+  &__card {
+    pointer-events: auto;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 32px 32px 0 0;
+    padding: var(--nutui-spacing-8);
+    border-top: 1px solid #ffffff;
+    box-shadow: 0 -20px 50px rgba(176, 196, 222, 0.2);
+  }
+
+  &__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--nutui-spacing-5);
+    margin-bottom: var(--nutui-spacing-8);
+  }
+
+  &__info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__title {
+    display: block;
+    font-family: var(--sw-font-heading);
+    font-size: var(--nutui-font-size-8);
+    font-weight: 600;
+    color: var(--nutui-gray-7);
+    line-height: 1.3;
+  }
+
+  &__desc {
+    display: block;
+    margin-top: 4px;
+    font-family: var(--sw-font-body);
+    font-size: var(--nutui-font-size-2);
+    color: var(--nutui-secondary-1);
+    line-height: 1.3;
+  }
+
+  &__save {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 28px;
+    min-height: 44px;
+    box-sizing: border-box;
+    border-radius: var(--sw-radius-pill);
+    background: var(--nutui-brand-6);
+    box-shadow: var(--sw-shadow-fab);
+
+    &-text {
+      font-family: var(--sw-font-heading);
+      font-size: var(--nutui-font-size-4);
+      font-weight: 500;
+      color: #ffffff;
+      line-height: 1.2;
+      white-space: nowrap;
+    }
+
+    &:active {
+      opacity: 0.92;
+      transform: scale(0.98);
+    }
+  }
+
+  &__thumbs {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  &__thumbs-inner {
+    display: flex;
+    gap: var(--nutui-spacing-5);
+    padding-top: 8px;
+    padding-bottom: 2px;
+  }
+}
+
+.outfit-thumb {
+  position: relative;
+  flex-shrink: 0;
+  width: 88px;
+  height: 128px;
+  overflow: visible;
+
+  &__media {
+    width: 100%;
+    height: 100%;
+    border-radius: var(--nutui-radius-6);
+    overflow: hidden;
+    background: var(--sw-color-surface-container);
+    box-shadow: var(--sw-shadow-card);
+  }
+
+  &__image {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  &__remove {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    z-index: 1;
+    width: 24px;
+    height: 24px;
+    border-radius: var(--sw-radius-pill);
+    background: var(--nutui-color-danger);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  }
+
+  &__remove-icon {
+    font-size: 16px;
+    line-height: 1;
+    color: #ffffff;
+    font-weight: 600;
+  }
+
+  &--add {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    border-radius: var(--nutui-radius-6);
+    border: 2px dashed var(--nutui-gray-4);
+    background: transparent;
+    box-sizing: border-box;
+  }
+
+  &__add-label {
+    font-family: var(--sw-font-body);
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--nutui-secondary-1);
+    letter-spacing: 0.06em;
+  }
+
+  &--add:active {
+    background: var(--nutui-gray-2);
+  }
+}
