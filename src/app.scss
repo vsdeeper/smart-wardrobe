@@ -32,6 +32,25 @@ h4 {
     sans-serif;
 }
 
+// ========== 图片占位底色（唯一入口：--sw-color-image-bg） ==========
+page .nut-image {
+  --nutui-gray-3: var(--sw-color-image-bg);
+
+  background-color: var(--sw-color-image-bg);
+
+  .nut-img,
+  .nut-img-loading,
+  .nut-img-error {
+    background: var(--sw-color-image-bg) !important;
+    background-size: 100% 100%;
+  }
+}
+
+page .nut-avatar,
+page .nut-avatar .avatar-img {
+  background-color: var(--sw-color-image-bg);
+}
+
 // 全局卡片预设样式（DESIGN.md 组件-卡片）
 // 无边框 + 大圆角 + 环境阴影
 .card {

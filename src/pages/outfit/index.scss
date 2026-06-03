@@ -49,7 +49,6 @@
     position: relative;
     aspect-ratio: 4 / 5;
     overflow: hidden;
-    background: var(--nutui-gray-2);
   }
 
   &__image {
@@ -221,7 +220,6 @@
     height: 128px;
     border-radius: var(--nutui-radius-6);
     overflow: hidden;
-    background: var(--sw-color-surface-container);
     box-shadow: var(--sw-shadow-card);
   }
 
@@ -252,7 +250,7 @@
     line-height: 1;
     color: #ffffff;
     font-weight: 600;
-    margin-top: -2px;
+    margin-top: -4px;
   }
 
   &--add {

@@ -1,0 +1,302 @@
+// ============================================================
+// 我的页面 — 对齐 Botanica 设计稿 / code.html
+// ============================================================
+
+.main-scroll--profile {
+  background: transparent;
+}
+
+.profile {
+  padding-top: var(--nutui-spacing-5);
+  padding-bottom: var(--nutui-spacing-8);
+}
+
+// ========== 头像与简介 ==========
+.profile-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: var(--nutui-spacing-10);
+}
+
+.profile-avatar {
+  position: relative;
+  margin-bottom: var(--nutui-spacing-8);
+
+  &__ring {
+    width: 128px;
+    height: 128px;
+    padding: 4px;
+    border-radius: 50%;
+    background: linear-gradient(
+      135deg,
+      var(--nutui-brand-6) 0%,
+      var(--nutui-brand-5) 100%
+    );
+    box-sizing: border-box;
+  }
+
+  &__image {
+    width: 100%;
+    height: 100%;
+    border: 4px solid #ffffff;
+    box-sizing: border-box;
+  }
+
+  &__edit {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--nutui-brand-6);
+    border: 2px solid #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--sw-shadow-fab);
+  }
+}
+
+.profile-header__name {
+  font-family: var(--sw-font-heading);
+  font-size: var(--nutui-font-size-10);
+  font-weight: var(--nutui-font-weight-bold);
+  color: var(--nutui-gray-7);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  margin-bottom: var(--nutui-spacing-1);
+}
+
+.profile-header__bio {
+  font-family: var(--sw-font-body);
+  font-size: var(--nutui-font-size-4);
+  line-height: var(--nutui-line-height-base);
+  color: var(--nutui-secondary-1);
+  max-width: 320px;
+  padding: 0 var(--nutui-spacing-8);
+}
+
+// ========== 数据卡片 2×2 ==========
+.profile-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--nutui-spacing-5);
+  margin-bottom: var(--nutui-spacing-10);
+}
+
+.profile-stat {
+  padding: var(--nutui-spacing-8);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  box-shadow: 0 -10px 40px rgba(176, 196, 222, 0.15);
+
+  &__icon {
+    font-size: 24px;
+    color: var(--nutui-brand-6);
+    margin-bottom: var(--nutui-spacing-3);
+    line-height: 1;
+  }
+
+  &__label {
+    font-family: var(--sw-font-body);
+    font-size: var(--nutui-font-size-2);
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--nutui-secondary-1);
+    margin-bottom: var(--nutui-spacing-2);
+  }
+
+  &__value {
+    font-family: var(--sw-font-heading);
+    font-size: var(--nutui-font-size-6);
+    font-weight: 500;
+    color: var(--nutui-gray-7);
+    line-height: 1.4;
+  }
+}
+
+// ========== 区块标题 ==========
+.profile-section {
+  &__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--nutui-spacing-8);
+  }
+
+  &__title {
+    font-family: var(--sw-font-heading);
+    font-size: var(--nutui-font-size-8);
+    font-weight: var(--nutui-font-weight-bold);
+    color: var(--nutui-gray-7);
+    line-height: 1.3;
+  }
+
+  &__action {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+
+  &__action-text {
+    font-family: var(--sw-font-body);
+    font-size: var(--nutui-font-size-2);
+    font-weight: 500;
+    color: var(--nutui-brand-6);
+  }
+}
+
+// ========== 风格标签 ==========
+.profile-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--nutui-spacing-3);
+}
+
+.profile-tag {
+  padding: var(--nutui-spacing-4) var(--nutui-spacing-5);
+  border-radius: var(--sw-radius-pill);
+  background: rgba(123, 192, 67, 0.1);
+  border: 1px solid rgba(54, 107, 0, 0.2);
+
+  &__text {
+    font-family: var(--sw-font-body);
+    font-size: var(--nutui-font-size-2);
+    font-weight: 500;
+    color: var(--nutui-brand-6);
+    line-height: 1.2;
+  }
+}
+
+// ========== 视觉日记 ==========
+.profile-diary-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+
+  &__icon {
+    font-size: 22px;
+    color: var(--nutui-gray-7);
+    line-height: 1;
+  }
+}
+
+.profile-diary {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--nutui-spacing-5);
+
+  &--list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--nutui-spacing-5);
+  }
+
+  &__item {
+    aspect-ratio: 4 / 5;
+    border-radius: var(--sw-radius-card);
+    overflow: hidden;
+    box-shadow: var(--nutui-shadow-light);
+  }
+
+  &__image {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  &__add {
+    aspect-ratio: 4 / 5;
+    border-radius: var(--sw-radius-card);
+    border: 2px dashed var(--nutui-gray-4);
+    background: var(--sw-color-image-bg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--nutui-spacing-3);
+  }
+
+  &__add-text {
+    font-family: var(--sw-font-body);
+    font-size: var(--nutui-font-size-2);
+    font-weight: 500;
+    color: var(--nutui-gray-5);
+  }
+}
+
+.profile-diary-row {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 12px;
+  padding: var(--nutui-spacing-5);
+  box-sizing: border-box;
+
+  &__media {
+    width: 80px;
+    flex-shrink: 0;
+    aspect-ratio: 4 / 5;
+    border-radius: var(--nutui-radius-6);
+    overflow: hidden;
+  }
+
+  &__image {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  &__body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: var(--nutui-spacing-3);
+  }
+
+  &__title {
+    font-family: var(--sw-font-heading);
+    font-size: var(--nutui-font-size-5);
+    font-weight: var(--nutui-font-weight-bold);
+    color: var(--nutui-gray-7);
+    line-height: 1.3;
+  }
+
+  &__desc {
+    font-family: var(--sw-font-body);
+    font-size: var(--nutui-font-size-3);
+    color: var(--nutui-gray-5);
+    line-height: var(--nutui-line-height-base);
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+  }
+
+  &--add {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: var(--nutui-spacing-3);
+    border: 2px dashed var(--nutui-gray-4);
+    background: var(--sw-color-image-bg);
+    box-shadow: none;
+    padding: var(--nutui-spacing-8) var(--nutui-spacing-5);
+  }
+
+  &__add-text {
+    font-family: var(--sw-font-body);
+    font-size: var(--nutui-font-size-2);
+    font-weight: 500;
+    color: var(--nutui-gray-5);
+  }
+}

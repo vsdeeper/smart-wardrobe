@@ -5,7 +5,7 @@ const TAB_ROUTES: (string | null)[] = [
   "/pages/wardrobe/index",
   "/pages/try-on/index",
   "/pages/outfit/index",
-  null,
+  "/pages/profile/index",
 ];
 
 export function useMainTabNavigation(currentTab: number) {
