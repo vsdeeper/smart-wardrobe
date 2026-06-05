@@ -5,8 +5,8 @@ cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 const PROVIDERS = {
   deepseek: {
     apiKey: process.env.DEEPSEEK_API_KEY,
-    baseUrl: process.env.DEEPSEEK_API_BASE_URL || 'https://api.deepseek.com/v1',
-    model: process.env.DEEPSEEK_MODEL || 'deepseek-chat',
+    baseUrl: process.env.DEEPSEEK_API_BASE_URL || 'https://api.deepseek.com',
+    model: process.env.DEEPSEEK_MODEL || 'deepseek-v4-flash',
   },
   doubao: {
     apiKey: process.env.DOUBAO_API_KEY,
@@ -68,7 +68,11 @@ exports.main = async (event) => {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${config.apiKey}`,
       },
-      body: JSON.stringify({ model, messages }),
+      body: JSON.stringify({
+        model,
+        messages,
+        ...(provider === 'deepseek' ? { thinking: { type: 'disabled' } } : {}),
+      }),
     })
 
     const data = await response.json()

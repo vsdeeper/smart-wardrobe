@@ -24,8 +24,8 @@ tcb fn deploy chat -e cloudbase-d6gkz1xlx9adbfe51
 | --- | --- |
 | `LLM_DEFAULT_PROVIDER` | 默认 `deepseek` |
 | `DEEPSEEK_API_KEY` | DeepSeek API Key |
-| `DEEPSEEK_API_BASE_URL` | 可选，默认 `https://api.deepseek.com/v1` |
-| `DEEPSEEK_MODEL` | 可选，默认 `deepseek-chat` |
+| `DEEPSEEK_API_BASE_URL` | 可选，默认 `https://api.deepseek.com` |
+| `DEEPSEEK_MODEL` | 可选，默认 `deepseek-v4-flash`（简单对话） |
 | `DOUBAO_API_KEY` | 火山方舟 API Key |
 | `DOUBAO_API_BASE_URL` | 可选，默认 `https://ark.cn-beijing.volces.com/api/v3` |
 | `DOUBAO_MODEL` | 方舟推理接入点 ID（`ep-` 前缀） |
@@ -68,7 +68,7 @@ wx.cloud.callFunction({
 }).then(console.log).catch(console.error)
 ```
 
-预期返回 `{ provider, model, content, usage }`。
+预期返回 `{ provider, model, content, usage }`（默认 `model` 为 `deepseek-v4-flash`）。
 
 或在页面代码中（Taro 项目内用法）：
 

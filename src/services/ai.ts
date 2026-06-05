@@ -43,7 +43,7 @@ function isChatError(result: ChatCloudResult): result is ChatWithLLMError {
  * 调用 chat 云函数，转发至 DeepSeek 或豆包大模型。
  *
  * @example
- * // 默认 DeepSeek
+ * // 默认 DeepSeek（云函数默认模型 deepseek-v4-flash）
  * const res = await chatWithLLM([{ role: 'user', content: '你好' }])
  *
  * @example

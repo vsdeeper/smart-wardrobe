@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import { useEffect } from 'react'
 import { useDidShow, useDidHide } from '@tarojs/taro'
 import { initCloud } from '@/services/cloud'
 // 全局样式
