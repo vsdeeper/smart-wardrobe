@@ -6,7 +6,7 @@
 
 智能衣橱（Smart Wardrobe）是基于 Taro 4.2 的跨平台小程序应用，结合 AI 打造个人化衣橱体验。技术栈：React 18、TypeScript 5.1、NutUI React Taro 2.6、Sass、Vite + SWC，包管理器为 pnpm。主要目标平台为微信小程序，亦支持 H5 及其他小程序平台。
 
-本文件适用于仓库根目录下的全部源码（`src/`、`config/`、`types/`）。当前为单包项目，无嵌套 `AGENTS.md`；若日后在子目录新增，以距离被编辑文件最近的 `AGENTS.md` 为准。
+本文件适用于仓库根目录下的全部源码（`src/`、`config/`、`types/`、`cloudfunctions/`）。当前为单包项目，无嵌套 `AGENTS.md`；若日后在子目录新增，以距离被编辑文件最近的 `AGENTS.md` 为准。
 
 ## Agent Role
 
@@ -109,6 +109,18 @@ types/
 - 页面/应用生命周期使用 Taro hooks：`useDidShow`、`useDidHide`、`useReady` 等。
 - 标准 React hooks（`useState`、`useEffect` 等）可正常使用。
 
+### 云函数（cloudfunctions/）
+
+- 云函数内发起**外部 HTTP 请求统一使用 Node 18 原生 `fetch()`**，与 [`cloudfunctions/chat/index.js`](cloudfunctions/chat/index.js) 保持一致。
+- 各云函数 [`config.json`](cloudfunctions/weather/config.json) 须声明 `"runtime": "Nodejs18.15"`；部署后云端须为 Node 18（原生 `fetch` 可用且自动解压 Gzip）。
+- **禁止**使用 `require('https')` / `https.get`、旧版 `request` 库或 axios 等额外依赖（除非用户明确要求）。
+- 原因：`https.get` 需手动解压 Gzip，易导致 `Unexpected end of JSON input`。
+- GET：`const res = await fetch(url)` → 检查 `res.ok` → `await res.text()` / `res.json()`。
+- POST：见 chat 云函数 `fetch(url, { method, headers, body })`。
+- 环境变量中的 API Host **必须含 `https://` 协议前缀**；Key 仅配在云函数环境变量，勿写入小程序端或提交 `.env`。
+- 和风天气：Geo / Weather / Air **共用控制台分配的单一 API Host**（如 `https://xxx.qweatherapi.com`），路径分别为 `/geo/v2/city/lookup`、`/v7/weather/now` 等；勿假设 `geoapi.qweather.com` 为独立域名。
+- 部署须选 **上传并部署：云端安装依赖**；说明见 [`cloudfunctions/README.md`](cloudfunctions/README.md)。
+
 ### 搜索范围
 
 排查代码时排除：`node_modules/`、`dist/`、`.git/`。
@@ -130,6 +142,7 @@ types/
 - 不要在未要求时执行 `git commit` / `git push`。
 - 不要在 `theme.scss` 中写全局选择器或 NutUI 类名覆写；应放在 `app.scss`。
 - 不要用 NutUI `Button` 实现高度定制的页面 CTA；应使用 `View` + `Text`（见「自定义按钮」）。
+- 不要在云函数中用 `https.get` 直接请求外部 JSON API；应使用 `fetch`（见「云函数」）。
 
 ## Safety & Guardrails
 

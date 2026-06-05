@@ -3,6 +3,7 @@ import Taro from "@tarojs/taro";
 import { Edit } from "@nutui/icons-react-taro";
 import { Image } from "@nutui/nutui-react-taro";
 import AppNavbar from "@/components/AppNavbar";
+import { useWeather } from "@/hooks/useWeather";
 import Main from "@/layouts/Main";
 import { useMainTabNavigation } from "@/utils/tabNavigation";
 import "./index.scss";
@@ -39,6 +40,7 @@ const OUTFIT_TIPS = [
 
 function TryOnPage() {
   const { activeTab, onTabChange } = useMainTabNavigation(1);
+  const { viewModel, status, isStale, handleCardClick } = useWeather();
 
   const handleWearOutfit = () => {
     Taro.showToast({ title: "已记录今日穿搭", icon: "success" });
@@ -56,15 +58,70 @@ function TryOnPage() {
       header={<AppNavbar />}
     >
       <Main.Scroll>
-        <View className="weather-card">
+        <View
+          className={[
+            "weather-card",
+            status === "loading" && "weather-card--loading",
+            status === "location_denied" && "weather-card--location-denied",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+          hoverClass="weather-card--pressed"
+          hoverStartTime={0}
+          hoverStayTime={100}
+          onClick={handleCardClick}
+        >
           <View className="weather-card__main">
-            <Text className="weather-card__icon">☀️</Text>
-            <View className="weather-card__info">
-              <Text className="weather-card__location">晴，伦敦</Text>
-              <Text className="weather-card__detail">21°C • 湿度 42%</Text>
-            </View>
+            {status === "loading" || status === "idle" ? (
+              <>
+                <View className="weather-card__skeleton weather-card__skeleton--icon" />
+                <View className="weather-card__info">
+                  <Text className="weather-card__location">获取天气中…</Text>
+                  <Text className="weather-card__detail">--</Text>
+                </View>
+              </>
+            ) : status === "location_denied" ? (
+              <>
+                <Text className="weather-card__icon">📍</Text>
+                <View className="weather-card__info">
+                  <Text className="weather-card__location">无法获取您的位置</Text>
+                  <Text className="weather-card__action">开启定位</Text>
+                </View>
+              </>
+            ) : status === "error" ? (
+              <>
+                <Text className="weather-card__icon">🌤️</Text>
+                <View className="weather-card__info">
+                  <Text className="weather-card__location">获取失败</Text>
+                  <Text className="weather-card__detail">点击重试</Text>
+                </View>
+              </>
+            ) : (
+              <>
+                <Text className="weather-card__icon">{viewModel?.icon}</Text>
+                <View className="weather-card__info">
+                  <Text className="weather-card__location">
+                    {viewModel?.locationLine}
+                  </Text>
+                  <Text className="weather-card__detail">
+                    {viewModel?.detailLine}
+                  </Text>
+                  {isStale && (
+                    <Text className="weather-card__hint">
+                      数据可能已过期，点击刷新
+                    </Text>
+                  )}
+                </View>
+              </>
+            )}
           </View>
-          <Text className="weather-card__air">空气质量优</Text>
+          <Text className="weather-card__air">
+            {status === "loading" || status === "idle"
+              ? "--"
+              : status === "success" && viewModel
+                ? viewModel.airQualityLabel
+                : "--"}
+          </Text>
         </View>
 
         <View className="outfit-hero">

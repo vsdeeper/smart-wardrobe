@@ -5,6 +5,12 @@ export default defineAppConfig({
     'pages/outfit/index',
     'pages/profile/index',
   ],
+  permission: {
+    'scope.userLocation': {
+      desc: '用于获取您所在位置的天气，推荐更合适的穿搭',
+    },
+  },
+  requiredPrivateInfos: ['getLocation'],
   window: {
     backgroundTextStyle: 'light',
     navigationBarBackgroundColor: '#fff',

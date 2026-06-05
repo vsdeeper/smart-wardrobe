@@ -2,6 +2,17 @@
 // 试穿页面 — 对齐 Botanica 设计稿
 // ============================================================
 
+@keyframes sw-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+}
+
 // ========== 天气卡片 ==========
 .weather-card {
   margin-bottom: var(--nutui-spacing-8);
@@ -14,6 +25,15 @@
   border-radius: var(--nutui-radius-6);
   box-shadow: var(--sw-shadow-card);
   border: 1px solid rgba(255, 255, 255, 0.65);
+  transition: transform 0.2s ease;
+
+  &--pressed {
+    transform: scale(0.98);
+  }
+
+  &--loading {
+    opacity: 0.92;
+  }
 
   &__main {
     display: flex;
@@ -51,6 +71,34 @@
 
   &__air {
     flex-shrink: 0;
+    font-family: var(--sw-font-body);
+    font-size: var(--nutui-font-size-2);
+    font-weight: 500;
+    color: var(--nutui-brand-6);
+  }
+
+  &__skeleton {
+    flex-shrink: 0;
+    border-radius: var(--nutui-radius-4);
+    background: var(--sw-color-surface-container);
+    animation: sw-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+
+    &--icon {
+      width: 28px;
+      height: 28px;
+    }
+  }
+
+  &__hint {
+    display: block;
+    margin-top: 4px;
+    font-family: var(--sw-font-body);
+    font-size: var(--nutui-font-size-1);
+    color: var(--nutui-gray-5);
+  }
+
+  &__action {
+    display: block;
     font-family: var(--sw-font-body);
     font-size: var(--nutui-font-size-2);
     font-weight: 500;

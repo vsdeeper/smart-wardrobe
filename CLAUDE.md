@@ -71,6 +71,9 @@ types/
 - 页面/应用生命周期使用 Taro hooks：`useDidShow`、`useDidHide`、`useReady` 等
 - 标准 React hooks（`useState`、`useEffect` 等）可正常使用
 
+### 云函数
+- 外部 HTTP 请求统一使用 Node `fetch()`，详见 `AGENTS.md`「云函数（cloudfunctions/）」小节
+
 ## 协作约定
 
 - **语言**: AI 对话使用中文简体，代码注释和提交信息也用中文
