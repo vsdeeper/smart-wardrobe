@@ -4,7 +4,7 @@
   "projectname": "smart-wardrobe",
   "description": "结合AI模型打造具有个人特色的智能衣橱。",
   "appid": "wx41fc2bff5cd34cd7",
-  "libVersion": "3.7.1",
+  "libVersion": "3.16.1",
   "setting": {
     "urlCheck": true,
     "es6": false,

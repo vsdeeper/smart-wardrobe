@@ -34,28 +34,43 @@ API Key 仅配置在控制台，勿提交到 Git。
 
 ## 3. Console 验证
 
+开发者工具 **Console 运行在小程序原生上下文**，仅识别 `wx` / `wx.cloud`，**没有** Taro 全局对象；勿在 Console 使用 `Taro.cloud`，否则会报 `Taro is not defined`。
+
+若 App 尚未执行云初始化（或刚清缓存），需先在 Console 调用 `wx.cloud.init`；App 已 `initCloud` 时可跳过 init。
+
+| 场景 | API |
+| --- | --- |
+| 开发者工具 Console | `wx.cloud.*` |
+| 页面 / 业务代码 | `chatWithLLM` → 内部 `Taro.cloud.callFunction` |
+
 开发者工具 Console：
 
 ```javascript
+// 若尚未初始化（可选，App 已 initCloud 时可跳过）
+wx.cloud.init({
+  env: 'cloudbase-d6gkz1xlx9adbfe51',
+  traceUser: true,
+})
+
 // DeepSeek（默认）
-Taro.cloud.callFunction({
+wx.cloud.callFunction({
   name: 'chat',
-  data: { messages: [{ role: 'user', content: '你好' }] }
-}).then(console.log)
+  data: { messages: [{ role: 'user', content: '你好' }] },
+}).then(console.log).catch(console.error)
 
 // 豆包
-Taro.cloud.callFunction({
+wx.cloud.callFunction({
   name: 'chat',
   data: {
     provider: 'doubao',
-    messages: [{ role: 'user', content: '用三句话介绍秋季穿搭' }]
-  }
-}).then(console.log)
+    messages: [{ role: 'user', content: '用三句话介绍秋季穿搭' }],
+  },
+}).then(console.log).catch(console.error)
 ```
 
 预期返回 `{ provider, model, content, usage }`。
 
-或在页面代码中：
+或在页面代码中（Taro 项目内用法）：
 
 ```typescript
 import { chatWithLLM } from '@/services/ai'
