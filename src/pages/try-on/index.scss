@@ -13,8 +13,20 @@
   }
 }
 
+@keyframes nut-loading-rotation {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
 // ========== 天气卡片 ==========
 .weather-card {
+  min-height: 70px;
+  box-sizing: border-box;
   margin-bottom: var(--nutui-spacing-8);
   padding: 14px var(--nutui-spacing-5);
   display: flex;
@@ -44,9 +56,28 @@
   }
 
   &__icon {
-    font-size: 28px;
-    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     flex-shrink: 0;
+
+    .nut-icon {
+      display: inline-block;
+    }
+
+    &--glyph {
+      font-size: 36px;
+      line-height: 1;
+      color: var(--nutui-brand-5);
+    }
+
+    &--location {
+      color: var(--nutui-secondary-1);
+    }
+
+    &--error {
+      color: var(--nutui-color-warning);
+    }
   }
 
   &__info {
@@ -67,6 +98,7 @@
     font-family: var(--sw-font-body);
     font-size: var(--nutui-font-size-2);
     color: var(--nutui-gray-5);
+    margin-top: 4px;
   }
 
   &__air {
@@ -78,14 +110,36 @@
   }
 
   &__skeleton {
-    flex-shrink: 0;
-    border-radius: var(--nutui-radius-4);
-    background: var(--sw-color-surface-container);
-    animation: sw-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-
     &--icon {
-      width: 28px;
-      height: 28px;
+      width: 50rpx;
+      height: 50rpx;
+      flex-shrink: 0;
+      --nutui-loading-icon-size: 50rpx;
+      --nutui-loading-icon-color: var(--nutui-brand-5);
+
+      .nut-loading {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+      }
+
+      .nut-loading-icon-box {
+        display: inline-block;
+        font-size: 0;
+        line-height: 0;
+        animation: nut-loading-rotation 1s infinite linear;
+      }
+
+      .nut-loading-icon,
+      .nut-icon {
+        display: inline-block;
+        width: 50rpx;
+        height: 50rpx;
+        color: var(--nutui-brand-5);
+        background-color: currentColor;
+      }
     }
   }
 

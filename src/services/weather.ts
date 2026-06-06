@@ -110,6 +110,7 @@ async function fetchWeatherFromCloud(
 
   return {
     city: data.city,
+    district: data.district || undefined,
     conditionCode: data.conditionCode as WeatherSnapshot["conditionCode"],
     temperature: data.temperature,
     humidity: data.humidity,

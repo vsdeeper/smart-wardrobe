@@ -36,15 +36,30 @@ function normalizeHost(host, fallback) {
   }
 }
 
-function buildUrl(host, path, key, params) {
-  const parts = Object.entries({ ...params, key }).map(
+function buildUrl(host, path, params) {
+  const parts = Object.entries(params).map(
     ([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`,
   )
-  return `${host}${path}?${parts.join('&')}`
+  return parts.length ? `${host}${path}?${parts.join('&')}` : `${host}${path}`
 }
 
-async function fetchJson(url) {
-  const res = await fetch(url)
+function buildAirCurrentUrl(host, latitude, longitude) {
+  return `${host}/airquality/v1/current/${latitude}/${longitude}`
+}
+
+function parseAirV1Aqi(airRes) {
+  const indexes = (airRes && airRes.indexes) || []
+  const cn = indexes.find(
+    (item) => item.code === 'cn-mee' || item.code === 'cn-mee-1h',
+  )
+  const raw = cn && cn.aqi != null ? Number(cn.aqi) : NaN
+  return Number.isNaN(raw) ? 0 : Math.round(raw)
+}
+
+async function fetchJson(url, apiKey) {
+  const res = await fetch(url, {
+    headers: { 'X-QW-Api-Key': apiKey },
+  })
   const text = await res.text()
   if (!res.ok) {
     throw new Error(`HTTP ${res.status}: ${text.slice(0, 200) || 'empty body'}`)
@@ -53,6 +68,30 @@ async function fetchJson(url) {
     throw new Error('和风 API 返回空响应')
   }
   return JSON.parse(text)
+}
+
+function parseGeoLocation(loc) {
+  if (!loc) {
+    return { city: '当前位置', district: '' }
+  }
+  const city = loc.adm2 || loc.name || '当前位置'
+  const district =
+    loc.adm3 ||
+    (loc.name && loc.adm2 && loc.name !== loc.adm2 ? loc.name : '') ||
+    ''
+  return { city, district }
+}
+
+async function fetchAirV1Aqi(apiHost, latitude, longitude, apiKey) {
+  try {
+    const airRes = await fetchJson(
+      buildAirCurrentUrl(apiHost, latitude, longitude),
+      apiKey,
+    )
+    return parseAirV1Aqi(airRes)
+  } catch {
+    return 0
+  }
 }
 
 exports.main = async (event) => {
@@ -71,13 +110,25 @@ exports.main = async (event) => {
     process.env.QWEATHER_API_HOST,
     'https://devapi.qweather.com',
   )
-  const location = `${longitude},${latitude}`
+  const coordQuery = `${longitude},${latitude}`
 
   try {
-    const [weatherRes, airRes, geoRes] = await Promise.all([
-      fetchJson(buildUrl(apiHost, '/v7/weather/now', apiKey, { location })),
-      fetchJson(buildUrl(apiHost, '/v7/air/now', apiKey, { location })),
-      fetchJson(buildUrl(apiHost, '/geo/v2/city/lookup', apiKey, { location })),
+    const geoRes = await fetchJson(
+      buildUrl(apiHost, '/geo/v2/city/lookup', { location: coordQuery }),
+      apiKey,
+    )
+
+    const loc = geoRes.location && geoRes.location[0]
+    const locationId = loc && loc.id
+    const { city, district } = parseGeoLocation(loc)
+    const weatherLocation = locationId || coordQuery
+
+    const [weatherRes, aqi] = await Promise.all([
+      fetchJson(
+        buildUrl(apiHost, '/v7/weather/now', { location: weatherLocation }),
+        apiKey,
+      ),
+      fetchAirV1Aqi(apiHost, latitude, longitude, apiKey),
     ])
 
     if (weatherRes.code !== '200' || !weatherRes.now) {
@@ -87,14 +138,9 @@ exports.main = async (event) => {
       }
     }
 
-    const loc = geoRes.location && geoRes.location[0]
-    const city = (loc && loc.name) || (loc && loc.adm2) || '当前位置'
-
-    const aqiRaw = airRes.now && airRes.now.aqi != null ? Number(airRes.now.aqi) : NaN
-    const aqi = Number.isNaN(aqiRaw) ? 0 : aqiRaw
-
     return {
       city,
+      district,
       conditionCode: mapQWeatherIcon(weatherRes.now.icon),
       temperature: Number(weatherRes.now.temp) || 0,
       humidity: Number(weatherRes.now.humidity) || 0,

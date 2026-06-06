@@ -1,7 +1,7 @@
 import { View, Text } from "@tarojs/components";
 import Taro from "@tarojs/taro";
-import { Edit } from "@nutui/icons-react-taro";
-import { Image } from "@nutui/nutui-react-taro";
+import { Edit, Location, LogisticsError } from "@nutui/icons-react-taro";
+import { Image, Loading } from "@nutui/nutui-react-taro";
 import AppNavbar from "@/components/AppNavbar";
 import { useWeather } from "@/hooks/useWeather";
 import Main from "@/layouts/Main";
@@ -74,23 +74,30 @@ function TryOnPage() {
           <View className="weather-card__main">
             {status === "loading" || status === "idle" ? (
               <>
-                <View className="weather-card__skeleton weather-card__skeleton--icon" />
+                <View className="weather-card__skeleton weather-card__skeleton--icon">
+                  <Loading type="circular" />
+                </View>
                 <View className="weather-card__info">
                   <Text className="weather-card__location">获取天气中…</Text>
-                  <Text className="weather-card__detail">--</Text>
                 </View>
               </>
             ) : status === "location_denied" ? (
               <>
-                <Text className="weather-card__icon">📍</Text>
+                <View className="weather-card__icon weather-card__icon--location">
+                  <Location size={36} color="var(--nutui-secondary-1)" />
+                </View>
                 <View className="weather-card__info">
-                  <Text className="weather-card__location">无法获取您的位置</Text>
+                  <Text className="weather-card__location">
+                    无法获取您的位置
+                  </Text>
                   <Text className="weather-card__action">开启定位</Text>
                 </View>
               </>
             ) : status === "error" ? (
               <>
-                <Text className="weather-card__icon">🌤️</Text>
+                <View className="weather-card__icon weather-card__icon--error">
+                  <LogisticsError size={36} color="var(--nutui-color-warning)" />
+                </View>
                 <View className="weather-card__info">
                   <Text className="weather-card__location">获取失败</Text>
                   <Text className="weather-card__detail">点击重试</Text>
@@ -98,7 +105,9 @@ function TryOnPage() {
               </>
             ) : (
               <>
-                <Text className="weather-card__icon">{viewModel?.icon}</Text>
+                <Text
+                  className={`iconfont ${viewModel?.icon} weather-card__icon weather-card__icon--glyph`}
+                />
                 <View className="weather-card__info">
                   <Text className="weather-card__location">
                     {viewModel?.locationLine}
@@ -117,7 +126,7 @@ function TryOnPage() {
           </View>
           <Text className="weather-card__air">
             {status === "loading" || status === "idle"
-              ? "--"
+              ? ""
               : status === "success" && viewModel
                 ? viewModel.airQualityLabel
                 : "--"}
@@ -168,7 +177,9 @@ function TryOnPage() {
                   />
                 </View>
                 <View className="outfit-piece__body">
-                  <Text className="outfit-piece__category">{piece.category}</Text>
+                  <Text className="outfit-piece__category">
+                    {piece.category}
+                  </Text>
                   <Text className="outfit-piece__name">{piece.name}</Text>
                 </View>
               </View>

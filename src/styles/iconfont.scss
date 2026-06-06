@@ -1,9 +1,9 @@
 @font-face {
   font-family: "iconfont"; /* Project id 5187712 */
   src:
-    url("@/assets/iconfonts/iconfont.woff2?t=1780500108899") format("woff2"),
-    url("@/assets/iconfonts/iconfont.woff?t=1780500108899") format("woff"),
-    url("@/assets/iconfonts/iconfont.ttf?t=1780500108899") format("truetype");
+    url("@/assets/iconfont/iconfont.woff2?t=1780733346201") format("woff2"),
+    url("@/assets/iconfont/iconfont.woff?t=1780733346201") format("woff"),
+    url("@/assets/iconfont/iconfont.ttf?t=1780733346201") format("truetype");
 }
 
 .iconfont {
@@ -12,6 +12,38 @@
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-snowy:before {
+  content: "\e63c";
+}
+
+.icon-overcast:before {
+  content: "\e698";
+}
+
+.icon-rainy:before {
+  content: "\e699";
+}
+
+.icon-cloudy:before {
+  content: "\e69a";
+}
+
+.icon-thunderstorm:before {
+  content: "\e69b";
+}
+
+.icon-foggy:before {
+  content: "\e69e";
+}
+
+.icon-windy:before {
+  content: "\e6a2";
+}
+
+.icon-sunny:before {
+  content: "\e602";
 }
 
 .icon-list:before {

@@ -104,8 +104,18 @@ tcb fn deploy weather -e cloudbase-d6gkz1xlx9adbfe51
 
 | 变量名              | 说明                                                                                      |
 | ------------------- | ----------------------------------------------------------------------------------------- |
-| `QWEATHER_API_KEY`  | [和风天气](https://dev.qweather.com/) 开发 Key（必填）                                    |
-| `QWEATHER_API_HOST` | 和风控制台 → 设置 → **API Host**，须含 `https://`（如 `https://xxx.qweatherapi.com`）；Geo / Weather / Air 共用此 Host。未配置时兜底 `https://devapi.qweather.com`（legacy 公共域名，2026 年起逐步停用） |
+| `QWEATHER_API_KEY`  | [和风天气](https://dev.qweather.com/) 开发 Key（必填）；云函数内通过请求头 **`X-QW-Api-Key`** 传递，勿写在 URL query 中 |
+| `QWEATHER_API_HOST` | 和风控制台 → 设置 → **API Host**，须含 `https://`；Geo / Weather / Air v1 共用此 Host，须与 Key **同一项目** |
+
+云函数请求链路（[`cloudfunctions/weather/index.js`](cloudfunctions/weather/index.js)）：
+
+| 步骤 | 接口 | 参数位置 |
+| ---- | ---- | -------- |
+| 1 Geo 反查 | `/geo/v2/city/lookup` | query `location=经度,纬度` |
+| 2 实时天气 | `/v7/weather/now` | query `location={LocationID}`（Geo 返回的 id） |
+| 3 实时空气 | `/airquality/v1/current/{纬度}/{经度}` | path 传坐标（非 v7/air/now） |
+
+凭据 **API 限制**须勾选：GeoAPI、实时天气、**实时空气质量 v1**。
 
 ### 故障排查
 
@@ -114,8 +124,10 @@ tcb fn deploy weather -e cloudbase-d6gkz1xlx9adbfe51
 | `fetch is not defined` | 运行时为 Node 16 及以下；确认 `config.json` 含 `"runtime": "Nodejs18.15"` 后重新上传部署。若控制台无法改运行时，删除云端该函数后从开发者工具重新「上传并部署：云端安装依赖」 |
 | `Invalid URL` | `QWEATHER_API_HOST` 缺少 `https://` 协议前缀 |
 | `Unexpected end of JSON input` | 使用了 `https.get` 未解压 Gzip；请确保已部署使用 `fetch` 的版本 |
-| `HTTP 403` / 业务 error | Key 与 API Host 不匹配，或配额用尽；检查和风控制台凭据与 Host 是否同一项目 |
-| `和风 API 返回空响应` | Host 或路径错误；Geo 路径应为 `/geo/v2/city/lookup` |
+| `HTTP 403` / `Security Restriction` | 凭据应用限制（云函数勿绑 IP 白名单）或 API 权限未勾选（Geo / 实时天气 / 空气 v1）；确认 Host 与 Key 同属一个项目 |
+| `HTTP 403` / 其他业务 error | Key 与 API Host 不匹配，或配额用尽 |
+| `和风 API 返回空响应` | Host 或路径错误 |
+| `aqi` 为 0 但天气正常 | 空气 v1 接口失败或未授权；天气与空气独立，空气失败时 AQI 回退 0 |
 
 ### Console 验证
 

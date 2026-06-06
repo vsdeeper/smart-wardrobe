@@ -118,7 +118,11 @@ types/
 - GET：`const res = await fetch(url)` → 检查 `res.ok` → `await res.text()` / `res.json()`。
 - POST：见 chat 云函数 `fetch(url, { method, headers, body })`。
 - 环境变量中的 API Host **必须含 `https://` 协议前缀**；Key 仅配在云函数环境变量，勿写入小程序端或提交 `.env`。
-- 和风天气：Geo / Weather / Air **共用控制台分配的单一 API Host**（如 `https://xxx.qweatherapi.com`），路径分别为 `/geo/v2/city/lookup`、`/v7/weather/now` 等；勿假设 `geoapi.qweather.com` 为独立域名。
+- 和风天气：Geo / Weather / Air **共用控制台分配的单一 API Host**；不同 endpoint 参数位置不同，勿假设统一格式：
+  - Geo：`/geo/v2/city/lookup?location=经度,纬度`
+  - 实时天气：`/v7/weather/now?location={LocationID}`（先 Geo 反查 ID）
+  - 实时空气 v1：`/airquality/v1/current/{纬度}/{经度}`（path 传坐标，非 query）
+- 和风 API KEY 通过请求头 **`X-QW-Api-Key`** 传递，**勿**在 URL query 中带 `key`（与 Header、query 二选一，勿混用）。
 - 部署须选 **上传并部署：云端安装依赖**；说明见 [`cloudfunctions/README.md`](cloudfunctions/README.md)。
 
 ### 搜索范围

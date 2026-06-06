@@ -12,6 +12,7 @@ export type WeatherConditionCode =
 export interface WeatherConditionPreset {
   code: WeatherConditionCode;
   label: string;
+  /** iconfont glyph 类名（如 icon-sunny），不含 iconfont 基类 */
   icon: string;
 }
 
@@ -31,6 +32,8 @@ export interface AirQualityPreset {
 
 export interface WeatherSnapshot {
   city: string;
+  /** 行政区域（区/县），可选 */
+  district?: string;
   conditionCode: WeatherConditionCode;
   temperature: number;
   humidity: number;
@@ -48,26 +51,31 @@ export const WEATHER_CONDITION_PRESETS: Record<
   WeatherConditionCode,
   WeatherConditionPreset
 > = {
-  sunny: { code: "sunny", label: "晴", icon: "☀️" },
-  cloudy: { code: "cloudy", label: "多云", icon: "⛅" },
-  overcast: { code: "overcast", label: "阴", icon: "☁️" },
-  rainy: { code: "rainy", label: "雨", icon: "🌧️" },
-  snowy: { code: "snowy", label: "雪", icon: "❄️" },
-  foggy: { code: "foggy", label: "雾", icon: "🌫️" },
-  thunderstorm: { code: "thunderstorm", label: "雷暴", icon: "⛈️" },
-  windy: { code: "windy", label: "风", icon: "💨" },
+  sunny: { code: "sunny", label: "晴", icon: "icon-sunny" },
+  cloudy: { code: "cloudy", label: "多云", icon: "icon-cloudy" },
+  overcast: { code: "overcast", label: "阴", icon: "icon-overcast" },
+  rainy: { code: "rainy", label: "雨", icon: "icon-rainy" },
+  snowy: { code: "snowy", label: "雪", icon: "icon-snowy" },
+  foggy: { code: "foggy", label: "雾", icon: "icon-foggy" },
+  thunderstorm: {
+    code: "thunderstorm",
+    label: "雷暴",
+    icon: "icon-thunderstorm",
+  },
+  windy: { code: "windy", label: "风", icon: "icon-windy" },
 };
 
 export const AIR_QUALITY_PRESETS: AirQualityPreset[] = [
-  { level: "excellent", label: "优", aqiMin: 0, aqiMax: 50 },
-  { level: "good", label: "良", aqiMin: 51, aqiMax: 100 },
+  { level: "excellent", label: "空气质量优", aqiMin: 0, aqiMax: 50 },
+  { level: "good", label: "空气质量良", aqiMin: 51, aqiMax: 100 },
   { level: "moderate", label: "轻度污染", aqiMin: 101, aqiMax: 150 },
   { level: "unhealthy", label: "中度污染", aqiMin: 151, aqiMax: 200 },
   { level: "hazardous", label: "重度污染", aqiMin: 201, aqiMax: 9999 },
 ];
 
 export const DEMO_WEATHER_SNAPSHOT: WeatherSnapshot = {
-  city: "伦敦",
+  city: "北京",
+  district: "朝阳",
   conditionCode: "sunny",
   temperature: 21,
   humidity: 42,
@@ -87,7 +95,9 @@ const QWEATHER_ICON_MAP: Array<[number, number, WeatherConditionCode]> = [
 ];
 
 /** 按和风 icon 字段映射为内部天气代码 */
-export function mapQWeatherIcon(iconCode: string | number): WeatherConditionCode {
+export function mapQWeatherIcon(
+  iconCode: string | number,
+): WeatherConditionCode {
   const code = Number(iconCode);
   if (Number.isNaN(code)) {
     return "sunny";
@@ -143,16 +153,26 @@ export function normalizeAirQualityCategory(
   return getAirQualityPreset(aqi);
 }
 
+export function formatLocationLabel(city: string, district?: string): string {
+  const safeCity = city.trim() || "当前位置";
+  const safeDistrict = district?.trim();
+  if (safeDistrict && safeDistrict !== safeCity) {
+    return `${safeCity} ${safeDistrict}`;
+  }
+  return safeCity;
+}
+
 export function buildWeatherCardView(
   snapshot: WeatherSnapshot,
 ): WeatherCardViewModel {
   const condition = getWeatherConditionPreset(snapshot.conditionCode);
   const air = getAirQualityPreset(snapshot.aqi);
+  const locationLabel = formatLocationLabel(snapshot.city, snapshot.district);
 
   return {
     icon: condition.icon,
-    locationLine: `${condition.label}，${snapshot.city}`,
+    locationLine: `${condition.label}，${locationLabel}`,
     detailLine: `${snapshot.temperature}°C • 湿度 ${snapshot.humidity}%`,
-    airQualityLabel: `空气质量${air.label}`,
+    airQualityLabel: air.label,
   };
 }
