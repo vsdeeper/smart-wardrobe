@@ -87,9 +87,9 @@
   }
 }
 
-// ========== 标题 & 季节筛选 ==========
+// ========== 标题 & 类型筛选 ==========
 .page-header {
-  margin-bottom: var(--nutui-spacing-10);
+  margin-bottom: var(--nutui-spacing-7);
   text-align: center;
 
   &__title {
@@ -104,8 +104,8 @@
   }
 }
 
-// 季节筛选：变量见 theme.scss；NutUI 覆写见 app.scss；此处仅隐藏 TabPane
-.season-tabs {
+// 类型筛选：变量见 theme.scss；NutUI 覆写见 app.scss；此处仅隐藏 TabPane
+.type-tabs {
   .nut-tabs-content-wrap {
     display: none;
   }
@@ -316,5 +316,49 @@
 
   &:active {
     transform: scale(0.95);
+  }
+
+  &--disabled {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+}
+
+// ========== 加载与空状态 ==========
+.wardrobe-loading,
+.wardrobe-load-more,
+.wardrobe-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--nutui-spacing-5);
+  padding: var(--nutui-spacing-10) var(--nutui-spacing-8);
+}
+
+.wardrobe-loading__text,
+.wardrobe-load-more__text {
+  font-family: var(--sw-font-body);
+  font-size: var(--nutui-font-size-4);
+  color: var(--nutui-gray-5);
+}
+
+.wardrobe-empty {
+  min-height: 200px;
+
+  &__title {
+    font-family: var(--sw-font-heading);
+    font-size: var(--nutui-font-size-6);
+    font-weight: var(--nutui-font-weight-bold);
+    color: var(--nutui-gray-7);
+  }
+
+  &__desc {
+    font-family: var(--sw-font-body);
+    font-size: var(--nutui-font-size-4);
+    color: var(--nutui-gray-5);
+    text-align: center;
+    line-height: 1.5;
+    max-width: 260px;
   }
 }

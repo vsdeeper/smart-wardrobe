@@ -103,6 +103,7 @@ page {
     .nut-tabs-titles-item {
       flex: 0 0 auto;
       height: auto;
+      align-items: self-start;
       min-width: var(--nutui-tabs-titles-item-min-width);
       padding: 0;
       line-height: 1.2;

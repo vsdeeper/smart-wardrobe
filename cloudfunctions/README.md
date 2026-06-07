@@ -144,3 +144,96 @@ wx.cloud
 预期返回 `{ city, conditionCode, temperature, humidity, aqi }`。
 
 页面内通过 `useWeather` hook 调用，定位失败时卡片引导「开启定位」。
+
+## 5. 云数据库（衣橱 AI 分类）
+
+云开发控制台 → **数据库** → 新建以下集合，并配置安全规则（仅创建者可读写）：
+
+### 集合 `clothing_types` — 衣物类型字典
+
+| 字段        | 类型     | 说明                         |
+| ----------- | -------- | ---------------------------- |
+| `_openid`   | string   | 自动注入，按用户隔离         |
+| `name`      | string   | 类型名，如「T恤」「牛仔裤」  |
+| `itemCount` | number   | 该类型下衣物数量             |
+| `createdAt` | Date     | 首次识别时间                 |
+| `updatedAt` | Date     | 最近更新                     |
+
+建议索引：`_openid` + `name`（组合）、`_openid` + `itemCount`（降序，供 Tab 排序）
+
+### 集合 `wardrobe_items` — 衣物单品
+
+| 字段          | 类型     | 说明                        |
+| ------------- | -------- | --------------------------- |
+| `_openid`     | string   | 用户隔离                    |
+| `name`        | string   | AI 识别名称                 |
+| `typeId`      | string   | 关联 `clothing_types._id` |
+| `typeName`    | string   | 冗余，卡片展示              |
+| `imageFileId` | string   | 云存储 fileID               |
+| `tags`        | array    | 颜色、材质等                |
+| `createdAt`   | Date     | 排序 + 分页                 |
+
+建议索引：`_openid` + `createdAt`（降序）、`_openid` + `typeId` + `createdAt`（降序，供类型筛选分页）
+
+### 安全规则示例
+
+两个集合均使用：
+
+```json
+{
+  "read": "doc._openid == auth.openid",
+  "write": "doc._openid == auth.openid"
+}
+```
+
+云函数 `recognize-clothing` 写入时会显式设置 `_openid`；小程序端查询时规则自动过滤当前用户数据。
+
+## 6. 部署 recognize-clothing 云函数
+
+1. 微信开发者工具展开 `cloudfunctions/recognize-clothing`
+2. 右键 → **上传并部署：云端安装依赖**
+
+或使用 CLI：
+
+```bash
+tcb fn deploy recognize-clothing -e cloudbase-d6gkz1xlx9adbfe51
+```
+
+### 环境变量
+
+云开发控制台 → **云函数** → `recognize-clothing` → **配置** → **环境变量**：
+
+| 变量名                | 说明                                               |
+| --------------------- | -------------------------------------------------- |
+| `DOUBAO_API_KEY`      | 火山方舟 API Key（可与 chat 共用）                 |
+| `DOUBAO_API_BASE_URL` | 可选，默认 `https://ark.cn-beijing.volces.com/api/v3` |
+| `DOUBAO_VISION_MODEL` | 方舟**多模态**推理接入点 ID（`ep-` 前缀，与文本模型不同） |
+
+须在[火山方舟控制台](https://console.volcengine.com/ark)创建支持图像理解的推理接入点，并将接入点 ID 填入 `DOUBAO_VISION_MODEL`。
+
+### Console 验证
+
+先通过小程序上传一张图片到云存储，取得 `fileID`，再调用：
+
+```javascript
+wx.cloud
+  .callFunction({
+    name: "recognize-clothing",
+    data: { fileID: "cloud://xxx.jpg" },
+  })
+  .then(console.log)
+  .catch(console.error);
+```
+
+预期返回 `{ item, type, isNewType }`；失败时返回 `{ error, message }`。
+
+### 故障排查
+
+| 返回 message | 常见原因 |
+| ------------ | -------- |
+| `未配置 DOUBAO_VISION_MODEL` | 未设置多模态接入点环境变量 |
+| `无法获取图片临时链接` | fileID 无效或云存储权限问题 |
+| `AI 返回格式无效` | Vision 模型未按 JSON 格式返回，检查 prompt 或换模型 |
+| `LLM_API_ERROR` | API Key 无效、接入点未开通 Vision、或配额用尽 |
+
+页面内通过衣橱页 FAB 上传触发：`chooseMedia` → `uploadFile` → `callFunction('recognize-clothing')`。

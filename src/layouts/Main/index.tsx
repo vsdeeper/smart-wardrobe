@@ -12,8 +12,14 @@ const BOTTOM_TABS = [
   { key: "profile", label: "我的", iconClass: "icon-profile" },
 ] as const;
 
-function MainScroll({ children }: { children: React.ReactNode }) {
-  return <>{children}</>;
+export interface MainScrollProps {
+  children: React.ReactNode;
+  onScrollToLower?: () => void;
+  lowerThreshold?: number;
+}
+
+function MainScroll(_props: MainScrollProps) {
+  return null;
 }
 
 export interface MainProps {
@@ -42,10 +48,11 @@ function Main({
   const overlayChildren = childArray.filter(
     (child) => !(isValidElement(child) && child.type === MainScroll),
   );
-  const scrollContent =
+  const scrollProps =
     isValidElement(scrollElement) && scrollElement.props
-      ? (scrollElement.props as { children: React.ReactNode }).children
-      : children;
+      ? (scrollElement.props as MainScrollProps)
+      : null;
+  const scrollContent = scrollProps?.children ?? children;
 
   const handleSwitch = (value: string | number) => {
     const index = value as number;
@@ -78,6 +85,8 @@ function Main({
           scrollY
           enhanced
           showScrollbar={false}
+          lowerThreshold={scrollProps?.lowerThreshold ?? 100}
+          onScrollToLower={scrollProps?.onScrollToLower}
         >
           {scrollContent}
         </ScrollView>

@@ -1,66 +1,38 @@
-import { useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { View, Text } from "@tarojs/components";
-import Taro from "@tarojs/taro";
+import Taro, { useDidShow } from "@tarojs/taro";
 import { Add } from "@nutui/icons-react-taro";
-import { Progress, Tabs, Tag, Image } from "@nutui/nutui-react-taro";
+import { Loading, Progress, Tabs, Tag, Image } from "@nutui/nutui-react-taro";
 import AppNavbar from "@/components/AppNavbar";
 import Main from "@/layouts/Main";
+import type { ClothingType, WardrobeItem } from "@/data/wardrobe";
+import { WARDROBE_PAGE_SIZE } from "@/data/wardrobe";
+import {
+  fetchClothingTypes,
+  fetchWardrobeItemCount,
+  fetchWardrobeItems,
+  uploadAndRecognize,
+} from "@/services/wardrobe";
+import { getCardLayout } from "@/utils/wardrobeLayout";
 import { useMainTabNavigation } from "@/utils/tabNavigation";
 import "./index.scss";
 
-/** 季节筛选 */
-const SEASONS = ["春季", "夏季", "秋季", "冬季"];
+type AiPhase = "idle" | "uploading" | "recognizing" | "done";
 
-/** 衣橱单品数据 */
-interface WardrobeItem {
-  id: number;
-  name: string;
-  category: string;
-  image: string;
-  tags?: string[];
-  layout?: "large" | "wide";
-  badge?: string;
+interface AiStatus {
+  phase: AiPhase;
+  progress: number;
+  totalCount: number;
 }
 
-const WARDROBE_ITEMS: WardrobeItem[] = [
-  {
-    id: 1,
-    name: "高级羊绒大衣",
-    category: "外套",
-    image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuBw3Rt1LTR0iAus-pSvKJmmYMaa3JYqAWnhZniCfKtRIdTxgC7juZkWot5ARP89TL4Ky6WU_G7L6wzAriFkwHEeb5wlQFJkZFryzSnF1-yFBAi3kREEqsiwhMfzne18MOXf3mqn6ZiOR3C4yCRWcpJVfltGUjTFWPSLAI9q_ER4P3ajRk3ImutzpNM5YS27qD9MSUpBX61-KL6hA3ZOJ-NnrTRYvJpsjSZKEtpyvms_PN2tTLGfmmlry8dOOIkfjkYTP1IFdRlTvOf4",
-    tags: ["羊毛", "米色"],
-    layout: "large",
-    badge: "可持续材质",
-  },
-  {
-    id: 2,
-    name: "基础 T 恤",
-    category: "基础款",
-    image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuCAF4s9JVyh6Q3vlcP3wPxo0gwLy_RxkOg6E8JZUSGxP68tvj48Ioik1gO0aB8VZQlE0_zbygPGjudWlGflBxPyPraqxTn2idBEek0FyXMd7ARPGZi7_H3MysGLIQdHahL4BBdRyPzm5C6JOh3ijHe76hAT5YhxKmKIvu2UQRXW4wHra50z6sOD82uV05IsAtrX5xMjgqVhYzCMTzuKQFvtHhV4YAPEdHJoP0N8dhqt0TcAJox1tjv2wX4jjYv7Gud5g301Aoy1xd_6",
-    tags: ["深色"],
-  },
-  {
-    id: 3,
-    name: "休闲牛仔裤",
-    category: "丹宁",
-    image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuD1fNe-82aDDhEx7bXwRQP-5plPuDic6nDBcHJebtYQE_L5JZRD8qlbQInmYMrSQ4-yPcT1TJOUgZ96WNmW3GUxncjssg8B7vrSH3TA_Okj2WdGtLDnlSpF8PZU4iMxMI5WQRSDfoyAI-ohMI1_AazahB0yHCOF2gGh7j-g45S07C_D2NcyFFij-LFl8HBAPz3TxycIbQ8IuQ44XIz6sLxujFHCbW_WigkUQmjJ3dicABQx-R7Dwcv3WIwNHnsQsqMetxZW1-jd4Hus",
-  },
-  {
-    id: 4,
-    name: "切尔西靴",
-    category: "鞋履",
-    image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuD2OVRhA4s2VaolG2KDLqjCPsWOJLSP9cl_BWgCen-Xy3Pla0JdPwEfvqIplLOYv_Vkw5lhbDJLwjOpijwK_23pVFSdJ3SN-N6IdKfeoUcCMD7X2tqzhkixHYmPrgJS4K4iGk-xusshKDVTLBOzZm4waYh9VF2pM14QkaR8qTBtUB4vYfktqqvEMJMSVrhVfOq109Ds3UUN8VkaKzXFOo3M81QkMhE5XwmCNUdWMcIm5Zbv6oMVa557Sf1pYSkIORKi8tX8G3pDnGPy",
-    layout: "wide",
-  },
-];
+interface WardrobeItemCardProps {
+  item: WardrobeItem;
+  layout?: "large" | "wide";
+}
 
-function WardrobeItemCard({ item }: { item: WardrobeItem }) {
-  const isLarge = item.layout === "large";
-  const isWide = item.layout === "wide";
+function WardrobeItemCard({ item, layout }: WardrobeItemCardProps) {
+  const isLarge = layout === "large";
+  const isWide = layout === "wide";
 
   return (
     <View
@@ -83,19 +55,13 @@ function WardrobeItemCard({ item }: { item: WardrobeItem }) {
         >
           <Image
             className="wardrobe-card__image"
-            src={item.image}
+            src={item.imageUrl || item.imageFileId}
             mode="aspectFill"
             radius="0"
           />
-          {item.badge && (
-            <View className="wardrobe-card__badge">
-              <Text className="wardrobe-card__badge-icon">🌿</Text>
-              <Text className="wardrobe-card__badge-text">{item.badge}</Text>
-            </View>
-          )}
         </View>
         <View className="wardrobe-card__body">
-          <Text className="wardrobe-card__category">{item.category}</Text>
+          <Text className="wardrobe-card__category">{item.typeName}</Text>
           <Text
             className={[
               "wardrobe-card__name",
@@ -128,24 +94,202 @@ function WardrobeItemCard({ item }: { item: WardrobeItem }) {
 }
 
 function WardrobePage() {
-  const [activeSeason, setActiveSeason] = useState(2);
-  const { activeTab, onTabChange } = useMainTabNavigation(0);
+  const [clothingTypes, setClothingTypes] = useState<ClothingType[]>([]);
+  const [items, setItems] = useState<WardrobeItem[]>([]);
+  const [activeTab, setActiveTab] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [listLoading, setListLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [adding, setAdding] = useState(false);
+  const [aiStatus, setAiStatus] = useState<AiStatus>({
+    phase: "idle",
+    progress: 0,
+    totalCount: 0,
+  });
 
-  const handleAddItem = () => {
-    Taro.showToast({ title: "添加单品", icon: "none" });
+  const loadingRef = useRef(false);
+  const itemsRef = useRef<WardrobeItem[]>([]);
+  itemsRef.current = items;
+  const { activeTab: mainTab, onTabChange } = useMainTabNavigation(0);
+
+  const activeTypeId = useMemo(() => {
+    if (activeTab === 0) return null;
+    return clothingTypes[activeTab - 1]?._id ?? null;
+  }, [activeTab, clothingTypes]);
+
+  const tabTitles = useMemo(
+    () =>
+      clothingTypes.length > 0
+        ? ["全部", ...clothingTypes.map((type) => type.name)]
+        : [],
+    [clothingTypes],
+  );
+
+  const loadTypes = useCallback(async () => {
+    const types = await fetchClothingTypes();
+    setClothingTypes(types);
+    return types;
+  }, []);
+
+  const loadItems = useCallback(
+    async (options: { reset?: boolean; typeId?: string | null } = {}) => {
+      if (loadingRef.current) return;
+      loadingRef.current = true;
+
+      const reset = options.reset ?? false;
+      const typeId =
+        options.typeId !== undefined ? options.typeId : activeTypeId;
+
+      if (reset) {
+        setInitialLoading(true);
+      } else {
+        setListLoading(true);
+      }
+
+      try {
+        const skip = reset ? 0 : itemsRef.current.length;
+        const nextItems = await fetchWardrobeItems({
+          typeId,
+          skip: reset ? 0 : skip,
+          limit: WARDROBE_PAGE_SIZE,
+        });
+
+        setItems((prev) => (reset ? nextItems : [...prev, ...nextItems]));
+        setHasMore(nextItems.length >= WARDROBE_PAGE_SIZE);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "加载失败";
+        Taro.showToast({ title: message, icon: "none" });
+      } finally {
+        loadingRef.current = false;
+        setListLoading(false);
+        setInitialLoading(false);
+      }
+    },
+    [activeTypeId],
+  );
+
+  const refreshWardrobe = useCallback(async () => {
+    try {
+      const [totalCount] = await Promise.all([
+        fetchWardrobeItemCount(),
+        loadTypes(),
+      ]);
+      setAiStatus((prev) => ({ ...prev, totalCount, phase: "idle" }));
+      await loadItems({ reset: true });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "加载失败";
+      Taro.showToast({ title: message, icon: "none" });
+      setInitialLoading(false);
+    }
+  }, [loadItems, loadTypes]);
+
+  useDidShow(() => {
+    if (process.env.TARO_ENV !== "weapp") {
+      setInitialLoading(false);
+      return;
+    }
+    refreshWardrobe();
+  });
+
+  const handleTypeChange = async (value: string | number) => {
+    const nextTab = value as number;
+    setActiveTab(nextTab);
+    setItems([]);
+    setHasMore(true);
+
+    const typeId =
+      nextTab === 0 ? null : (clothingTypes[nextTab - 1]?._id ?? null);
+    loadingRef.current = false;
+    await loadItems({ reset: true, typeId });
+  };
+
+  const handleAddItem = async () => {
+    if (process.env.TARO_ENV !== "weapp") {
+      Taro.showToast({ title: "请在微信小程序中使用", icon: "none" });
+      return;
+    }
+    if (adding) return;
+
+    try {
+      const chooseRes = await Taro.chooseMedia({
+        count: 1,
+        mediaType: ["image"],
+        sourceType: ["album", "camera"],
+      });
+      const filePath = chooseRes.tempFiles[0]?.tempFilePath;
+      if (!filePath) return;
+
+      setAdding(true);
+      setAiStatus((prev) => ({
+        ...prev,
+        phase: "uploading",
+        progress: 30,
+      }));
+
+      setAiStatus((prev) => ({
+        ...prev,
+        phase: "recognizing",
+        progress: 70,
+      }));
+
+      const result = await uploadAndRecognize(filePath);
+
+      setAiStatus((prev) => ({
+        ...prev,
+        phase: "done",
+        progress: 100,
+        totalCount: prev.totalCount + 1,
+      }));
+
+      await loadTypes();
+
+      if (activeTypeId === null || activeTypeId === result.item.typeId) {
+        setItems((prev) => [result.item, ...prev]);
+      }
+
+      Taro.showToast({ title: "识别成功", icon: "success" });
+
+      setTimeout(() => {
+        setAiStatus((prev) => ({ ...prev, phase: "idle", progress: 0 }));
+      }, 1500);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "识别失败";
+      Taro.showToast({ title: message, icon: "none" });
+      setAiStatus((prev) => ({ ...prev, phase: "idle", progress: 0 }));
+    } finally {
+      setAdding(false);
+    }
+  };
+
+  const handleScrollToLower = () => {
+    if (!hasMore || listLoading || initialLoading || loadingRef.current) return;
+    loadItems();
   };
 
   const handleAIStyling = () => {
     Taro.showToast({ title: "AI 正在搭配中...", icon: "none" });
   };
 
+  const aiStatusDesc = useMemo(() => {
+    switch (aiStatus.phase) {
+      case "uploading":
+        return "正在上传图片...";
+      case "recognizing":
+        return "AI 正在识别衣物类型...";
+      case "done":
+        return "分类完成";
+      default:
+        return aiStatus.totalCount > 0
+          ? `已分类 ${aiStatus.totalCount} 件单品`
+          : "上传衣物照片，AI 将自动识别分类";
+    }
+  }, [aiStatus]);
+
+  const showProgress = aiStatus.phase !== "idle";
+
   return (
-    <Main
-      activeTab={activeTab}
-      onTabChange={onTabChange}
-      header={<AppNavbar />}
-    >
-      <Main.Scroll>
+    <Main activeTab={mainTab} onTabChange={onTabChange} header={<AppNavbar />}>
+      <Main.Scroll lowerThreshold={120} onScrollToLower={handleScrollToLower}>
         <View className="ai-status">
           <View className="ai-status__content">
             <View className="ai-status__icon-wrap">
@@ -153,57 +297,89 @@ function WardrobePage() {
             </View>
             <View className="ai-status__text">
               <Text className="ai-status__label">AI 智能分类</Text>
-              <Text className="ai-status__desc">正在扫描 12 件新单品...</Text>
+              <Text className="ai-status__desc">{aiStatusDesc}</Text>
             </View>
           </View>
-          <Progress
-            percent={70}
-            className="ai-status__progress"
-            color="var(--sw-color-accent)"
-            background="var(--sw-color-progress-track)"
-            showText={false}
-          />
+          {showProgress && (
+            <Progress
+              percent={aiStatus.progress}
+              className="ai-status__progress"
+              color="var(--sw-color-accent)"
+              background="var(--sw-color-progress-track)"
+              showText={false}
+            />
+          )}
         </View>
 
         <View className="page-header">
           <Text className="page-header__title">个人衣橱</Text>
           <Tabs
-            value={activeSeason}
+            value={activeTab}
             activeType="button"
-            className="season-tabs"
-            onChange={(v) => setActiveSeason(v as number)}
+            className="type-tabs"
+            onChange={handleTypeChange}
           >
-            {SEASONS.map((season, idx) => (
-              <Tabs.TabPane key={season} title={season} value={idx} />
+            {tabTitles.map((title, idx) => (
+              <Tabs.TabPane key={title} title={title} value={idx} />
             ))}
           </Tabs>
         </View>
 
-        <View className="wardrobe-grid">
-          {WARDROBE_ITEMS.map((item) => (
-            <WardrobeItemCard key={item.id} item={item} />
-          ))}
+        {initialLoading ? (
+          <View className="wardrobe-loading">
+            <Loading type="circular" />
+            <Text className="wardrobe-loading__text">加载中...</Text>
+          </View>
+        ) : items.length === 0 ? (
+          <View className="wardrobe-empty">
+            <Text className="wardrobe-empty__title">衣橱还是空的</Text>
+            <Text className="wardrobe-empty__desc">
+              点击右下角按钮上传衣物照片，AI 将自动识别并分类
+            </Text>
+          </View>
+        ) : (
+          <View className="wardrobe-grid">
+            {items.map((item, index) => (
+              <WardrobeItemCard
+                key={item._id}
+                item={item}
+                layout={getCardLayout(index, items.length)}
+              />
+            ))}
 
-          <View className="wardrobe-card wardrobe-card--cta">
-            <View className="wardrobe-cta">
-              <View className="wardrobe-cta__pattern" aria-hidden>
-                <Text className="iconfont icon-magic-wand wardrobe-cta__pattern-icon" />
-              </View>
-              <View className="wardrobe-cta__content">
-                <Text className="wardrobe-cta__title">需要搭配建议吗？</Text>
-                <Text className="wardrobe-cta__desc">
-                  AI 已根据您的秋季收藏为您准备了 5 套全新搭配。
-                </Text>
-                <View className="wardrobe-cta__btn" onClick={handleAIStyling}>
-                  <Text className="wardrobe-cta__btn-text">开始搭配</Text>
+            <View className="wardrobe-card wardrobe-card--cta">
+              <View className="wardrobe-cta">
+                <View className="wardrobe-cta__pattern" aria-hidden>
+                  <Text className="iconfont icon-magic-wand wardrobe-cta__pattern-icon" />
+                </View>
+                <View className="wardrobe-cta__content">
+                  <Text className="wardrobe-cta__title">需要搭配建议吗？</Text>
+                  <Text className="wardrobe-cta__desc">
+                    AI 已根据您的收藏为您准备了全新搭配。
+                  </Text>
+                  <View className="wardrobe-cta__btn" onClick={handleAIStyling}>
+                    <Text className="wardrobe-cta__btn-text">开始搭配</Text>
+                  </View>
                 </View>
               </View>
             </View>
           </View>
-        </View>
+        )}
+
+        {listLoading && items.length > 0 && (
+          <View className="wardrobe-load-more">
+            <Loading type="circular" />
+            <Text className="wardrobe-load-more__text">加载更多...</Text>
+          </View>
+        )}
       </Main.Scroll>
 
-      <View className="wardrobe-fab" onClick={handleAddItem}>
+      <View
+        className={["wardrobe-fab", adding && "wardrobe-fab--disabled"]
+          .filter(Boolean)
+          .join(" ")}
+        onClick={handleAddItem}
+      >
         <Add className="wardrobe-fab__icon" color="#ffffff" size={30} />
       </View>
     </Main>

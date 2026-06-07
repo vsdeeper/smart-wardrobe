@@ -5,12 +5,12 @@ cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 const PROVIDERS = {
   deepseek: {
     apiKey: process.env.DEEPSEEK_API_KEY,
-    baseUrl: process.env.DEEPSEEK_API_BASE_URL || 'https://api.deepseek.com',
-    model: process.env.DEEPSEEK_MODEL || 'deepseek-v4-flash',
+    baseUrl: process.env.DEEPSEEK_API_BASE_URL,
+    model: process.env.DEEPSEEK_MODEL,
   },
   doubao: {
     apiKey: process.env.DOUBAO_API_KEY,
-    baseUrl: process.env.DOUBAO_API_BASE_URL || 'https://ark.cn-beijing.volces.com/api/v3',
+    baseUrl: process.env.DOUBAO_API_BASE_URL,
     model: process.env.DOUBAO_MODEL,
   },
 }

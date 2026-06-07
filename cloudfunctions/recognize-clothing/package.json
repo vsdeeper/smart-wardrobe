@@ -1,0 +1,9 @@
+{
+  "name": "recognize-clothing",
+  "version": "1.0.0",
+  "description": "衣物图像识别与分类云函数（豆包 Vision）",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}
