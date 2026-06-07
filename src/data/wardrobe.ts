@@ -18,3 +18,6 @@ export interface WardrobeItem {
 }
 
 export const WARDROBE_PAGE_SIZE = 20
+
+/** FAB 批量上传时一次最多可选图片数 */
+export const WARDROBE_BATCH_UPLOAD_MAX = 3

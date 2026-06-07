@@ -102,12 +102,21 @@
     display: block;
     margin-bottom: var(--nutui-spacing-8);
   }
-}
 
-// 类型筛选：变量见 theme.scss；NutUI 覆写见 app.scss；此处仅隐藏 TabPane
-.type-tabs {
-  .nut-tabs-content-wrap {
-    display: none;
+  // 类型筛选：变量见 theme.scss；NutUI 覆写见 app.scss；此处仅隐藏 TabPane
+  // 选择器挂 .page-header 下，优先级高于 app.scss 的 page .nut-tabs-titles-button .nut-tabs-list { center }
+  .type-tabs {
+    .nut-tabs-content-wrap {
+      display: none;
+    }
+
+    .nut-tabs-list {
+      justify-content: flex-start;
+    }
+
+    .nut-tabs-titles-item {
+      align-items: start;
+    }
   }
 }
 
@@ -202,7 +211,6 @@
 
     &--large {
       font-size: var(--nutui-font-size-6);
-      font-weight: 500;
     }
   }
 

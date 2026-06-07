@@ -140,6 +140,43 @@ export async function uploadAndRecognize(
   }
 }
 
+export interface BatchRecognizeProgress {
+  current: number
+  total: number
+  phase: 'uploading' | 'recognizing'
+}
+
+export interface BatchRecognizeResult {
+  succeeded: RecognizeClothingResult[]
+  failed: { index: number; message: string }[]
+}
+
+/** 串行批量上传并识别，单张失败不影响后续 */
+export async function uploadAndRecognizeBatch(
+  filePaths: string[],
+  onProgress?: (progress: BatchRecognizeProgress) => void,
+): Promise<BatchRecognizeResult> {
+  const total = filePaths.length
+  const succeeded: RecognizeClothingResult[] = []
+  const failed: { index: number; message: string }[] = []
+
+  for (let i = 0; i < filePaths.length; i++) {
+    const current = i + 1
+    onProgress?.({ current, total, phase: 'uploading' })
+    onProgress?.({ current, total, phase: 'recognizing' })
+
+    try {
+      const result = await uploadAndRecognize(filePaths[i])
+      succeeded.push(result)
+    } catch (err) {
+      const message = err instanceof Error ? err.message : '识别失败'
+      failed.push({ index: current, message })
+    }
+  }
+
+  return { succeeded, failed }
+}
+
 /** 统计当前用户衣物总数 */
 export async function fetchWardrobeItemCount(): Promise<number> {
   const db = Taro.cloud.database()
