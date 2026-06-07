@@ -19,6 +19,10 @@ import "./index.scss";
 
 type AiPhase = "idle" | "uploading" | "recognizing" | "done";
 
+function isAiBusy(phase: AiPhase): boolean {
+  return phase === "uploading" || phase === "recognizing" || phase === "done";
+}
+
 interface AiStatus {
   phase: AiPhase;
   progress: number;
@@ -121,6 +125,8 @@ function WardrobePage() {
   const loadingRef = useRef(false);
   const itemsRef = useRef<WardrobeItem[]>([]);
   const scrollResetTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const aiResetTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const uploadFlowRef = useRef(false);
   itemsRef.current = items;
   const { activeTab: mainTab, onTabChange } = useMainTabNavigation(0);
 
@@ -196,7 +202,11 @@ function WardrobePage() {
         fetchWardrobeItemCount(),
         loadTypes(),
       ]);
-      setAiStatus((prev) => ({ ...prev, totalCount, phase: "idle" }));
+      setAiStatus((prev) =>
+        isAiBusy(prev.phase)
+          ? prev
+          : { ...prev, totalCount, phase: "idle" },
+      );
       await loadItems({ reset: true });
     } catch (err) {
       const message = err instanceof Error ? err.message : "加载失败";
@@ -210,6 +220,7 @@ function WardrobePage() {
       setInitialLoading(false);
       return;
     }
+    if (uploadFlowRef.current) return;
     refreshWardrobe();
   });
 
@@ -233,6 +244,7 @@ function WardrobePage() {
     if (adding) return;
 
     try {
+      uploadFlowRef.current = true;
       const chooseRes = await Taro.chooseMedia({
         count: WARDROBE_BATCH_UPLOAD_MAX,
         mediaType: ["image"],
@@ -242,6 +254,11 @@ function WardrobePage() {
         .map((file) => file.tempFilePath)
         .filter(Boolean);
       if (filePaths.length === 0) return;
+
+      if (aiResetTimerRef.current) {
+        clearTimeout(aiResetTimerRef.current);
+        aiResetTimerRef.current = undefined;
+      }
 
       const batchTotal = filePaths.length;
       scrollToTop();
@@ -257,10 +274,12 @@ function WardrobePage() {
       const { succeeded, failed } = await uploadAndRecognizeBatch(
         filePaths,
         ({ current, total, phase }) => {
+          const itemSpan = 100 / total;
+          const base = (current - 1) * itemSpan;
           const progress =
             phase === "uploading"
-              ? Math.round(((current - 0.5) / total) * 100)
-              : Math.min(Math.round((current / total) * 100), 99);
+              ? Math.round(base + itemSpan * 0.25)
+              : Math.min(Math.round(base + itemSpan * 0.85), 99);
           setAiStatus((prev) => ({
             ...prev,
             phase: phase === "uploading" ? "uploading" : "recognizing",
@@ -296,6 +315,32 @@ function WardrobePage() {
         if (newItems.length > 0) {
           setItems((prev) => [...newItems, ...prev]);
         }
+
+        if (failCount === 0) {
+          Taro.showToast({
+            title:
+              successCount === 1 ? "识别成功" : `识别成功 ${successCount} 件`,
+            icon: "success",
+          });
+        } else {
+          Taro.showToast({
+            title: `成功 ${successCount} 件，失败 ${failCount} 件`,
+            icon: "none",
+          });
+        }
+
+        await new Promise<void>((resolve) => {
+          aiResetTimerRef.current = setTimeout(resolve, 1500);
+        });
+        aiResetTimerRef.current = undefined;
+
+        setAiStatus((prev) => ({
+          ...prev,
+          phase: "idle",
+          progress: 0,
+          batchCurrent: undefined,
+          batchTotal: undefined,
+        }));
       } else {
         setAiStatus((prev) => ({
           ...prev,
@@ -304,36 +349,10 @@ function WardrobePage() {
           batchCurrent: undefined,
           batchTotal: undefined,
         }));
-      }
-
-      if (successCount > 0 && failCount === 0) {
-        Taro.showToast({
-          title:
-            successCount === 1 ? "识别成功" : `识别成功 ${successCount} 件`,
-          icon: "success",
-        });
-      } else if (successCount > 0 && failCount > 0) {
-        Taro.showToast({
-          title: `成功 ${successCount} 件，失败 ${failCount} 件`,
-          icon: "none",
-        });
-      } else {
         Taro.showToast({
           title: failed[0]?.message || "识别失败",
           icon: "none",
         });
-      }
-
-      if (successCount > 0) {
-        setTimeout(() => {
-          setAiStatus((prev) => ({
-            ...prev,
-            phase: "idle",
-            progress: 0,
-            batchCurrent: undefined,
-            batchTotal: undefined,
-          }));
-        }, 1500);
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : "识别失败";
@@ -346,6 +365,11 @@ function WardrobePage() {
         batchTotal: undefined,
       }));
     } finally {
+      if (aiResetTimerRef.current) {
+        clearTimeout(aiResetTimerRef.current);
+        aiResetTimerRef.current = undefined;
+      }
+      uploadFlowRef.current = false;
       setAdding(false);
     }
   };

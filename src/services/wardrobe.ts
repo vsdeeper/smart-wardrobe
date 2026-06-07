@@ -114,15 +114,18 @@ export async function resolveImageUrls(
 /** 上传图片并调用 AI 识别，写入云数据库 */
 export async function uploadAndRecognize(
   filePath: string,
+  onPhase?: (phase: 'uploading' | 'recognizing') => void,
 ): Promise<RecognizeClothingResult> {
   const ext = filePath.includes('.') ? filePath.slice(filePath.lastIndexOf('.')) : '.jpg'
   const cloudPath = `wardrobe/${Date.now()}-${Math.random().toString(36).slice(2)}${ext}`
 
+  onPhase?.('uploading')
   const uploadRes = await Taro.cloud.uploadFile({
     cloudPath,
     filePath,
   })
 
+  onPhase?.('recognizing')
   const { result } = await Taro.cloud.callFunction({
     name: 'recognize-clothing',
     data: { fileID: uploadRes.fileID },
@@ -162,11 +165,11 @@ export async function uploadAndRecognizeBatch(
 
   for (let i = 0; i < filePaths.length; i++) {
     const current = i + 1
-    onProgress?.({ current, total, phase: 'uploading' })
-    onProgress?.({ current, total, phase: 'recognizing' })
 
     try {
-      const result = await uploadAndRecognize(filePaths[i])
+      const result = await uploadAndRecognize(filePaths[i], (phase) => {
+        onProgress?.({ current, total, phase })
+      })
       succeeded.push(result)
     } catch (err) {
       const message = err instanceof Error ? err.message : '识别失败'
