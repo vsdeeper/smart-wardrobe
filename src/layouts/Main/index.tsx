@@ -16,6 +16,7 @@ export interface MainScrollProps {
   children: React.ReactNode;
   onScrollToLower?: () => void;
   lowerThreshold?: number;
+  scrollIntoView?: string;
 }
 
 function MainScroll(_props: MainScrollProps) {
@@ -85,6 +86,8 @@ function Main({
           scrollY
           enhanced
           showScrollbar={false}
+          scrollWithAnimation
+          scrollIntoView={scrollProps?.scrollIntoView}
           lowerThreshold={scrollProps?.lowerThreshold ?? 100}
           onScrollToLower={scrollProps?.onScrollToLower}
         >

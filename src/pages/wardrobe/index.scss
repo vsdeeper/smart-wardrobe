@@ -341,14 +341,46 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    width: 30px;
+    height: 30px;
+  }
+
+  &__loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    --nutui-loading-icon-size: 30px;
+    --nutui-loading-icon-color: #ffffff;
+
+    .nut-loading {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+    }
+
+    .nut-loading-icon-box {
+      font-size: 0;
+      line-height: 0;
+    }
+
+    .nut-loading-icon,
+    .nut-icon {
+      width: 30px;
+      height: 30px;
+      color: #ffffff;
+      background-color: currentColor;
+    }
   }
 
   &:active {
     transform: scale(0.95);
   }
 
-  &--disabled {
-    opacity: 0.6;
+  &--loading {
     pointer-events: none;
   }
 }

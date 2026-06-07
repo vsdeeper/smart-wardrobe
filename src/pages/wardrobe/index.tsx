@@ -111,6 +111,7 @@ function WardrobePage() {
   const [listLoading, setListLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [adding, setAdding] = useState(false);
+  const [scrollIntoViewId, setScrollIntoViewId] = useState("");
   const [aiStatus, setAiStatus] = useState<AiStatus>({
     phase: "idle",
     progress: 0,
@@ -119,6 +120,7 @@ function WardrobePage() {
 
   const loadingRef = useRef(false);
   const itemsRef = useRef<WardrobeItem[]>([]);
+  const scrollResetTimerRef = useRef<ReturnType<typeof setTimeout>>();
   itemsRef.current = items;
   const { activeTab: mainTab, onTabChange } = useMainTabNavigation(0);
 
@@ -134,6 +136,16 @@ function WardrobePage() {
         : [],
     [clothingTypes],
   );
+
+  const scrollToTop = useCallback(() => {
+    if (scrollResetTimerRef.current) {
+      clearTimeout(scrollResetTimerRef.current);
+    }
+    setScrollIntoViewId("wardrobe-scroll-top");
+    scrollResetTimerRef.current = setTimeout(() => {
+      setScrollIntoViewId("");
+    }, 400);
+  }, []);
 
   const loadTypes = useCallback(async () => {
     const types = await fetchClothingTypes();
@@ -232,6 +244,7 @@ function WardrobePage() {
       if (filePaths.length === 0) return;
 
       const batchTotal = filePaths.length;
+      scrollToTop();
       setAdding(true);
       setAiStatus((prev) => ({
         ...prev,
@@ -372,7 +385,12 @@ function WardrobePage() {
 
   return (
     <Main activeTab={mainTab} onTabChange={onTabChange} header={<AppNavbar />}>
-      <Main.Scroll lowerThreshold={120} onScrollToLower={handleScrollToLower}>
+      <Main.Scroll
+        lowerThreshold={120}
+        scrollIntoView={scrollIntoViewId}
+        onScrollToLower={handleScrollToLower}
+      >
+        <View id="wardrobe-scroll-top" />
         <View className="ai-status">
           <View className="ai-status__content">
             <View className="ai-status__icon-wrap">
@@ -458,12 +476,20 @@ function WardrobePage() {
       </Main.Scroll>
 
       <View
-        className={["wardrobe-fab", adding && "wardrobe-fab--disabled"]
+        className={["wardrobe-fab", adding && "wardrobe-fab--loading"]
           .filter(Boolean)
           .join(" ")}
         onClick={handleAddItem}
       >
-        <Add className="wardrobe-fab__icon" color="#ffffff" size={30} />
+        {adding ? (
+          <Loading
+            type="circular"
+            color="#ffffff"
+            className="wardrobe-fab__loading"
+          />
+        ) : (
+          <Add className="wardrobe-fab__icon" color="#ffffff" size={30} />
+        )}
       </View>
     </Main>
   );
