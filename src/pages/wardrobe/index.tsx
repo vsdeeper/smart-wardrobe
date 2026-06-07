@@ -6,10 +6,7 @@ import { Loading, Progress, Tabs, Tag, Image } from "@nutui/nutui-react-taro";
 import AppNavbar from "@/components/AppNavbar";
 import Main from "@/layouts/Main";
 import type { ClothingType, WardrobeItem } from "@/data/wardrobe";
-import {
-  WARDROBE_BATCH_UPLOAD_MAX,
-  WARDROBE_PAGE_SIZE,
-} from "@/data/wardrobe";
+import { WARDROBE_BATCH_UPLOAD_MAX, WARDROBE_PAGE_SIZE } from "@/data/wardrobe";
 import {
   fetchClothingTypes,
   fetchWardrobeItemCount,
@@ -71,6 +68,7 @@ function WardrobeItemCard({ item, layout }: WardrobeItemCardProps) {
             className={[
               "wardrobe-card__name",
               isLarge && "wardrobe-card__name--large",
+              isWide && "wardrobe-card__name--wide",
             ]
               .filter(Boolean)
               .join(" ")}
@@ -272,8 +270,7 @@ function WardrobePage() {
           .map((result) => result.item)
           .reverse()
           .filter(
-            (item) =>
-              activeTypeId === null || activeTypeId === item.typeId,
+            (item) => activeTypeId === null || activeTypeId === item.typeId,
           );
 
         if (newItems.length > 0) {
@@ -292,9 +289,7 @@ function WardrobePage() {
       if (successCount > 0 && failCount === 0) {
         Taro.showToast({
           title:
-            successCount === 1
-              ? "识别成功"
-              : `识别成功 ${successCount} 件`,
+            successCount === 1 ? "识别成功" : `识别成功 ${successCount} 件`,
           icon: "success",
         });
       } else if (successCount > 0 && failCount > 0) {
@@ -352,9 +347,7 @@ function WardrobePage() {
 
     switch (aiStatus.phase) {
       case "uploading":
-        return batchLabel
-          ? `正在上传 ${batchLabel}...`
-          : "正在上传图片...";
+        return batchLabel ? `正在上传 ${batchLabel}...` : "正在上传图片...";
       case "recognizing":
         return batchLabel
           ? `正在识别 ${batchLabel}...`
