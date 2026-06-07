@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from "react";
-import { View, Text } from "@tarojs/components";
+import { View, Text, ScrollView } from "@tarojs/components";
 import Taro, { useDidShow } from "@tarojs/taro";
 import { Add } from "@nutui/icons-react-taro";
 import { Loading, Progress, Tabs, Tag, Image } from "@nutui/nutui-react-taro";
@@ -76,19 +76,26 @@ function WardrobeItemCard({ item, layout }: WardrobeItemCardProps) {
             {item.name}
           </Text>
           {item.tags && item.tags.length > 0 && (
-            <View className="wardrobe-card__tags">
-              {item.tags.map((tag) => (
-                <Tag
-                  key={tag}
-                  round
-                  className="wardrobe-card__tag"
-                  background="var(--sw-color-tag-bg)"
-                  color="var(--sw-color-tag-text)"
-                >
-                  {tag}
-                </Tag>
-              ))}
-            </View>
+            <ScrollView
+              className="wardrobe-card__tags-scroll"
+              scrollX
+              showScrollbar={false}
+              enhanced
+            >
+              <View className="wardrobe-card__tags">
+                {item.tags.map((tag) => (
+                  <Tag
+                    key={tag}
+                    round
+                    className="wardrobe-card__tag"
+                    background="var(--sw-color-tag-bg)"
+                    color="var(--sw-color-tag-text)"
+                  >
+                    {tag}
+                  </Tag>
+                ))}
+              </View>
+            </ScrollView>
           )}
         </View>
       </View>
