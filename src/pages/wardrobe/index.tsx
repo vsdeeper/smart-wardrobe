@@ -2,12 +2,20 @@ import { useCallback, useMemo, useRef, useState } from "react";
 import { View, Text, ScrollView } from "@tarojs/components";
 import Taro, { useDidShow } from "@tarojs/taro";
 import { Add } from "@nutui/icons-react-taro";
-import { Loading, Progress, Tabs, Tag, Image } from "@nutui/nutui-react-taro";
+import {
+  ActionSheet,
+  Loading,
+  Progress,
+  Tabs,
+  Tag,
+  Image,
+} from "@nutui/nutui-react-taro";
 import AppNavbar from "@/components/AppNavbar";
 import Main from "@/layouts/Main";
 import type { ClothingType, WardrobeItem } from "@/data/wardrobe";
 import { WARDROBE_BATCH_UPLOAD_MAX, WARDROBE_PAGE_SIZE } from "@/data/wardrobe";
 import {
+  deleteWardrobeItem,
   fetchClothingTypes,
   fetchWardrobeItemCount,
   fetchWardrobeItems,
@@ -31,12 +39,19 @@ interface AiStatus {
   batchTotal?: number;
 }
 
+const ITEM_ACTION_OPTIONS = [
+  { name: "查看", danger: false },
+  { name: "编辑", danger: false },
+  { name: "删除", danger: true },
+];
+
 interface WardrobeItemCardProps {
   item: WardrobeItem;
   layout?: "large" | "wide";
+  onLongPress?: (item: WardrobeItem) => void;
 }
 
-function WardrobeItemCard({ item, layout }: WardrobeItemCardProps) {
+function WardrobeItemCard({ item, layout, onLongPress }: WardrobeItemCardProps) {
   const isLarge = layout === "large";
   const isWide = layout === "wide";
 
@@ -49,6 +64,7 @@ function WardrobeItemCard({ item, layout }: WardrobeItemCardProps) {
       ]
         .filter(Boolean)
         .join(" ")}
+      onLongPress={() => onLongPress?.(item)}
     >
       <View className="wardrobe-card__inner">
         <View
@@ -115,6 +131,9 @@ function WardrobePage() {
   const [listLoading, setListLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [adding, setAdding] = useState(false);
+  const [actionSheetVisible, setActionSheetVisible] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<WardrobeItem | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const [aiStatus, setAiStatus] = useState<AiStatus>({
     phase: "idle",
     progress: 0,
@@ -377,6 +396,84 @@ function WardrobePage() {
     Taro.showToast({ title: "AI 正在搭配中...", icon: "none" });
   };
 
+  const closeActionSheet = useCallback(() => {
+    setActionSheetVisible(false);
+    setSelectedItem(null);
+  }, []);
+
+  const handleItemLongPress = useCallback((item: WardrobeItem) => {
+    setSelectedItem(item);
+    setActionSheetVisible(true);
+  }, []);
+
+  const handleDeleteItem = useCallback(
+    async (item: WardrobeItem) => {
+      if (deleting) return;
+
+      if (process.env.TARO_ENV !== "weapp") {
+        Taro.showToast({ title: "请在微信小程序中使用", icon: "none" });
+        return;
+      }
+
+      const modalRes = await Taro.showModal({
+        title: "确认删除",
+        content: `确定要删除「${item.name}」吗？此操作不可恢复。`,
+        confirmText: "删除",
+        confirmColor: "#fa2c19",
+      });
+
+      if (!modalRes.confirm) return;
+
+      setDeleting(true);
+      try {
+        await deleteWardrobeItem(item);
+        setItems((prev) => prev.filter((i) => i._id !== item._id));
+        setClothingTypes((prev) =>
+          prev.map((type) =>
+            type._id === item.typeId
+              ? { ...type, itemCount: Math.max(0, type.itemCount - 1) }
+              : type,
+          ),
+        );
+        setAiStatus((prev) =>
+          isAiBusy(prev.phase)
+            ? prev
+            : { ...prev, totalCount: Math.max(0, prev.totalCount - 1) },
+        );
+        Taro.showToast({ title: "已删除", icon: "success" });
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "删除失败";
+        Taro.showToast({ title: message, icon: "none" });
+      } finally {
+        setDeleting(false);
+      }
+    },
+    [deleting],
+  );
+
+  const handleActionSelect = useCallback(
+    (option: { name?: string }) => {
+      const item = selectedItem;
+      closeActionSheet();
+      if (!item) return;
+
+      switch (option.name) {
+        case "查看":
+          Taro.showToast({ title: "查看功能即将上线", icon: "none" });
+          break;
+        case "编辑":
+          Taro.showToast({ title: "编辑功能即将上线", icon: "none" });
+          break;
+        case "删除":
+          void handleDeleteItem(item);
+          break;
+        default:
+          break;
+      }
+    },
+    [closeActionSheet, handleDeleteItem, selectedItem],
+  );
+
   const aiStatusDesc = useMemo(() => {
     const batchLabel =
       aiStatus.batchTotal && aiStatus.batchTotal > 1 && aiStatus.batchCurrent
@@ -458,6 +555,7 @@ function WardrobePage() {
                 key={item._id}
                 item={item}
                 layout={getCardLayout(index, items.length)}
+                onLongPress={handleItemLongPress}
               />
             ))}
 
@@ -504,6 +602,15 @@ function WardrobePage() {
           <Add className="wardrobe-fab__icon" color="#ffffff" size={30} />
         )}
       </View>
+
+      <ActionSheet
+        visible={actionSheetVisible}
+        options={ITEM_ACTION_OPTIONS}
+        cancelText="取消"
+        onSelect={handleActionSelect}
+        onCancel={closeActionSheet}
+        onClose={closeActionSheet}
+      />
     </Main>
   );
 }

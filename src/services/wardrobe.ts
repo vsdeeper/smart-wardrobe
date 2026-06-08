@@ -186,3 +186,28 @@ export async function fetchWardrobeItemCount(): Promise<number> {
   const res = await db.collection('wardrobe_items').count()
   return res.total
 }
+
+/** 删除衣橱单品，同步减少类型计数并尝试清理云存储图片 */
+export async function deleteWardrobeItem(item: WardrobeItem): Promise<void> {
+  const db = Taro.cloud.database()
+  const _ = db.command
+
+  await db.collection('wardrobe_items').doc(item._id).remove()
+
+  if (item.typeId) {
+    await db.collection('clothing_types').doc(item.typeId).update({
+      data: {
+        itemCount: _.inc(-1),
+        updatedAt: db.serverDate(),
+      },
+    })
+  }
+
+  if (item.imageFileId) {
+    try {
+      await Taro.cloud.deleteFile({ fileList: [item.imageFileId] })
+    } catch {
+      // 云存储删除失败不阻断主流程
+    }
+  }
+}
