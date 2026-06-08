@@ -115,7 +115,6 @@ function WardrobePage() {
   const [listLoading, setListLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [adding, setAdding] = useState(false);
-  const [scrollIntoViewId, setScrollIntoViewId] = useState("");
   const [aiStatus, setAiStatus] = useState<AiStatus>({
     phase: "idle",
     progress: 0,
@@ -124,7 +123,6 @@ function WardrobePage() {
 
   const loadingRef = useRef(false);
   const itemsRef = useRef<WardrobeItem[]>([]);
-  const scrollResetTimerRef = useRef<ReturnType<typeof setTimeout>>();
   const aiResetTimerRef = useRef<ReturnType<typeof setTimeout>>();
   const uploadFlowRef = useRef(false);
   itemsRef.current = items;
@@ -144,13 +142,11 @@ function WardrobePage() {
   );
 
   const scrollToTop = useCallback(() => {
-    if (scrollResetTimerRef.current) {
-      clearTimeout(scrollResetTimerRef.current);
-    }
-    setScrollIntoViewId("wardrobe-scroll-top");
-    scrollResetTimerRef.current = setTimeout(() => {
-      setScrollIntoViewId("");
-    }, 400);
+    Taro.pageScrollTo({
+      scrollTop: 0,
+      duration: 300,
+      selector: "#main-scroll",
+    });
   }, []);
 
   const loadTypes = useCallback(async () => {
@@ -203,9 +199,7 @@ function WardrobePage() {
         loadTypes(),
       ]);
       setAiStatus((prev) =>
-        isAiBusy(prev.phase)
-          ? prev
-          : { ...prev, totalCount, phase: "idle" },
+        isAiBusy(prev.phase) ? prev : { ...prev, totalCount, phase: "idle" },
       );
       await loadItems({ reset: true });
     } catch (err) {
@@ -409,12 +403,7 @@ function WardrobePage() {
 
   return (
     <Main activeTab={mainTab} onTabChange={onTabChange} header={<AppNavbar />}>
-      <Main.Scroll
-        lowerThreshold={120}
-        scrollIntoView={scrollIntoViewId}
-        onScrollToLower={handleScrollToLower}
-      >
-        <View id="wardrobe-scroll-top" />
+      <Main.Scroll lowerThreshold={120} onScrollToLower={handleScrollToLower}>
         <View className="ai-status">
           <View className="ai-status__content">
             <View className="ai-status__icon-wrap">
