@@ -51,9 +51,14 @@ src/
   app.scss            # 全局样式
   index.html          # H5 入口
   pages/my-page/      # 页面，kebab-case（如 my-page、outfit-detail）
+  pages/my-page/components/  # 页面私有组件（可选，大驼峰子目录）
   pages/wardrobe/     # 单词页面同样合法
   layouts/Main/       # 布局组件，目录名大驼峰
-  components/WardrobeCard/  # 通用 UI 组件，目录名大驼峰
+  components/AppNavbar/  # 跨页复用 UI，目录名大驼峰
+  hooks/              # 可复用状态与副作用
+  services/           # 云/API 调用
+  utils/              # 纯函数
+  data/               # 类型、枚举、常量
   styles/             # 全局主题等
 config/
   index.ts            # Taro 构建（designWidth: 375）
@@ -65,7 +70,7 @@ types/
 ### 页面组织
 
 - 页面目录：`src/pages/<page-name>/`，**目录名使用 kebab-case**（短横线连接，如 `my-page`、`outfit-detail`）；单词页面如 `wardrobe` 同样合法。
-- 每个页面目录包含 `index.tsx`、`index.config.ts`、`index.scss`。
+- 每个页面目录包含 `index.tsx`、`index.config.ts`、`index.scss`；复杂页面可增 `components/` 子目录（见「组件抽象与解耦」）。
 - 必须在 `src/app.config.ts` 的 `pages` 数组中注册路径（如 `'pages/my-page/index'`）。
 - 页面配置：同目录 `index.config.ts`，使用 `definePageConfig` 导出。
 
@@ -87,6 +92,23 @@ types/
 - **布局组件**（`src/layouts/`）：目录名**大驼峰**，与 default export 组件名一致。示例：`src/layouts/Main/index.tsx` + `index.scss`；引入 `import Main from "@/layouts/Main"`。
 - **通用组件**（`src/components/`）：同样大驼峰 + `index.tsx` / `index.scss`。示例：`src/components/WardrobeCard/index.tsx`；引入 `import WardrobeCard from "@/components/WardrobeCard"`。
 - 布局级外壳放 `layouts/`，可复用 UI 块放 `components/`，二者目录结构一致、父目录不同。
+
+#### 组件抽象与解耦（必须遵守）
+
+- `pages/<page>/index.tsx` 为**编排层**：组合 `Main` / `AppNavbar`、连接 Tab/路由、挂载 hooks、渲染区块；避免堆叠大段 JSX 与复杂业务实现。
+- 单文件**建议 ≤ 250 行**；超过或出现下列信号时应拆分（供自检，非 CI 硬性规则）。
+
+| 信号 | 建议落点 |
+|------|----------|
+| 独立 UI 区块（卡片、Banner、表单段）且 JSX > ~40 行 | `pages/<page>/components/<Name>/index.tsx` + `index.scss` |
+| 同一 UI 被 ≥2 个页面使用 | `src/components/<Name>/`（大驼峰，如 [`AppNavbar`](src/components/AppNavbar/index.tsx)） |
+| 可复用状态/副作用（分页、轮询、表单） | `src/hooks/useXxx.ts`（如 [`useWeather`](src/hooks/useWeather.ts)） |
+| 云函数 / HTTP / 数据库访问 | `src/services/`（如 [`wardrobe.ts`](src/services/wardrobe.ts)） |
+| 无 UI 的纯计算/格式化 | `src/utils/`（如 [`wardrobeLayout.ts`](src/utils/wardrobeLayout.ts)） |
+| 类型、枚举、分页常量 | `src/data/`（如 [`wardrobe.ts`](src/data/wardrobe.ts)） |
+
+- **页面私有组件**：仅单页使用时放 `src/pages/<page>/components/<ComponentName>/`（大驼峰 + `index.tsx` / `index.scss`）；页面内 `import X from "./components/X"`。组件样式与组件同目录；页面级布局/网格仍留 `index.scss`。
+- **平衡**：为可读性与职责分离而拆；一次任务若新增 >1 个独立 UI 块，优先抽组件。不要为 5–10 行 JSX 单独建目录；不要为「可能复用」提前抽到 `components/`（YAGNI）；不要在小修复中顺带大规模重构无关页面。
 
 ### 样式分层（必须遵守）
 
@@ -137,12 +159,16 @@ types/
 - 新页面按「目录 + 注册 `app.config.ts` + `definePageConfig`」完整落地。
 - 保持 diff 最小，只改与任务相关的文件。
 - 与用户、注释、提交说明使用**简体中文**。
+- 新功能开发时，先判断 UI / 状态 / 请求是否应落在 `components`、`hooks`、`services` 层。
+- 页面 `index.tsx` 保持「读一遍能看清页面结构」。
 
 **Don’t**
 
 - 不要为简单 UI 手写大量原生组件，应先查 NutUI。
 - 不要跳过 `app.config.ts` 注册页面。
-- 不要添加无意义的注释、过度抽象或无关重构。
+- 不要添加无意义注释；不要为 trivial 逻辑过度抽象，也不要把多职责堆进单文件；不要无关重构。
+- 不要在 `index.tsx` 内同时维护大块 JSX、复杂 async 流程与多个子组件实现（应下沉到 `components` / `hooks` / `services`）。
+- 不要把仅本页使用的组件 premature 抽到 `src/components/`。
 - 不要在未要求时执行 `git commit` / `git push`。
 - 不要在 `theme.scss` 中写全局选择器或 NutUI 类名覆写；应放在 `app.scss`。
 - 不要用 NutUI `Button` 实现高度定制的页面 CTA；应使用 `View` + `Text`（见「自定义按钮」）。
