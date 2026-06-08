@@ -185,3 +185,17 @@ page {
     var(--sw-safe-area-bottom, 0px)
   );
 }
+
+// ActionSheet 选项点击态：消除小程序/H5 按压底色闪现
+page {
+  .nut-actionsheet-item,
+  .nut-actionsheet-cancel {
+    background-color: var(--nutui-gray-1) !important;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .nut-actionsheet-item:active,
+  .nut-actionsheet-cancel:active {
+    background-color: var(--nutui-gray-1) !important;
+  }
+}
