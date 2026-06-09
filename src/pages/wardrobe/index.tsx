@@ -119,6 +119,7 @@ function WardrobePage() {
       </View>
 
       <ActionSheet
+        className="wardrobe-actionsheet"
         visible={actionSheetVisible}
         options={WARDROBE_ITEM_ACTION_OPTIONS}
         cancelText="取消"

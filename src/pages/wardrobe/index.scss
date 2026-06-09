@@ -106,6 +106,15 @@
   }
 }
 
+// ========== 长按操作 ActionSheet ==========
+.wardrobe-actionsheet {
+  .nut-actionsheet-item,
+  .nut-actionsheet-cancel {
+    font-size: var(--nutui-font-size-4);
+    line-height: var(--nutui-line-height-base);
+  }
+}
+
 // ========== 加载与空状态 ==========
 .wardrobe-loading,
 .wardrobe-load-more,
