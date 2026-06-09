@@ -15,6 +15,10 @@
     height: 96px;
     border-radius: var(--nutui-radius-4);
     overflow: hidden;
+
+    &--clickable:active {
+      opacity: 0.92;
+    }
   }
 
   &__image {

@@ -5,12 +5,29 @@ import "./index.scss";
 
 export interface RecognitionItemCardProps {
   item: RecognizedPreviewItem;
+  onImageClick?: () => void;
 }
 
-export default function RecognitionItemCard({ item }: RecognitionItemCardProps) {
+export default function RecognitionItemCard({
+  item,
+  onImageClick,
+}: RecognitionItemCardProps) {
+  const handleImageClick = (e: { stopPropagation: () => void }) => {
+    e.stopPropagation();
+    onImageClick?.();
+  };
+
   return (
     <View className="recognition-card">
-      <View className="recognition-card__image-wrap">
+      <View
+        className={[
+          "recognition-card__image-wrap",
+          onImageClick && "recognition-card__image-wrap--clickable",
+        ]
+          .filter(Boolean)
+          .join(" ")}
+        onClick={onImageClick ? handleImageClick : undefined}
+      >
         <Image
           className="recognition-card__image"
           src={item.imageUrl || item.imageFileId}
