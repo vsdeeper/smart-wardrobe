@@ -1,9 +1,7 @@
 const cloud = require('wx-server-sdk')
+const { saveRecognizedItem } = require('../common/wardrobeSave')
 
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
-
-const db = cloud.database()
-const _ = db.command
 
 const SYSTEM_PROMPT = `你是一个专业的衣物识别助手。根据用户上传的衣物照片，识别衣物类型和属性。
 只返回 JSON，不要其他文字。格式：
@@ -38,47 +36,8 @@ function parseRecognitionContent(content) {
   }
 }
 
-async function upsertClothingType(openid, typeName) {
-  const coll = db.collection('clothing_types')
-  const { data } = await coll.where({ _openid: openid, name: typeName }).limit(1).get()
-  const now = db.serverDate()
-
-  if (data.length > 0) {
-    const typeDoc = data[0]
-    await coll.doc(typeDoc._id).update({
-      data: {
-        itemCount: _.inc(1),
-        updatedAt: now,
-      },
-    })
-    return {
-      type: {
-        _id: typeDoc._id,
-        name: typeDoc.name,
-        itemCount: (typeDoc.itemCount || 0) + 1,
-      },
-      isNewType: false,
-    }
-  }
-
-  const addRes = await coll.add({
-    data: {
-      _openid: openid,
-      name: typeName,
-      itemCount: 1,
-      createdAt: now,
-      updatedAt: now,
-    },
-  })
-
-  return {
-    type: { _id: addRes._id, name: typeName, itemCount: 1 },
-    isNewType: true,
-  }
-}
-
 exports.main = async (event) => {
-  const { fileID } = event || {}
+  const { fileID, persist = false } = event || {}
 
   if (!fileID || typeof fileID !== 'string') {
     return { error: 'INVALID_FILE_ID', message: '缺少 fileID' }
@@ -134,33 +93,19 @@ exports.main = async (event) => {
 
     const content = data?.choices?.[0]?.message?.content ?? ''
     const recognized = parseRecognitionContent(content)
-    const { type, isNewType } = await upsertClothingType(openid, recognized.typeName)
 
-    const now = db.serverDate()
-    const itemRes = await db.collection('wardrobe_items').add({
-      data: {
-        _openid: openid,
-        name: recognized.name,
-        typeId: type._id,
-        typeName: recognized.typeName,
-        imageFileId: fileID,
-        tags: recognized.tags,
-        createdAt: now,
-      },
-    })
+    if (persist === true) {
+      const saved = await saveRecognizedItem(openid, fileID, recognized)
+      return saved
+    }
 
     return {
-      item: {
-        _id: itemRes._id,
+      preview: {
         name: recognized.name,
-        typeId: type._id,
         typeName: recognized.typeName,
-        imageFileId: fileID,
         tags: recognized.tags,
-        createdAt: Date.now(),
+        imageFileId: fileID,
       },
-      type,
-      isNewType,
     }
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)

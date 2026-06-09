@@ -1,0 +1,135 @@
+.ai-recognition-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--nutui-gray-3);
+  box-sizing: border-box;
+
+  &__navbar {
+    flex-shrink: 0;
+  }
+
+  &__back {
+    font-size: var(--nutui-font-size-3);
+    color: var(--nutui-gray-7);
+  }
+
+  &__title {
+    font-family: var(--sw-font-heading);
+    font-size: var(--nutui-font-size-4);
+    font-weight: var(--nutui-font-weight-bold);
+    color: var(--nutui-gray-7);
+  }
+
+  &__scroll {
+    flex: 1;
+    height: 0;
+    padding: var(--nutui-spacing-5) var(--nutui-spacing-5)
+      calc(88px + var(--sw-safe-area-bottom, 0px));
+    box-sizing: border-box;
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--nutui-spacing-5);
+  }
+
+  &__delete {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 72px;
+    height: 100%;
+    background: var(--nutui-color-danger);
+    border-radius: 0 var(--sw-radius-card) var(--sw-radius-card) 0;
+  }
+
+  &__delete-text {
+    font-family: var(--sw-font-body);
+    font-size: var(--nutui-font-size-3);
+    font-weight: 500;
+    color: var(--sw-color-on-primary);
+  }
+
+  &__empty {
+    padding: 48px 24px;
+    text-align: center;
+  }
+
+  &__empty-text {
+    font-size: var(--nutui-font-size-3);
+    color: var(--nutui-gray-5);
+  }
+}
+
+// Swipe 右侧操作区高度撑满
+.ai-recognition-page__list .nut-swipe-right {
+  height: 100%;
+
+  .ai-recognition-page__delete {
+    height: 100%;
+  }
+}
+
+.ai-recognition-actions {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 50;
+  display: flex;
+  gap: var(--nutui-spacing-5);
+  padding: 12px var(--nutui-spacing-5)
+    calc(12px + var(--sw-safe-area-bottom, 0px));
+  background: var(--nutui-gray-1);
+  border-top: 1px solid var(--sw-color-progress-track);
+  box-sizing: border-box;
+
+  &__btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 52px;
+    border-radius: var(--sw-radius-pill);
+    box-sizing: border-box;
+
+    &--secondary {
+      background: var(--nutui-gray-1);
+      border: 1px solid var(--nutui-gray-4);
+    }
+
+    &--primary {
+      background: var(--nutui-brand-6);
+      box-shadow: var(--sw-shadow-fab);
+    }
+
+    &--disabled {
+      opacity: 0.5;
+      pointer-events: none;
+    }
+
+    &:active:not(&--disabled) {
+      opacity: 0.92;
+      transform: scale(0.98);
+    }
+  }
+
+  &__btn-text {
+    font-family: var(--sw-font-heading);
+    font-size: var(--nutui-font-size-4);
+    font-weight: var(--nutui-font-weight-bold);
+    color: var(--nutui-gray-7);
+    line-height: 1.2;
+
+    &--primary {
+      color: var(--sw-color-on-primary);
+    }
+  }
+
+  &__loading {
+    --nutui-loading-icon-size: 24px;
+    --nutui-loading-icon-color: var(--sw-color-on-primary);
+  }
+}

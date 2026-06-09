@@ -1,0 +1,69 @@
+.recognition-card {
+  display: flex;
+  align-items: stretch;
+  gap: var(--nutui-spacing-5);
+  min-height: 96px;
+  padding: var(--nutui-spacing-5);
+  background: var(--nutui-gray-1);
+  border-radius: var(--sw-radius-card);
+  box-shadow: var(--sw-shadow-card);
+  box-sizing: border-box;
+
+  &__image-wrap {
+    flex-shrink: 0;
+    width: 96px;
+    height: 96px;
+    border-radius: var(--nutui-radius-4);
+    overflow: hidden;
+  }
+
+  &__image {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  &__body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+  }
+
+  &__category {
+    font-family: var(--sw-font-body);
+    font-size: var(--nutui-font-size-2);
+    font-weight: 500;
+    color: var(--nutui-gray-5);
+    letter-spacing: 0.04em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__name {
+    font-family: var(--sw-font-heading);
+    font-size: var(--nutui-font-size-4);
+    font-weight: var(--nutui-font-weight-bold);
+    color: var(--nutui-gray-7);
+    line-height: 1.35;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 4px;
+  }
+
+  &__tag {
+    flex-shrink: 0;
+    font-size: var(--nutui-font-size-2) !important;
+    padding: 2px 10px !important;
+  }
+}

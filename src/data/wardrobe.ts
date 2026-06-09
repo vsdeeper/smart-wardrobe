@@ -17,6 +17,16 @@ export interface WardrobeItem {
   createdAt: number
 }
 
+/** AI 识别预览项（确认入库前，无 _id） */
+export interface RecognizedPreviewItem {
+  tempId: string
+  name: string
+  typeName: string
+  tags: string[]
+  imageFileId: string
+  imageUrl?: string
+}
+
 export const WARDROBE_PAGE_SIZE = 20
 
 /** FAB 批量上传时一次最多可选图片数 */

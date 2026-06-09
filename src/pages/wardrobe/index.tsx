@@ -27,14 +27,11 @@ function WardrobePage() {
 
   const {
     items,
-    setItems,
     activeTab,
-    activeTypeId,
     tabTitles,
     initialLoading,
     listLoading,
     actionSheetVisible,
-    loadTypes,
     handleTypeChange,
     handleScrollToLower,
     closeActionSheet,
@@ -43,9 +40,6 @@ function WardrobePage() {
   } = useWardrobeList({ uploadFlowRef, setAiStatus });
 
   const { adding, handleAddItem, handleAIStyling } = useWardrobeUpload({
-    activeTypeId,
-    setItems,
-    loadTypes,
     setAiStatus,
     uploadFlowRef,
   });
