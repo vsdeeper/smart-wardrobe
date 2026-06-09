@@ -27,3 +27,8 @@ declare namespace NodeJS {
     TARO_APP_CLOUD_ENV: string
   }
 }
+
+/** Taro 构建时注入的平台环境变量（见上方 ProcessEnv） */
+declare const process: {
+  env: NodeJS.ProcessEnv
+}
