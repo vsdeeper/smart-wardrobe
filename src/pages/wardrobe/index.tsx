@@ -1,526 +1,59 @@
-import { useCallback, useMemo, useRef, useState } from "react";
-import { View, Text, ScrollView } from "@tarojs/components";
-import Taro, { useDidShow } from "@tarojs/taro";
+import { useRef, useState } from "react";
+import { View, Text } from "@tarojs/components";
 import { Add } from "@nutui/icons-react-taro";
-import {
-  ActionSheet,
-  Loading,
-  Progress,
-  Tabs,
-  Tag,
-  Image,
-} from "@nutui/nutui-react-taro";
+import { ActionSheet, Loading, Tabs } from "@nutui/nutui-react-taro";
 import AppNavbar from "@/components/AppNavbar";
 import Main from "@/layouts/Main";
-import type { ClothingType, WardrobeItem } from "@/data/wardrobe";
-import { WARDROBE_BATCH_UPLOAD_MAX, WARDROBE_PAGE_SIZE } from "@/data/wardrobe";
-import {
-  deleteWardrobeItem,
-  fetchClothingTypes,
-  fetchWardrobeItemCount,
-  fetchWardrobeItems,
-  uploadAndRecognizeBatch,
-} from "@/services/wardrobe";
+import type { AiStatus } from "@/data/wardrobe";
+import { WARDROBE_ITEM_ACTION_OPTIONS } from "@/data/wardrobe";
+import { useWardrobeList } from "@/hooks/useWardrobeList";
+import { useWardrobeUpload } from "@/hooks/useWardrobeUpload";
 import { getCardLayout } from "@/utils/wardrobeLayout";
-import { useMainTabNavigation } from "@/utils/tabNavigation";
+import { useMainTabNavigation } from "@/hooks/useMainTabNavigation";
+import AiStatusBanner from "./components/AiStatusBanner";
+import WardrobeItemCard from "./components/WardrobeItemCard";
+import WardrobeStylingCta from "./components/WardrobeStylingCta";
 import "./index.scss";
 
-type AiPhase = "idle" | "uploading" | "recognizing" | "done";
-
-function isAiBusy(phase: AiPhase): boolean {
-  return phase === "uploading" || phase === "recognizing" || phase === "done";
-}
-
-interface AiStatus {
-  phase: AiPhase;
-  progress: number;
-  totalCount: number;
-  batchCurrent?: number;
-  batchTotal?: number;
-}
-
-const ITEM_ACTION_OPTIONS = [
-  { name: "查看", danger: false },
-  { name: "编辑", danger: false },
-  { name: "删除", danger: true },
-];
-
-interface WardrobeItemCardProps {
-  item: WardrobeItem;
-  layout?: "large" | "wide";
-  onLongPress?: (item: WardrobeItem) => void;
-}
-
-function WardrobeItemCard({ item, layout, onLongPress }: WardrobeItemCardProps) {
-  const isLarge = layout === "large";
-  const isWide = layout === "wide";
-
-  return (
-    <View
-      className={[
-        "wardrobe-card",
-        isLarge && "wardrobe-card--large",
-        isWide && "wardrobe-card--wide",
-      ]
-        .filter(Boolean)
-        .join(" ")}
-      onLongPress={() => onLongPress?.(item)}
-    >
-      <View className="wardrobe-card__inner">
-        <View
-          className={[
-            "wardrobe-card__image-wrap",
-            isLarge && "wardrobe-card__image-wrap--large",
-          ]
-            .filter(Boolean)
-            .join(" ")}
-        >
-          <Image
-            className="wardrobe-card__image"
-            src={item.imageUrl || item.imageFileId}
-            mode="aspectFill"
-            radius="0"
-          />
-        </View>
-        <View className="wardrobe-card__body">
-          <Text className="wardrobe-card__category">{item.typeName}</Text>
-          <Text
-            className={[
-              "wardrobe-card__name",
-              isLarge && "wardrobe-card__name--large",
-              isWide && "wardrobe-card__name--wide",
-            ]
-              .filter(Boolean)
-              .join(" ")}
-          >
-            {item.name}
-          </Text>
-          {item.tags && item.tags.length > 0 && (
-            <ScrollView
-              className="wardrobe-card__tags-scroll"
-              scrollX
-              showScrollbar={false}
-              enhanced
-            >
-              <View className="wardrobe-card__tags">
-                {item.tags.map((tag) => (
-                  <Tag
-                    key={tag}
-                    round
-                    className="wardrobe-card__tag"
-                    background="var(--sw-color-tag-bg)"
-                    color="var(--sw-color-tag-text)"
-                  >
-                    {tag}
-                  </Tag>
-                ))}
-              </View>
-            </ScrollView>
-          )}
-        </View>
-      </View>
-    </View>
-  );
-}
-
 function WardrobePage() {
-  const [clothingTypes, setClothingTypes] = useState<ClothingType[]>([]);
-  const [items, setItems] = useState<WardrobeItem[]>([]);
-  const [activeTab, setActiveTab] = useState(0);
-  const [hasMore, setHasMore] = useState(true);
-  const [listLoading, setListLoading] = useState(false);
-  const [initialLoading, setInitialLoading] = useState(true);
-  const [adding, setAdding] = useState(false);
-  const [actionSheetVisible, setActionSheetVisible] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<WardrobeItem | null>(null);
-  const [deleting, setDeleting] = useState(false);
+  const uploadFlowRef = useRef(false);
   const [aiStatus, setAiStatus] = useState<AiStatus>({
     phase: "idle",
     progress: 0,
     totalCount: 0,
   });
 
-  const loadingRef = useRef(false);
-  const itemsRef = useRef<WardrobeItem[]>([]);
-  const aiResetTimerRef = useRef<ReturnType<typeof setTimeout>>();
-  const uploadFlowRef = useRef(false);
-  itemsRef.current = items;
   const { activeTab: mainTab, onTabChange } = useMainTabNavigation(0);
 
-  const activeTypeId = useMemo(() => {
-    if (activeTab === 0) return null;
-    return clothingTypes[activeTab - 1]?._id ?? null;
-  }, [activeTab, clothingTypes]);
+  const {
+    items,
+    setItems,
+    activeTab,
+    activeTypeId,
+    tabTitles,
+    initialLoading,
+    listLoading,
+    actionSheetVisible,
+    loadTypes,
+    handleTypeChange,
+    handleScrollToLower,
+    closeActionSheet,
+    handleItemLongPress,
+    handleActionSelect,
+  } = useWardrobeList({ uploadFlowRef, setAiStatus });
 
-  const tabTitles = useMemo(
-    () =>
-      clothingTypes.length > 0
-        ? ["全部", ...clothingTypes.map((type) => type.name)]
-        : [],
-    [clothingTypes],
-  );
-
-  const scrollToTop = useCallback(() => {
-    Taro.pageScrollTo({
-      scrollTop: 0,
-      duration: 300,
-      selector: "#main-scroll",
-    });
-  }, []);
-
-  const loadTypes = useCallback(async () => {
-    const types = await fetchClothingTypes();
-    setClothingTypes(types);
-    return types;
-  }, []);
-
-  const loadItems = useCallback(
-    async (options: { reset?: boolean; typeId?: string | null } = {}) => {
-      if (loadingRef.current) return;
-      loadingRef.current = true;
-
-      const reset = options.reset ?? false;
-      const typeId =
-        options.typeId !== undefined ? options.typeId : activeTypeId;
-
-      if (reset) {
-        setInitialLoading(true);
-      } else {
-        setListLoading(true);
-      }
-
-      try {
-        const skip = reset ? 0 : itemsRef.current.length;
-        const nextItems = await fetchWardrobeItems({
-          typeId,
-          skip: reset ? 0 : skip,
-          limit: WARDROBE_PAGE_SIZE,
-        });
-
-        setItems((prev) => (reset ? nextItems : [...prev, ...nextItems]));
-        setHasMore(nextItems.length >= WARDROBE_PAGE_SIZE);
-      } catch (err) {
-        const message = err instanceof Error ? err.message : "加载失败";
-        Taro.showToast({ title: message, icon: "none" });
-      } finally {
-        loadingRef.current = false;
-        setListLoading(false);
-        setInitialLoading(false);
-      }
-    },
-    [activeTypeId],
-  );
-
-  const refreshWardrobe = useCallback(async () => {
-    try {
-      const [totalCount] = await Promise.all([
-        fetchWardrobeItemCount(),
-        loadTypes(),
-      ]);
-      setAiStatus((prev) =>
-        isAiBusy(prev.phase) ? prev : { ...prev, totalCount, phase: "idle" },
-      );
-      await loadItems({ reset: true });
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "加载失败";
-      Taro.showToast({ title: message, icon: "none" });
-      setInitialLoading(false);
-    }
-  }, [loadItems, loadTypes]);
-
-  useDidShow(() => {
-    if (process.env.TARO_ENV !== "weapp") {
-      setInitialLoading(false);
-      return;
-    }
-    if (uploadFlowRef.current) return;
-    refreshWardrobe();
+  const { adding, handleAddItem, handleAIStyling } = useWardrobeUpload({
+    activeTypeId,
+    setItems,
+    loadTypes,
+    setAiStatus,
+    uploadFlowRef,
   });
-
-  const handleTypeChange = async (value: string | number) => {
-    const nextTab = value as number;
-    setActiveTab(nextTab);
-    setItems([]);
-    setHasMore(true);
-
-    const typeId =
-      nextTab === 0 ? null : (clothingTypes[nextTab - 1]?._id ?? null);
-    loadingRef.current = false;
-    await loadItems({ reset: true, typeId });
-  };
-
-  const handleAddItem = async () => {
-    if (process.env.TARO_ENV !== "weapp") {
-      Taro.showToast({ title: "请在微信小程序中使用", icon: "none" });
-      return;
-    }
-    if (adding) return;
-
-    try {
-      uploadFlowRef.current = true;
-      const chooseRes = await Taro.chooseMedia({
-        count: WARDROBE_BATCH_UPLOAD_MAX,
-        mediaType: ["image"],
-        sourceType: ["album", "camera"],
-      });
-      const filePaths = chooseRes.tempFiles
-        .map((file) => file.tempFilePath)
-        .filter(Boolean);
-      if (filePaths.length === 0) return;
-
-      if (aiResetTimerRef.current) {
-        clearTimeout(aiResetTimerRef.current);
-        aiResetTimerRef.current = undefined;
-      }
-
-      const batchTotal = filePaths.length;
-      scrollToTop();
-      setAdding(true);
-      setAiStatus((prev) => ({
-        ...prev,
-        phase: "uploading",
-        progress: 0,
-        batchCurrent: 1,
-        batchTotal,
-      }));
-
-      const { succeeded, failed } = await uploadAndRecognizeBatch(
-        filePaths,
-        ({ current, total, phase }) => {
-          const itemSpan = 100 / total;
-          const base = (current - 1) * itemSpan;
-          const progress =
-            phase === "uploading"
-              ? Math.round(base + itemSpan * 0.25)
-              : Math.min(Math.round(base + itemSpan * 0.85), 99);
-          setAiStatus((prev) => ({
-            ...prev,
-            phase: phase === "uploading" ? "uploading" : "recognizing",
-            progress,
-            batchCurrent: current,
-            batchTotal: total,
-          }));
-        },
-      );
-
-      const successCount = succeeded.length;
-      const failCount = failed.length;
-
-      if (successCount > 0) {
-        setAiStatus((prev) => ({
-          ...prev,
-          phase: "done",
-          progress: 100,
-          totalCount: prev.totalCount + successCount,
-          batchCurrent: undefined,
-          batchTotal: undefined,
-        }));
-
-        await loadTypes();
-
-        const newItems = succeeded
-          .map((result) => result.item)
-          .reverse()
-          .filter(
-            (item) => activeTypeId === null || activeTypeId === item.typeId,
-          );
-
-        if (newItems.length > 0) {
-          setItems((prev) => [...newItems, ...prev]);
-        }
-
-        if (failCount === 0) {
-          Taro.showToast({
-            title:
-              successCount === 1 ? "识别成功" : `识别成功 ${successCount} 件`,
-            icon: "success",
-          });
-        } else {
-          Taro.showToast({
-            title: `成功 ${successCount} 件，失败 ${failCount} 件`,
-            icon: "none",
-          });
-        }
-
-        await new Promise<void>((resolve) => {
-          aiResetTimerRef.current = setTimeout(resolve, 1500);
-        });
-        aiResetTimerRef.current = undefined;
-
-        setAiStatus((prev) => ({
-          ...prev,
-          phase: "idle",
-          progress: 0,
-          batchCurrent: undefined,
-          batchTotal: undefined,
-        }));
-      } else {
-        setAiStatus((prev) => ({
-          ...prev,
-          phase: "idle",
-          progress: 0,
-          batchCurrent: undefined,
-          batchTotal: undefined,
-        }));
-        Taro.showToast({
-          title: failed[0]?.message || "识别失败",
-          icon: "none",
-        });
-      }
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "识别失败";
-      Taro.showToast({ title: message, icon: "none" });
-      setAiStatus((prev) => ({
-        ...prev,
-        phase: "idle",
-        progress: 0,
-        batchCurrent: undefined,
-        batchTotal: undefined,
-      }));
-    } finally {
-      if (aiResetTimerRef.current) {
-        clearTimeout(aiResetTimerRef.current);
-        aiResetTimerRef.current = undefined;
-      }
-      uploadFlowRef.current = false;
-      setAdding(false);
-    }
-  };
-
-  const handleScrollToLower = () => {
-    if (!hasMore || listLoading || initialLoading || loadingRef.current) return;
-    loadItems();
-  };
-
-  const handleAIStyling = () => {
-    Taro.showToast({ title: "AI 正在搭配中...", icon: "none" });
-  };
-
-  const closeActionSheet = useCallback(() => {
-    setActionSheetVisible(false);
-    setSelectedItem(null);
-  }, []);
-
-  const handleItemLongPress = useCallback((item: WardrobeItem) => {
-    setSelectedItem(item);
-    setActionSheetVisible(true);
-  }, []);
-
-  const handleDeleteItem = useCallback(
-    async (item: WardrobeItem) => {
-      if (deleting) return;
-
-      if (process.env.TARO_ENV !== "weapp") {
-        Taro.showToast({ title: "请在微信小程序中使用", icon: "none" });
-        return;
-      }
-
-      const modalRes = await Taro.showModal({
-        title: "确认删除",
-        content: `确定要删除「${item.name}」吗？此操作不可恢复。`,
-        confirmText: "删除",
-        confirmColor: "#fa2c19",
-      });
-
-      if (!modalRes.confirm) return;
-
-      setDeleting(true);
-      try {
-        await deleteWardrobeItem(item);
-        setItems((prev) => prev.filter((i) => i._id !== item._id));
-        setClothingTypes((prev) =>
-          prev.map((type) =>
-            type._id === item.typeId
-              ? { ...type, itemCount: Math.max(0, type.itemCount - 1) }
-              : type,
-          ),
-        );
-        setAiStatus((prev) =>
-          isAiBusy(prev.phase)
-            ? prev
-            : { ...prev, totalCount: Math.max(0, prev.totalCount - 1) },
-        );
-        Taro.showToast({ title: "已删除", icon: "success" });
-      } catch (err) {
-        const message = err instanceof Error ? err.message : "删除失败";
-        Taro.showToast({ title: message, icon: "none" });
-      } finally {
-        setDeleting(false);
-      }
-    },
-    [deleting],
-  );
-
-  const handleActionSelect = useCallback(
-    (option: { name?: string }) => {
-      const item = selectedItem;
-      closeActionSheet();
-      if (!item) return;
-
-      switch (option.name) {
-        case "查看":
-          Taro.showToast({ title: "查看功能即将上线", icon: "none" });
-          break;
-        case "编辑":
-          Taro.showToast({ title: "编辑功能即将上线", icon: "none" });
-          break;
-        case "删除":
-          void handleDeleteItem(item);
-          break;
-        default:
-          break;
-      }
-    },
-    [closeActionSheet, handleDeleteItem, selectedItem],
-  );
-
-  const aiStatusDesc = useMemo(() => {
-    const batchLabel =
-      aiStatus.batchTotal && aiStatus.batchTotal > 1 && aiStatus.batchCurrent
-        ? `${aiStatus.batchCurrent}/${aiStatus.batchTotal}`
-        : null;
-
-    switch (aiStatus.phase) {
-      case "uploading":
-        return batchLabel ? `正在上传 ${batchLabel}...` : "正在上传图片...";
-      case "recognizing":
-        return batchLabel
-          ? `正在识别 ${batchLabel}...`
-          : "AI 正在识别衣物类型...";
-      case "done":
-        return "分类完成";
-      default:
-        return aiStatus.totalCount > 0
-          ? `已分类 ${aiStatus.totalCount} 件单品`
-          : "上传衣物照片，AI 将自动识别分类";
-    }
-  }, [aiStatus]);
-
-  const showProgress = aiStatus.phase !== "idle";
 
   return (
     <Main activeTab={mainTab} onTabChange={onTabChange} header={<AppNavbar />}>
       <Main.Scroll lowerThreshold={120} onScrollToLower={handleScrollToLower}>
-        <View className="ai-status">
-          <View className="ai-status__content">
-            <View className="ai-status__icon-wrap">
-              <Text className="iconfont icon-magic-wand ai-status__icon" />
-            </View>
-            <View className="ai-status__text">
-              <Text className="ai-status__label">AI 智能分类</Text>
-              <Text className="ai-status__desc">{aiStatusDesc}</Text>
-            </View>
-          </View>
-          {showProgress && (
-            <Progress
-              percent={aiStatus.progress}
-              className="ai-status__progress"
-              color="var(--sw-color-accent)"
-              background="var(--sw-color-progress-track)"
-              showText={false}
-            />
-          )}
-        </View>
+        <AiStatusBanner aiStatus={aiStatus} />
 
         <View className="page-header">
           <Text className="page-header__title">个人衣橱</Text>
@@ -558,23 +91,7 @@ function WardrobePage() {
                 onLongPress={handleItemLongPress}
               />
             ))}
-
-            <View className="wardrobe-card wardrobe-card--cta">
-              <View className="wardrobe-cta">
-                <View className="wardrobe-cta__pattern" aria-hidden>
-                  <Text className="iconfont icon-magic-wand wardrobe-cta__pattern-icon" />
-                </View>
-                <View className="wardrobe-cta__content">
-                  <Text className="wardrobe-cta__title">需要搭配建议吗？</Text>
-                  <Text className="wardrobe-cta__desc">
-                    AI 已根据您的收藏为您准备了全新搭配。
-                  </Text>
-                  <View className="wardrobe-cta__btn" onClick={handleAIStyling}>
-                    <Text className="wardrobe-cta__btn-text">开始搭配</Text>
-                  </View>
-                </View>
-              </View>
-            </View>
+            <WardrobeStylingCta onStartStyling={handleAIStyling} />
           </View>
         )}
 
@@ -595,17 +112,21 @@ function WardrobePage() {
         {adding ? (
           <Loading
             type="circular"
-            color="#ffffff"
+            color="var(--sw-color-on-primary)"
             className="wardrobe-fab__loading"
           />
         ) : (
-          <Add className="wardrobe-fab__icon" color="#ffffff" size={30} />
+          <Add
+            className="wardrobe-fab__icon"
+            color="var(--sw-color-on-primary)"
+            size={30}
+          />
         )}
       </View>
 
       <ActionSheet
         visible={actionSheetVisible}
-        options={ITEM_ACTION_OPTIONS}
+        options={WARDROBE_ITEM_ACTION_OPTIONS}
         cancelText="取消"
         onSelect={handleActionSelect}
         onCancel={closeActionSheet}

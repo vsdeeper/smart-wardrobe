@@ -7,8 +7,8 @@ import "./index.scss";
 /** 底部导航 — 对齐设计稿 */
 const BOTTOM_TABS = [
   { key: "wardrobe", label: "衣橱", iconClass: "icon-wardrobe" },
-  { key: "outfit", label: "试穿", iconClass: "icon-outfit" },
-  { key: "discover", label: "搭配", iconClass: "icon-magic-wand" },
+  { key: "try-on", label: "试穿", iconClass: "icon-outfit" },
+  { key: "outfit", label: "搭配", iconClass: "icon-magic-wand" },
   { key: "profile", label: "我的", iconClass: "icon-profile" },
 ] as const;
 

@@ -76,13 +76,13 @@ page .nut-avatar .avatar-img {
 .input-field {
   border: none;
   border-radius: 8px; // DESIGN.md rounded-DEFAULT
-  background: #daeaf7; // DESIGN.md surface-container-high
-  color: #0e1d26; // on-background
+  background: var(--sw-color-tabs-inactive-bg);
+  color: var(--nutui-gray-7);
   padding: 12px 16px;
   font-size: 16px; // body-md
 
   &:focus {
-    background: #e0f0fd; // 聚焦时变亮 — surface-container
+    background: var(--sw-color-surface-container);
   }
 }
 
@@ -156,6 +156,30 @@ page {
         font-weight: var(--nutui-tabs-titles-item-active-font-weight);
       }
     }
+  }
+}
+
+// 搭配页分类 Tab：非激活态使用钢蓝浅底（区别于衣橱白底胶囊）
+page .category-tabs {
+  .nut-tabs-titles-item:not(.nut-tabs-titles-item-active)
+    .nut-tabs-titles-item-text {
+    background: var(--sw-color-tabs-inactive-bg);
+    border: none;
+    color: var(--nutui-secondary-1);
+  }
+}
+
+// AI 状态条 / 通用进度条 NutUI 覆写
+.ai-status,
+.sw-progress {
+  .nut-progress-outer {
+    height: 8px !important;
+    border-radius: var(--sw-radius-pill) !important;
+    background: var(--sw-color-progress-track) !important;
+  }
+
+  .nut-progress-inner {
+    border-radius: var(--sw-radius-pill) !important;
   }
 }
 

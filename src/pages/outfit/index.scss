@@ -13,13 +13,6 @@
   .nut-tabs-list {
     justify-content: flex-start;
   }
-
-  .nut-tabs-titles-item:not(.nut-tabs-titles-item-active)
-    .nut-tabs-titles-item-text {
-    background: #daeaf7;
-    border: none;
-    color: var(--nutui-secondary-1);
-  }
 }
 
 // ========== 单品网格 ==========
@@ -27,76 +20,6 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--nutui-spacing-5);
-}
-
-.match-card {
-  position: relative;
-  overflow: hidden;
-  background: var(--nutui-gray-1);
-  border-radius: var(--sw-radius-card);
-  box-shadow: var(--sw-shadow-card);
-  border: 2px solid transparent;
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
-
-  &--selected {
-    border-color: var(--nutui-brand-6);
-    box-shadow: var(--sw-shadow-tab-active);
-  }
-
-  &__image-wrap {
-    position: relative;
-    aspect-ratio: 4 / 5;
-    overflow: hidden;
-  }
-
-  &__image {
-    width: 100%;
-    height: 100%;
-    display: block;
-  }
-
-  &__check {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    width: 24px;
-    height: 24px;
-    border-radius: var(--sw-radius-pill);
-    background: var(--nutui-brand-6);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  &__body {
-    padding: var(--nutui-spacing-5);
-  }
-
-  &__series {
-    display: block;
-    font-family: var(--sw-font-body);
-    font-size: 10px;
-    font-weight: 500;
-    color: var(--nutui-gray-5);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-  }
-
-  &__name {
-    display: block;
-    margin-top: 4px;
-    font-family: var(--sw-font-heading);
-    font-size: var(--nutui-font-size-4);
-    font-weight: 500;
-    color: var(--nutui-gray-7);
-    line-height: 1.4;
-  }
-
-  &:active {
-    opacity: 0.96;
-  }
 }
 
 // ========== 搭配页滚动区（为底部浮层留白） ==========
@@ -126,7 +49,7 @@
     -webkit-backdrop-filter: blur(12px);
     border-radius: 32px 32px 0 0;
     padding: var(--nutui-spacing-8);
-    border-top: 1px solid #ffffff;
+    border-top: 1px solid var(--sw-color-on-primary);
     box-shadow: 0 -20px 50px rgba(176, 196, 222, 0.2);
   }
 
@@ -178,7 +101,7 @@
       font-family: var(--sw-font-heading);
       font-size: var(--nutui-font-size-4);
       font-weight: 500;
-      color: #ffffff;
+      color: var(--sw-color-on-primary);
       line-height: 1.2;
       white-space: nowrap;
     }
@@ -248,7 +171,7 @@
   &__remove-icon {
     font-size: 16px;
     line-height: 1;
-    color: #ffffff;
+    color: var(--sw-color-on-primary);
     font-weight: 600;
     margin-top: -4px;
   }

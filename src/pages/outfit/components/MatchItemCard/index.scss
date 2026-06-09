@@ -1,0 +1,69 @@
+.match-card {
+  position: relative;
+  overflow: hidden;
+  background: var(--nutui-gray-1);
+  border-radius: var(--sw-radius-card);
+  box-shadow: var(--sw-shadow-card);
+  border: 2px solid transparent;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+
+  &--selected {
+    border-color: var(--nutui-brand-6);
+    box-shadow: var(--sw-shadow-tab-active);
+  }
+
+  &__image-wrap {
+    position: relative;
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+  }
+
+  &__image {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  &__check {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 24px;
+    height: 24px;
+    border-radius: var(--sw-radius-pill);
+    background: var(--nutui-brand-6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &__body {
+    padding: var(--nutui-spacing-5);
+  }
+
+  &__series {
+    display: block;
+    font-family: var(--sw-font-body);
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--nutui-gray-5);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  &__name {
+    display: block;
+    margin-top: 4px;
+    font-family: var(--sw-font-heading);
+    font-size: var(--nutui-font-size-4);
+    font-weight: 500;
+    color: var(--nutui-gray-7);
+    line-height: 1.4;
+  }
+
+  &:active {
+    opacity: 0.96;
+  }
+}

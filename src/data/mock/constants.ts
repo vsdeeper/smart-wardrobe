@@ -1,0 +1,3 @@
+/** Mock 演示用头像 URL（AppNavbar / 个人页共用） */
+export const MOCK_AVATAR_SRC =
+  "https://lh3.googleusercontent.com/aida-public/AB6AXuDPDeFJzh186ovI3Plbl8K7F3qdw-elrRyXjncgp8t9YQNday2x2oIoN5nteUHhP32BSiM5CR1fc49uiK789widOOLK5YxshmGfMhNe2TT2d5IJdNqpJYGL_PFF36Ruro5yC7UHscSEs01ktokI2GSgvLXk90TBDHf6ESosVQwGKrhLkkeXYNUP2ipg8T987bJ_d2iHiQPJ_fu7yyT9Egc4RydqfepqIhwTG1ruCQw-Fszp7s-L4JuUKLtQY9cemfj3Rk_Ri348o_N5";
