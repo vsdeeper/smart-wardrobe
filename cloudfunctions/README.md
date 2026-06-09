@@ -186,12 +186,27 @@ wx.cloud
 }
 ```
 
-云函数 `recognize-clothing` 写入时会显式设置 `_openid`；小程序端查询时规则自动过滤当前用户数据。
+云函数 `recognize-clothing`（`persist: true`）与 `save-wardrobe-items` 写入时会显式设置 `_openid`；小程序端查询时规则自动过滤当前用户数据。
 
-## 6. 部署 recognize-clothing 云函数
+## 6. 共享代码同步（部署衣橱相关云函数前必读）
 
-1. 微信开发者工具展开 `cloudfunctions/recognize-clothing`
-2. 右键 → **上传并部署：云端安装依赖**
+`recognize-clothing` 与 `save-wardrobe-items` 共用 [`cloudfunctions/common/wardrobeSave.js`](cloudfunctions/common/wardrobeSave.js)。微信云函数**按单目录独立打包上传**，同级 `common/` 不会随函数部署，须在本地同步进各函数目录：
+
+```bash
+pnpm cf:sync-common
+```
+
+同步后各函数内会有 `common/wardrobeSave.js`（如 `cloudfunctions/recognize-clothing/common/wardrobeSave.js`）。**修改 `cloudfunctions/common/` 下源码后，须重新执行上述命令再上传部署。**
+
+| 错误信息 | 常见原因 |
+| -------- | -------- |
+| `Cannot find module '../common/wardrobeSave'` | 未同步 common 或使用了旧的 `../common/` 引用；运行 `pnpm cf:sync-common` 后重新「上传并部署：云端安装依赖」 |
+
+## 7. 部署 recognize-clothing 云函数
+
+1. 执行 `pnpm cf:sync-common`（若刚修改过 common 或首次部署）
+2. 微信开发者工具展开 `cloudfunctions/recognize-clothing`
+3. 右键 → **上传并部署：云端安装依赖**
 
 或使用 CLI：
 
@@ -219,21 +234,66 @@ tcb fn deploy recognize-clothing -e cloudbase-d6gkz1xlx9adbfe51
 wx.cloud
   .callFunction({
     name: "recognize-clothing",
-    data: { fileID: "cloud://xxx.jpg" },
+    data: { fileID: "cloud://xxx.jpg", persist: false },
   })
   .then(console.log)
   .catch(console.error);
 ```
 
-预期返回 `{ item, type, isNewType }`；失败时返回 `{ error, message }`。
+预览模式（`persist: false`，小程序默认）预期返回 `{ preview: { name, typeName, tags, imageFileId } }`；`persist: true` 时直接入库，返回 `{ item, type, isNewType }`。失败时返回 `{ error, message }`。
 
 ### 故障排查
 
 | 返回 message | 常见原因 |
 | ------------ | -------- |
+| `145 code exit unexpected` | SDK 在 `cloud.init()` 前调用 `cloud.database()`；确保已部署最新代码后重新「上传并部署：云端安装依赖」 |
+| `Cannot find module '../common/wardrobeSave'` | 未同步 common；见第 6 节，运行 `pnpm cf:sync-common` 后重新部署 |
 | `未配置 DOUBAO_VISION_MODEL` | 未设置多模态接入点环境变量 |
 | `无法获取图片临时链接` | fileID 无效或云存储权限问题 |
 | `AI 返回格式无效` | Vision 模型未按 JSON 格式返回，检查 prompt 或换模型 |
 | `LLM_API_ERROR` | API Key 无效、接入点未开通 Vision、或配额用尽 |
 
-页面内通过衣橱页 FAB 上传触发：`chooseMedia` → `uploadFile` → `callFunction('recognize-clothing')`。
+页面内通过衣橱页 FAB 上传触发：`chooseMedia` → `uploadFile` → `callFunction('recognize-clothing')`（预览不入库，确认后由 `save-wardrobe-items` 批量入库）。
+
+## 8. 部署 save-wardrobe-items 云函数
+
+1. 执行 `pnpm cf:sync-common`（与 recognize-clothing 共用 common 模块）
+2. 微信开发者工具展开 `cloudfunctions/save-wardrobe-items`
+3. 右键 → **上传并部署：云端安装依赖**
+
+或使用 CLI：
+
+```bash
+tcb fn deploy save-wardrobe-items -e cloudbase-d6gkz1xlx9adbfe51
+```
+
+### Console 验证
+
+```javascript
+wx.cloud
+  .callFunction({
+    name: "save-wardrobe-items",
+    data: {
+      items: [
+        {
+          name: "基础白色T恤",
+          typeName: "T恤",
+          imageFileId: "cloud://xxx.jpg",
+          tags: ["白色", "棉质"],
+        },
+      ],
+    },
+  })
+  .then(console.log)
+  .catch(console.error);
+```
+
+预期返回 `{ saved: [...], failed: [] }`；单条格式无效时出现在 `failed` 数组，不影响其余条目。
+
+### 故障排查
+
+| 返回 message | 常见原因 |
+| ------------ | -------- |
+| `Cannot find module '../common/wardrobeSave'` | 未同步 common；见第 6 节 |
+| `缺少待入库衣物数据` | `items` 为空或非数组 |
+| `无法获取用户身份` | 未登录或未初始化云开发 |

@@ -1,9 +1,12 @@
 const cloud = require('wx-server-sdk')
 
-const db = cloud.database()
-const _ = db.command
+function getDb() {
+  return cloud.database()
+}
 
 async function upsertClothingType(openid, typeName) {
+  const db = getDb()
+  const _ = db.command
   const coll = db.collection('clothing_types')
   const { data } = await coll.where({ _openid: openid, name: typeName }).limit(1).get()
   const now = db.serverDate()
@@ -43,6 +46,7 @@ async function upsertClothingType(openid, typeName) {
 }
 
 async function saveRecognizedItem(openid, fileID, recognized) {
+  const db = getDb()
   const { type, isNewType } = await upsertClothingType(openid, recognized.typeName)
   const now = db.serverDate()
 

@@ -1,7 +1,8 @@
 const cloud = require('wx-server-sdk')
-const { saveRecognizedItem } = require('../common/wardrobeSave')
 
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
+
+const { saveRecognizedItem } = require('./common/wardrobeSave')
 
 function normalizeItemInput(raw) {
   if (!raw || typeof raw !== 'object') return null

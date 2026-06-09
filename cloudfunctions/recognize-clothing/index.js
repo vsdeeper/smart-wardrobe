@@ -1,5 +1,4 @@
 const cloud = require('wx-server-sdk')
-const { saveRecognizedItem } = require('../common/wardrobeSave')
 
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 
@@ -10,6 +9,8 @@ const SYSTEM_PROMPT = `你是一个专业的衣物识别助手。根据用户上
   "name": "简短描述性名称，如 基础白色T恤",
   "tags": ["颜色", "材质或风格标签"]
 }`
+
+const DEFAULT_BASE_URL = 'https://ark.cn-beijing.volces.com/api/v3'
 
 async function resolveImageUrl(fileID) {
   const res = await cloud.getTempFileURL({ fileList: [fileID] })
@@ -43,24 +44,24 @@ exports.main = async (event) => {
     return { error: 'INVALID_FILE_ID', message: '缺少 fileID' }
   }
 
-  const wxContext = cloud.getWXContext()
-  const openid = wxContext.OPENID
-  if (!openid) {
-    return { error: 'NO_OPENID', message: '无法获取用户身份' }
-  }
-
-  const apiKey = process.env.DOUBAO_API_KEY
-  const baseUrl = process.env.DOUBAO_API_BASE_URL
-  const model = process.env.DOUBAO_VISION_MODEL
-
-  if (!apiKey) {
-    return { error: 'PROVIDER_CONFIG', message: '未配置 DOUBAO_API_KEY 环境变量' }
-  }
-  if (!model) {
-    return { error: 'PROVIDER_CONFIG', message: '未配置 DOUBAO_VISION_MODEL 环境变量' }
-  }
-
   try {
+    const wxContext = cloud.getWXContext()
+    const openid = wxContext.OPENID
+    if (!openid) {
+      return { error: 'NO_OPENID', message: '无法获取用户身份' }
+    }
+
+    const apiKey = process.env.DOUBAO_API_KEY
+    const baseUrl = process.env.DOUBAO_API_BASE_URL || DEFAULT_BASE_URL
+    const model = process.env.DOUBAO_VISION_MODEL
+
+    if (!apiKey) {
+      return { error: 'PROVIDER_CONFIG', message: '未配置 DOUBAO_API_KEY 环境变量' }
+    }
+    if (!model) {
+      return { error: 'PROVIDER_CONFIG', message: '未配置 DOUBAO_VISION_MODEL 环境变量' }
+    }
+
     const imageUrl = await resolveImageUrl(fileID)
 
     const response = await fetch(`${baseUrl}/chat/completions`, {
@@ -95,6 +96,7 @@ exports.main = async (event) => {
     const recognized = parseRecognitionContent(content)
 
     if (persist === true) {
+      const { saveRecognizedItem } = require('./common/wardrobeSave')
       const saved = await saveRecognizedItem(openid, fileID, recognized)
       return saved
     }
