@@ -63,19 +63,22 @@ function TryOnPage() {
                 </View>
                 <View className="weather-card__info">
                   <Text className="weather-card__location">
-                    无法获取您的位置
+                    无法获取您的位置，开启定位
                   </Text>
-                  <Text className="weather-card__action">开启定位</Text>
                 </View>
               </>
             ) : status === "error" ? (
               <>
                 <View className="weather-card__icon weather-card__icon--error">
-                  <LogisticsError size={36} color="var(--nutui-color-warning)" />
+                  <LogisticsError
+                    size={36}
+                    color="var(--nutui-color-warning)"
+                  />
                 </View>
                 <View className="weather-card__info">
-                  <Text className="weather-card__location">获取失败</Text>
-                  <Text className="weather-card__detail">点击重试</Text>
+                  <Text className="weather-card__location">
+                    获取失败，点击重试
+                  </Text>
                 </View>
               </>
             ) : (
@@ -104,7 +107,7 @@ function TryOnPage() {
               ? ""
               : status === "success" && viewModel
                 ? viewModel.airQualityLabel
-                : "--"}
+                : ""}
           </Text>
         </View>
 
