@@ -26,6 +26,7 @@
   &__body {
     flex: 1;
     min-width: 0;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -52,13 +53,19 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    margin-bottom: var(--nutui-spacing-4);
+  }
+
+  &__tags-scroll {
+    margin-top: 4px;
+    width: 100%;
   }
 
   &__tags {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: 6px;
-    margin-top: 4px;
+    width: max-content;
   }
 
   &__tag {
