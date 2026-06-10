@@ -46,11 +46,6 @@
     margin-top: var(--nutui-spacing-2);
   }
 
-  &__outfit-box {
-    min-height: 120px;
-    box-sizing: border-box;
-  }
-
   &__outfit-box--placeholder {
     .wardrobe-detail-info__outfit-text {
       color: var(--nutui-gray-5);
