@@ -36,6 +36,7 @@ function WardrobePage() {
     handleScrollToLower,
     closeActionSheet,
     handleItemLongPress,
+    handleItemClick,
     handleActionSelect,
   } = useWardrobeList({ uploadFlowRef, setAiStatus });
 
@@ -82,6 +83,7 @@ function WardrobePage() {
                 key={item._id}
                 item={item}
                 layout={getCardLayout(index, items.length)}
+                onClick={handleItemClick}
                 onLongPress={handleItemLongPress}
               />
             ))}

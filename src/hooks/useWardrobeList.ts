@@ -144,6 +144,12 @@ export function useWardrobeList({
     setActionSheetVisible(true);
   }, []);
 
+  const handleItemClick = useCallback((item: WardrobeItem) => {
+    Taro.navigateTo({
+      url: `/pages/wardrobe-detail/index?id=${item._id}`,
+    });
+  }, []);
+
   const handleDeleteItem = useCallback(
     async (item: WardrobeItem) => {
       if (deleting) return;
@@ -197,9 +203,7 @@ export function useWardrobeList({
 
       switch (option.name) {
         case "查看":
-          Taro.navigateTo({
-            url: `/pages/wardrobe-detail/index?id=${item._id}`,
-          });
+          handleItemClick(item);
           break;
         case "编辑":
           Taro.navigateTo({
@@ -213,7 +217,7 @@ export function useWardrobeList({
           break;
       }
     },
-    [closeActionSheet, handleDeleteItem, selectedItem],
+    [closeActionSheet, handleDeleteItem, handleItemClick, selectedItem],
   );
 
   return {
@@ -233,6 +237,7 @@ export function useWardrobeList({
     handleScrollToLower,
     closeActionSheet,
     handleItemLongPress,
+    handleItemClick,
     handleActionSelect,
   };
 }

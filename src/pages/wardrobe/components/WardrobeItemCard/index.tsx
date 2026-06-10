@@ -6,12 +6,14 @@ import "./index.scss";
 export interface WardrobeItemCardProps {
   item: WardrobeItem;
   layout?: "large" | "wide";
+  onClick?: (item: WardrobeItem) => void;
   onLongPress?: (item: WardrobeItem) => void;
 }
 
 export default function WardrobeItemCard({
   item,
   layout,
+  onClick,
   onLongPress,
 }: WardrobeItemCardProps) {
   const isLarge = layout === "large";
@@ -26,6 +28,7 @@ export default function WardrobeItemCard({
       ]
         .filter(Boolean)
         .join(" ")}
+      onClick={() => onClick?.(item)}
       onLongPress={() => onLongPress?.(item)}
     >
       <View className="wardrobe-card__inner">
