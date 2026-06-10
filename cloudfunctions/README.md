@@ -190,13 +190,15 @@ wx.cloud
 
 ## 6. 共享代码同步（部署衣橱相关云函数前必读）
 
-`recognize-clothing` 与 `save-wardrobe-items` 共用 [`cloudfunctions/common/wardrobeSave.js`](cloudfunctions/common/wardrobeSave.js)。微信云函数**按单目录独立打包上传**，同级 `common/` 不会随函数部署，须在本地同步进各函数目录：
+`recognize-clothing` 使用 [`cloudfunctions/common/recognitionRules.js`](common/recognitionRules.js)（Prompt 规则 + 结构校验）；`recognize-clothing` 与 `save-wardrobe-items` 共用 [`cloudfunctions/common/wardrobeSave.js`](common/wardrobeSave.js)。微信云函数**按单目录独立打包上传**，同级 `common/` 不会随函数部署，须在本地同步进各函数目录：
 
 ```bash
 pnpm cf:sync-common
 ```
 
-同步后各函数内会有 `common/wardrobeSave.js`（如 `cloudfunctions/recognize-clothing/common/wardrobeSave.js`）。**修改 `cloudfunctions/common/` 下源码后，须重新执行上述命令再上传部署。**
+同步后：`recognize-clothing/common/` 含 `recognitionRules.js`、`wardrobeSave.js`；`save-wardrobe-items/common/` 仅含 `wardrobeSave.js`。**修改 `cloudfunctions/common/` 下源码后，须重新执行上述命令再上传部署。**
+
+业务约束（typeName 白名单、name 长度、tags 规则、name/tags 互斥）由 **Prompt** 负责；云函数侧仅做 JSON 解析与非空 trim，不再做白名单归并或截断兜底。
 
 | 错误信息 | 常见原因 |
 | -------- | -------- |
@@ -223,8 +225,11 @@ tcb fn deploy recognize-clothing -e cloudbase-d6gkz1xlx9adbfe51
 | `DOUBAO_API_KEY`      | 火山方舟 API Key（可与 chat 共用）                 |
 | `DOUBAO_API_BASE_URL` | 可选，默认 `https://ark.cn-beijing.volces.com/api/v3` |
 | `DOUBAO_VISION_MODEL` | 方舟**多模态**推理接入点 ID（`ep-` 前缀，与文本模型不同） |
+| `DOUBAO_VISION_TEMPERATURE` | 可选，识别采样温度，默认 `0.1`，范围 0–2 |
 
 须在[火山方舟控制台](https://console.volcengine.com/ark)创建支持图像理解的推理接入点，并将接入点 ID 填入 `DOUBAO_VISION_MODEL`。
+
+识别规则（typeName 白名单、Prompt 文案）见 [`cloudfunctions/common/recognitionRules.js`](common/recognitionRules.js)。修改后须 `pnpm cf:sync-common` 并重新部署 `recognize-clothing`（`save-wardrobe-items` 仅需同步 `wardrobeSave.js` 变更时部署）。
 
 ### Console 验证
 

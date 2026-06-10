@@ -1,16 +1,14 @@
 const cloud = require('wx-server-sdk')
+const {
+  buildSystemPrompt,
+  USER_PROMPT,
+  parseRecognitionResult,
+} = require('./common/recognitionRules')
 
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 
-const SYSTEM_PROMPT = `你是一个专业的衣物识别助手。根据用户上传的衣物照片，识别衣物类型和属性。
-只返回 JSON，不要其他文字。格式：
-{
-  "typeName": "类型名，如 T恤、衬衫、毛衣、牛仔裤、短裤、连衣裙、大衣、运动鞋等",
-  "name": "简短描述性名称，如 基础白色T恤",
-  "tags": ["颜色", "材质或风格标签"]
-}`
-
 const DEFAULT_BASE_URL = 'https://ark.cn-beijing.volces.com/api/v3'
+const DEFAULT_TEMPERATURE = 0.1
 
 async function resolveImageUrl(fileID) {
   const res = await cloud.getTempFileURL({ fileList: [fileID] })
@@ -21,20 +19,23 @@ async function resolveImageUrl(fileID) {
   return file.tempFileURL
 }
 
+function resolveVisionTemperature() {
+  const raw = process.env.DOUBAO_VISION_TEMPERATURE
+  const parsed = raw === undefined || raw === '' ? DEFAULT_TEMPERATURE : parseFloat(raw)
+  if (Number.isNaN(parsed)) return DEFAULT_TEMPERATURE
+  return Math.min(2, Math.max(0, parsed))
+}
+
 function parseRecognitionContent(content) {
   const jsonMatch = content.match(/\{[\s\S]*\}/)
   if (!jsonMatch) {
     throw new Error('AI 返回格式无效')
   }
   const parsed = JSON.parse(jsonMatch[0])
-  if (!parsed.typeName || !parsed.name) {
+  if (!parsed.typeName && !parsed.name) {
     throw new Error('AI 返回缺少必要字段')
   }
-  return {
-    typeName: String(parsed.typeName).trim(),
-    name: String(parsed.name).trim(),
-    tags: Array.isArray(parsed.tags) ? parsed.tags.map(String) : [],
-  }
+  return parseRecognitionResult(parsed)
 }
 
 exports.main = async (event) => {
@@ -63,6 +64,7 @@ exports.main = async (event) => {
     }
 
     const imageUrl = await resolveImageUrl(fileID)
+    const temperature = resolveVisionTemperature()
 
     const response = await fetch(`${baseUrl}/chat/completions`, {
       method: 'POST',
@@ -72,13 +74,14 @@ exports.main = async (event) => {
       },
       body: JSON.stringify({
         model,
+        temperature,
         messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
+          { role: 'system', content: buildSystemPrompt() },
           {
             role: 'user',
             content: [
               { type: 'image_url', image_url: { url: imageUrl } },
-              { type: 'text', text: '请识别这件衣物的类型、名称和标签。' },
+              { type: 'text', text: USER_PROMPT },
             ],
           },
         ],
