@@ -39,10 +39,6 @@
     gap: var(--nutui-spacing-2);
   }
 
-  &__tag {
-    flex-shrink: 0;
-  }
-
   &__outfit {
     display: flex;
     flex-direction: column;
@@ -52,10 +48,6 @@
 
   &__outfit-box {
     min-height: 120px;
-    padding: var(--nutui-spacing-4);
-    background: var(--nutui-gray-2);
-    border: 1px solid var(--nutui-gray-4);
-    border-radius: var(--nutui-radius-6);
     box-sizing: border-box;
   }
 

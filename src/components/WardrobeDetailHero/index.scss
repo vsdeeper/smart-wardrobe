@@ -2,7 +2,7 @@
   position: relative;
   height: 65vh;
   min-height: 280px;
-  border-radius: 32px;
+  border-radius: var(--sw-radius-card);
   overflow: hidden;
   box-shadow: 0 25px 50px -12px rgba(176, 196, 222, 0.25);
 

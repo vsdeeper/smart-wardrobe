@@ -36,9 +36,9 @@ function FormRow({
   children: React.ReactNode;
 }) {
   return (
-    <View className="wardrobe-edit-form__row">
-      <Text className="wardrobe-edit-form__label">{label}</Text>
-      <View className="wardrobe-edit-form__value">{children}</View>
+    <View className="sw-form-row">
+      <Text className="sw-form-label">{label}</Text>
+      <View className="sw-form-value">{children}</View>
     </View>
   );
 }
@@ -94,7 +94,7 @@ export default function WardrobeEditForm({
     const trimmed = newTypeName.trim();
     if (!trimmed) {
       Taro.showToast({ title: "请输入类别名称", icon: "none" });
-      return false;
+      return;
     }
     onTypeNameChange(trimmed);
     setNewTypeDialogVisible(false);
@@ -130,28 +130,29 @@ export default function WardrobeEditForm({
   return (
     <View className="wardrobe-edit-form">
       <FormRow label="名称">
-        <Input
-          className="wardrobe-edit-form__input"
-          value={name}
-          maxLength={MAX_NAME_LENGTH}
-          placeholder="请输入名称"
-          onChange={onNameChange}
-        />
+        <View className="sw-field-input">
+          <Input
+            value={name}
+            maxLength={MAX_NAME_LENGTH}
+            placeholder="请输入名称"
+            onChange={onNameChange}
+          />
+        </View>
       </FormRow>
 
       <FormRow label="类别">
-        <View className="wardrobe-edit-form__picker" onClick={openTypeSheet}>
+        <View className="sw-field-select" onClick={openTypeSheet}>
           <Text
             className={[
-              "wardrobe-edit-form__picker-text",
-              !typeName && "wardrobe-edit-form__picker-text--placeholder",
+              "sw-field-select__text",
+              !typeName && "sw-field-select__text--placeholder",
             ]
               .filter(Boolean)
               .join(" ")}
           >
             {typeName || "请选择类别"}
           </Text>
-          <Text className="wardrobe-edit-form__picker-arrow">›</Text>
+          <Text className="sw-field-select__arrow">›</Text>
         </View>
       </FormRow>
 
@@ -162,7 +163,7 @@ export default function WardrobeEditForm({
               key={tag}
               round
               closeable
-              className="wardrobe-edit-form__tag"
+              className="sw-tag"
               background="var(--sw-color-tag-bg)"
               color="var(--sw-color-tag-text)"
               onClose={() => handleRemoveTag(tag)}
@@ -170,25 +171,25 @@ export default function WardrobeEditForm({
               {tag}
             </Tag>
           ))}
-          <Input
-            className="wardrobe-edit-form__tag-input"
-            value={tagInput}
-            disabled={tagInputDisabled}
-            placeholder={
-              tagInputDisabled ? `最多 ${MAX_TAGS} 个标签` : "输入后回车添加"
-            }
-            confirmType="done"
-            onChange={setTagInput}
-            onConfirm={handleAddTag}
-          />
+          <View className="sw-field-input sw-field-input--sm wardrobe-edit-form__tag-input">
+            <Input
+              value={tagInput}
+              disabled={tagInputDisabled}
+              placeholder={
+                tagInputDisabled ? `最多 ${MAX_TAGS} 个标签` : "输入后回车添加"
+              }
+              confirmType="done"
+              onChange={setTagInput}
+              onConfirm={handleAddTag}
+            />
+          </View>
         </View>
       </FormRow>
 
       <View className="wardrobe-edit-form__outfit">
-        <Text className="wardrobe-edit-form__label">搭配推荐</Text>
-        <View className="wardrobe-edit-form__outfit-box">
+        <Text className="sw-form-label">搭配推荐</Text>
+        <View className="sw-field-box">
           <TextArea
-            className="wardrobe-edit-form__textarea"
             value={outfitRecommendation}
             placeholder={OUTFIT_PLACEHOLDER}
             autoSize
@@ -215,13 +216,14 @@ export default function WardrobeEditForm({
         onCancel={handleNewTypeCancel}
         onClose={handleNewTypeCancel}
       >
-        <Input
-          className="wardrobe-edit-form__dialog-input"
-          value={newTypeName}
-          maxLength={20}
-          placeholder="请输入类别名称"
-          onChange={setNewTypeName}
-        />
+        <View className="sw-field-input wardrobe-edit-form__dialog-input">
+          <Input
+            value={newTypeName}
+            maxLength={20}
+            placeholder="请输入类别名称"
+            onChange={setNewTypeName}
+          />
+        </View>
       </Dialog>
     </View>
   );

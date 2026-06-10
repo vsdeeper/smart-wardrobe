@@ -69,7 +69,7 @@ export default function WardrobeItemCard({
                   <Tag
                     key={tag}
                     round
-                    className="wardrobe-card__tag"
+                    className="sw-tag"
                     background="var(--sw-color-tag-bg)"
                     color="var(--sw-color-tag-text)"
                   >

@@ -71,18 +71,121 @@ page .nut-avatar .avatar-img {
   font-weight: 500;
 }
 
-// 输入框预设（DESIGN.md 组件-输入框）
-// 柔和石板色背景，无边框
-.input-field {
-  border: none;
-  border-radius: 8px; // DESIGN.md rounded-DEFAULT
-  background: var(--sw-color-tabs-inactive-bg);
-  color: var(--nutui-gray-7);
-  padding: 12px 16px;
-  font-size: 16px; // body-md
+// 衣物 NutUI Tag（列表卡片 / 详情 / 编辑共用）
+.sw-tag {
+  flex-shrink: 0;
+  font-size: var(--nutui-font-size-2) !important;
+  padding: 4px 10px !important;
+}
 
-  &:focus {
-    background: var(--sw-color-surface-container);
+// ========== 表单控件（Input / TextArea / Select） ==========
+.sw-form-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--nutui-spacing-2);
+}
+
+.sw-form-label {
+  font-family: var(--sw-font-body);
+  font-size: var(--nutui-font-size-2);
+  color: var(--nutui-gray-5);
+  line-height: 1.4;
+}
+
+.sw-form-value {
+  min-width: 0;
+}
+
+// NutUI Input 外壳（须包裹 <Input />，小程序自定义组件样式隔离下边框/背景写在外层 View）
+.sw-field-input {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+  padding: var(--sw-field-padding);
+  background: var(--sw-field-bg);
+  border: 1px solid var(--sw-field-border-color);
+  border-radius: var(--sw-radius-field);
+
+  // 传入 NutUI Input 内部（CSS 变量可穿透样式隔离）
+  --nutui-input-padding: 0;
+  --nutui-input-border-bottom-width: 0;
+  --nutui-input-background-color: transparent;
+  --nutui-input-border-radius: 0;
+  --nutui-input-font-size: var(--sw-field-font-size);
+  --nutui-input-color: var(--sw-field-color);
+
+  &--sm {
+    padding: var(--sw-field-padding-sm);
+    --nutui-input-font-size: var(--sw-field-font-size-sm);
+  }
+
+  // H5 字体增强（小程序走 CSS 变量）
+  .nut-input-native {
+    font-family: var(--sw-font-body);
+  }
+}
+
+// NutUI TextArea 外壳（须包裹 <TextArea />；置于 .sw-field-box 内时可省略）
+.sw-field-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: var(--sw-field-padding);
+  background: var(--sw-field-bg);
+  border: 1px solid var(--sw-field-border-color);
+  border-radius: var(--sw-radius-field);
+
+  --nutui-textarea-padding: 0;
+  --nutui-textarea-font: var(--sw-field-font-size);
+  --nutui-textarea-text-color: var(--sw-field-color);
+  --nutui-gray-1: transparent;
+}
+
+// TextArea 浅底外框（搭配内层 <TextArea />，无需再加 .sw-field-textarea）
+.sw-field-box {
+  min-height: 120px;
+  padding: var(--nutui-spacing-4);
+  background: var(--sw-field-bg-muted);
+  border: 1px solid var(--sw-field-border-color);
+  border-radius: var(--sw-radius-field);
+  box-sizing: border-box;
+
+  --nutui-textarea-padding: 0;
+  --nutui-textarea-font: var(--sw-field-font-size);
+  --nutui-textarea-text-color: var(--sw-field-color);
+  --nutui-gray-1: transparent;
+}
+
+// 自定义 Select / Picker 触发区
+.sw-field-select {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--nutui-spacing-3);
+  padding: var(--sw-field-padding);
+  background: var(--sw-field-bg);
+  border: 1px solid var(--sw-field-border-color);
+  border-radius: var(--sw-radius-field);
+  box-sizing: border-box;
+
+  &__text {
+    flex: 1;
+    min-width: 0;
+    font-family: var(--sw-font-body);
+    font-size: var(--sw-field-font-size);
+    color: var(--sw-field-color);
+    line-height: var(--sw-field-line-height);
+
+    &--placeholder {
+      color: var(--sw-field-placeholder-color);
+    }
+  }
+
+  &__arrow {
+    flex-shrink: 0;
+    font-size: 20px;
+    line-height: 1;
+    color: var(--sw-field-placeholder-color);
   }
 }
 

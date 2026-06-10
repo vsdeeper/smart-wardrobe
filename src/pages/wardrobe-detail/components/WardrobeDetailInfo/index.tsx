@@ -10,7 +10,13 @@ export interface WardrobeDetailInfoProps {
   item: WardrobeItem;
 }
 
-function InfoRow({ label, children }: { label: string; children: React.ReactNode }) {
+function InfoRow({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
   return (
     <View className="wardrobe-detail-info__row">
       <Text className="wardrobe-detail-info__label">{label}</Text>
@@ -41,7 +47,7 @@ export default function WardrobeDetailInfo({ item }: WardrobeDetailInfoProps) {
               <Tag
                 key={tag}
                 round
-                className="wardrobe-detail-info__tag"
+                className="sw-tag"
                 background="var(--sw-color-tag-bg)"
                 color="var(--sw-color-tag-text)"
               >
@@ -73,12 +79,15 @@ export default function WardrobeDetailInfo({ item }: WardrobeDetailInfoProps) {
         <View
           className={[
             "wardrobe-detail-info__outfit-box",
-            isOutfitPlaceholder && "wardrobe-detail-info__outfit-box--placeholder",
+            isOutfitPlaceholder &&
+              "wardrobe-detail-info__outfit-box--placeholder",
           ]
             .filter(Boolean)
             .join(" ")}
         >
-          <Text className="wardrobe-detail-info__outfit-text">{outfitText}</Text>
+          <Text className="wardrobe-detail-info__outfit-text">
+            {outfitText}
+          </Text>
         </View>
       </View>
     </View>
