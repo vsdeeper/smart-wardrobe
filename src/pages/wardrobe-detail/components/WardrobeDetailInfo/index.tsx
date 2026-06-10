@@ -32,12 +32,10 @@ export default function WardrobeDetailInfo({ item }: WardrobeDetailInfoProps) {
 
   return (
     <View className="wardrobe-detail-info">
-      <InfoRow label="名称">
-        <Text className="wardrobe-detail-info__text">{item.name}</Text>
-      </InfoRow>
-
-      <InfoRow label="类别">
-        <Text className="wardrobe-detail-info__text">{item.typeName}</Text>
+      <InfoRow label="类别 / 名称">
+        <Text className="wardrobe-detail-info__text">
+          {item.typeName} / {item.name}
+        </Text>
       </InfoRow>
 
       <InfoRow label="标签">
