@@ -59,6 +59,8 @@ async function saveRecognizedItem(openid, fileID, recognized) {
       imageFileId: fileID,
       tags: recognized.tags,
       createdAt: now,
+      updatedAt: now,
+      outfitRecommendation: '',
     },
   })
 
@@ -71,6 +73,8 @@ async function saveRecognizedItem(openid, fileID, recognized) {
       imageFileId: fileID,
       tags: recognized.tags,
       createdAt: Date.now(),
+      updatedAt: Date.now(),
+      outfitRecommendation: '',
     },
     type,
     isNewType,

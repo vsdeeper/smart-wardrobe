@@ -197,7 +197,9 @@ export function useWardrobeList({
 
       switch (option.name) {
         case "查看":
-          Taro.showToast({ title: "查看功能即将上线", icon: "none" });
+          Taro.navigateTo({
+            url: `/pages/wardrobe-detail/index?id=${item._id}`,
+          });
           break;
         case "编辑":
           Taro.showToast({ title: "编辑功能即将上线", icon: "none" });

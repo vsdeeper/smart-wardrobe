@@ -1,0 +1,50 @@
+.wardrobe-detail-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--nutui-gray-3);
+  box-sizing: border-box;
+
+  &__navbar {
+    flex-shrink: 0;
+  }
+
+  &__back {
+    font-size: var(--nutui-font-size-3);
+    color: var(--nutui-gray-7);
+  }
+
+  &__title {
+    font-family: var(--sw-font-heading);
+    font-size: var(--nutui-font-size-4);
+    font-weight: var(--nutui-font-weight-bold);
+    color: var(--nutui-gray-7);
+  }
+
+  &__scroll {
+    flex: 1;
+    height: 0;
+    padding: var(--nutui-spacing-5) var(--nutui-spacing-5)
+      calc(var(--nutui-spacing-8) + var(--sw-safe-area-bottom, 0px));
+    box-sizing: border-box;
+  }
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    padding: 48px 24px;
+  }
+
+  &__state-text {
+    font-size: var(--nutui-font-size-3);
+    color: var(--nutui-gray-5);
+    text-align: center;
+  }
+}

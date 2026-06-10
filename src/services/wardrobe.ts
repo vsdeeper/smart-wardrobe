@@ -54,15 +54,25 @@ function normalizeCreatedAt(value: unknown): number {
 }
 
 function normalizeWardrobeItem(raw: Record<string, unknown>): WardrobeItem {
-  return {
+  const createdAt = normalizeCreatedAt(raw.createdAt);
+  const item: WardrobeItem = {
     _id: String(raw._id ?? ""),
     name: String(raw.name ?? ""),
     typeId: String(raw.typeId ?? ""),
     typeName: String(raw.typeName ?? ""),
     imageFileId: String(raw.imageFileId ?? ""),
     tags: Array.isArray(raw.tags) ? raw.tags.map(String) : [],
-    createdAt: normalizeCreatedAt(raw.createdAt),
+    createdAt,
   };
+
+  if (raw.updatedAt != null) {
+    item.updatedAt = normalizeCreatedAt(raw.updatedAt);
+  }
+  if (typeof raw.outfitRecommendation === "string") {
+    item.outfitRecommendation = raw.outfitRecommendation;
+  }
+
+  return item;
 }
 
 function normalizeClothingType(raw: Record<string, unknown>): ClothingType {
@@ -289,6 +299,21 @@ export async function fetchWardrobeItemCount(): Promise<number> {
   const db = Taro.cloud.database();
   const res = await db.collection("wardrobe_items").count();
   return res.total;
+}
+
+/** 按 id 查询单件衣橱单品 */
+export async function fetchWardrobeItemById(id: string): Promise<WardrobeItem> {
+  const db = Taro.cloud.database();
+  const res = await db.collection("wardrobe_items").doc(id).get({});
+  const raw = res.data as Record<string, unknown> | undefined;
+
+  if (!raw || !raw._id) {
+    throw new Error("衣物不存在或已被删除");
+  }
+
+  const item = normalizeWardrobeItem(raw);
+  const [withUrl] = await resolveImageUrls([item]);
+  return withUrl ?? item;
 }
 
 /** 删除衣橱单品，同步减少类型计数并尝试清理云存储图片 */

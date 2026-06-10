@@ -15,6 +15,8 @@ export interface WardrobeItem {
   imageUrl?: string
   tags?: string[]
   createdAt: number
+  updatedAt?: number
+  outfitRecommendation?: string
 }
 
 /** AI 识别预览项（确认入库前，无 _id） */
