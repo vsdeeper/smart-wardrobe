@@ -1,4 +1,11 @@
-import { useCallback, useMemo, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 import { View, Text } from "@tarojs/components";
 import Taro from "@tarojs/taro";
 import { Add } from "@nutui/icons-react-taro";
@@ -29,12 +36,52 @@ export interface WardrobeEditFormProps {
   onOutfitRecommendationChange: (value: string) => void;
 }
 
+interface WardrobeEditFormContextValue {
+  name: string;
+  typeName: string;
+  tags: string[];
+  outfitRecommendation: string;
+  tagAddDisabled: boolean;
+  onNameChange: (value: string) => void;
+  onOutfitRecommendationChange: (value: string) => void;
+  openTypeSheet: () => void;
+  openTagDialog: () => void;
+  handleRemoveTag: (tag: string) => void;
+  typeSheetVisible: boolean;
+  typeOptions: { name: string }[];
+  closeTypeSheet: () => void;
+  handleTypeSelect: (option: { name?: string }) => void;
+  newTypeDialogVisible: boolean;
+  newTypeName: string;
+  setNewTypeName: (value: string) => void;
+  handleNewTypeConfirm: () => void;
+  handleNewTypeCancel: () => void;
+  tagDialogVisible: boolean;
+  tagInput: string;
+  setTagInput: (value: string) => void;
+  handleTagDialogConfirm: () => void;
+  handleTagDialogCancel: () => void;
+}
+
+const WardrobeEditFormContext =
+  createContext<WardrobeEditFormContextValue | null>(null);
+
+function useWardrobeEditFormContext() {
+  const context = useContext(WardrobeEditFormContext);
+  if (!context) {
+    throw new Error(
+      "WardrobeEditForm 子组件必须在 WardrobeEditFormProvider 内使用",
+    );
+  }
+  return context;
+}
+
 function FormRow({
   label,
   children,
 }: {
   label: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <View className="sw-form-row">
@@ -44,7 +91,7 @@ function FormRow({
   );
 }
 
-export default function WardrobeEditForm({
+export function WardrobeEditFormProvider({
   name,
   typeName,
   tags,
@@ -54,7 +101,8 @@ export default function WardrobeEditForm({
   onTypeNameChange,
   onTagsChange,
   onOutfitRecommendationChange,
-}: WardrobeEditFormProps) {
+  children,
+}: WardrobeEditFormProps & { children: ReactNode }) {
   const [typeSheetVisible, setTypeSheetVisible] = useState(false);
   const [newTypeDialogVisible, setNewTypeDialogVisible] = useState(false);
   const [newTypeName, setNewTypeName] = useState("");
@@ -147,6 +195,80 @@ export default function WardrobeEditForm({
     setTagInput("");
   }, [onTagsChange, tagInput, tags]);
 
+  const value = useMemo<WardrobeEditFormContextValue>(
+    () => ({
+      name,
+      typeName,
+      tags,
+      outfitRecommendation,
+      tagAddDisabled,
+      onNameChange,
+      onOutfitRecommendationChange,
+      openTypeSheet,
+      openTagDialog,
+      handleRemoveTag,
+      typeSheetVisible,
+      typeOptions,
+      closeTypeSheet,
+      handleTypeSelect,
+      newTypeDialogVisible,
+      newTypeName,
+      setNewTypeName,
+      handleNewTypeConfirm,
+      handleNewTypeCancel,
+      tagDialogVisible,
+      tagInput,
+      setTagInput,
+      handleTagDialogConfirm,
+      handleTagDialogCancel,
+    }),
+    [
+      name,
+      typeName,
+      tags,
+      outfitRecommendation,
+      tagAddDisabled,
+      onNameChange,
+      onOutfitRecommendationChange,
+      openTypeSheet,
+      openTagDialog,
+      handleRemoveTag,
+      typeSheetVisible,
+      typeOptions,
+      closeTypeSheet,
+      handleTypeSelect,
+      newTypeDialogVisible,
+      newTypeName,
+      handleNewTypeConfirm,
+      handleNewTypeCancel,
+      tagDialogVisible,
+      tagInput,
+      handleTagDialogConfirm,
+      handleTagDialogCancel,
+    ],
+  );
+
+  return (
+    <WardrobeEditFormContext.Provider value={value}>
+      {children}
+    </WardrobeEditFormContext.Provider>
+  );
+}
+
+export function WardrobeEditFormFields() {
+  const {
+    name,
+    typeName,
+    tags,
+    outfitRecommendation,
+    tagAddDisabled,
+    onNameChange,
+    onOutfitRecommendationChange,
+    openTypeSheet,
+    openTagDialog,
+    handleRemoveTag,
+  } = useWardrobeEditFormContext();
+
   return (
     <View className="wardrobe-edit-form">
       <FormRow label="名称">
@@ -220,7 +342,30 @@ export default function WardrobeEditForm({
           />
         </View>
       </View>
+    </View>
+  );
+}
 
+export function WardrobeEditFormOverlays() {
+  const {
+    typeSheetVisible,
+    typeOptions,
+    closeTypeSheet,
+    handleTypeSelect,
+    newTypeDialogVisible,
+    newTypeName,
+    setNewTypeName,
+    handleNewTypeConfirm,
+    handleNewTypeCancel,
+    tagDialogVisible,
+    tagInput,
+    setTagInput,
+    handleTagDialogConfirm,
+    handleTagDialogCancel,
+  } = useWardrobeEditFormContext();
+
+  return (
+    <>
       <ActionSheet
         visible={typeSheetVisible}
         options={typeOptions}
@@ -269,6 +414,15 @@ export default function WardrobeEditForm({
           />
         </View>
       </Dialog>
-    </View>
+    </>
+  );
+}
+
+export default function WardrobeEditForm(props: WardrobeEditFormProps) {
+  return (
+    <WardrobeEditFormProvider {...props}>
+      <WardrobeEditFormFields />
+      <WardrobeEditFormOverlays />
+    </WardrobeEditFormProvider>
   );
 }
