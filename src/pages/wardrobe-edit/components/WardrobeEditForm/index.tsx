@@ -19,6 +19,43 @@ import {
 import type { ClothingType } from "@/data/wardrobe";
 import "./index.scss";
 
+function FormDialogFooter({
+  cancelText = "取消",
+  confirmText = "确定",
+  onCancel,
+  onConfirm,
+}: {
+  cancelText?: string;
+  confirmText?: string;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
+  return (
+    <View className="sw-dialog-footer">
+      <View
+        className="sw-dialog-footer__btn sw-dialog-footer__btn--cancel"
+        onClick={(e) => {
+          e.stopPropagation();
+          onCancel();
+        }}
+      >
+        <Text className="sw-dialog-footer__text">{cancelText}</Text>
+      </View>
+      <View
+        className="sw-dialog-footer__btn sw-dialog-footer__btn--confirm"
+        onClick={(e) => {
+          e.stopPropagation();
+          onConfirm();
+        }}
+      >
+        <Text className="sw-dialog-footer__text sw-dialog-footer__text--confirm">
+          {confirmText}
+        </Text>
+      </View>
+    </View>
+  );
+}
+
 const OUTFIT_PLACEHOLDER = "暂无搭配推荐，将在 AI 识别阶段生成";
 const MAX_NAME_LENGTH = 30;
 const MAX_TAGS = 8;
@@ -76,13 +113,7 @@ function useWardrobeEditFormContext() {
   return context;
 }
 
-function FormRow({
-  label,
-  children,
-}: {
-  label: string;
-  children: ReactNode;
-}) {
+function FormRow({ label, children }: { label: string; children: ReactNode }) {
   return (
     <View className="sw-form-row">
       <Text className="sw-form-label">{label}</Text>
@@ -378,18 +409,22 @@ export function WardrobeEditFormOverlays() {
       <Dialog
         title="新建类别"
         visible={newTypeDialogVisible}
-        confirmText="确定"
-        cancelText="取消"
-        onConfirm={handleNewTypeConfirm}
-        onCancel={handleNewTypeCancel}
+        footer={null}
+        closeOnOverlayClick
         onClose={handleNewTypeCancel}
       >
-        <View className="sw-field-input wardrobe-edit-form__dialog-input">
-          <Input
-            value={newTypeName}
-            maxLength={20}
-            placeholder="请输入类别名称"
-            onChange={setNewTypeName}
+        <View className="sw-dialog-body">
+          <View className="sw-field-input sw-dialog-body__input">
+            <Input
+              value={newTypeName}
+              maxLength={20}
+              placeholder="请输入类别名称"
+              onChange={setNewTypeName}
+            />
+          </View>
+          <FormDialogFooter
+            onCancel={handleNewTypeCancel}
+            onConfirm={handleNewTypeConfirm}
           />
         </View>
       </Dialog>
@@ -397,19 +432,23 @@ export function WardrobeEditFormOverlays() {
       <Dialog
         title="添加标签"
         visible={tagDialogVisible}
-        confirmText="确定"
-        cancelText="取消"
-        onConfirm={handleTagDialogConfirm}
-        onCancel={handleTagDialogCancel}
+        footer={null}
+        closeOnOverlayClick
         onClose={handleTagDialogCancel}
       >
-        <View className="sw-field-input wardrobe-edit-form__dialog-input">
-          <Input
-            value={tagInput}
-            maxLength={20}
-            placeholder="请输入标签"
-            confirmType="done"
-            onChange={setTagInput}
+        <View className="sw-dialog-body">
+          <View className="sw-field-input sw-dialog-body__input">
+            <Input
+              value={tagInput}
+              maxLength={20}
+              placeholder="请输入标签"
+              confirmType="done"
+              onChange={setTagInput}
+              onConfirm={handleTagDialogConfirm}
+            />
+          </View>
+          <FormDialogFooter
+            onCancel={handleTagDialogCancel}
             onConfirm={handleTagDialogConfirm}
           />
         </View>
