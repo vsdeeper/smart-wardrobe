@@ -316,6 +316,87 @@ export async function fetchWardrobeItemById(id: string): Promise<WardrobeItem> {
   return withUrl ?? item;
 }
 
+export interface UpdateWardrobeItemInput {
+  _id: string;
+  name: string;
+  typeName: string;
+  tags: string[];
+  outfitRecommendation?: string;
+  previousTypeId: string;
+}
+
+/** 更新衣橱单品，类别变更时同步迁移类型计数 */
+export async function updateWardrobeItem(
+  input: UpdateWardrobeItemInput,
+): Promise<WardrobeItem> {
+  const trimmedName = input.name.trim();
+  const trimmedTypeName = input.typeName.trim();
+
+  if (!trimmedName) {
+    throw new Error("名称不能为空");
+  }
+  if (!trimmedTypeName) {
+    throw new Error("类别不能为空");
+  }
+
+  const db = Taro.cloud.database();
+  const _ = db.command;
+  const typeColl = db.collection("clothing_types");
+  const now = db.serverDate();
+
+  const typeRes = await typeColl.where({ name: trimmedTypeName }).limit(1).get();
+  let newTypeId: string;
+  let newTypeName: string;
+
+  if (typeRes.data.length > 0) {
+    const typeDoc = typeRes.data[0] as Record<string, unknown>;
+    newTypeId = String(typeDoc._id);
+    newTypeName = String(typeDoc.name ?? trimmedTypeName);
+  } else {
+    const addRes = await typeColl.add({
+      data: {
+        name: trimmedTypeName,
+        itemCount: 0,
+        createdAt: now,
+        updatedAt: now,
+      },
+    });
+    newTypeId = addRes._id as string;
+    newTypeName = trimmedTypeName;
+  }
+
+  const updateData: Record<string, unknown> = {
+    name: trimmedName,
+    typeId: newTypeId,
+    typeName: newTypeName,
+    tags: input.tags,
+    updatedAt: now,
+  };
+
+  if (input.outfitRecommendation !== undefined) {
+    updateData.outfitRecommendation = input.outfitRecommendation;
+  }
+
+  await db.collection("wardrobe_items").doc(input._id).update({ data: updateData });
+
+  if (input.previousTypeId && input.previousTypeId !== newTypeId) {
+    await typeColl.doc(input.previousTypeId).update({
+      data: {
+        itemCount: _.inc(-1),
+        updatedAt: now,
+      },
+    });
+    await typeColl.doc(newTypeId).update({
+      data: {
+        itemCount: _.inc(1),
+        updatedAt: now,
+      },
+    });
+  }
+
+  return fetchWardrobeItemById(input._id);
+}
+
 /** 删除衣橱单品，同步减少类型计数并尝试清理云存储图片 */
 export async function deleteWardrobeItem(item: WardrobeItem): Promise<void> {
   const db = Taro.cloud.database();

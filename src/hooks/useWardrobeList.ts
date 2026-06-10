@@ -202,7 +202,9 @@ export function useWardrobeList({
           });
           break;
         case "编辑":
-          Taro.showToast({ title: "编辑功能即将上线", icon: "none" });
+          Taro.navigateTo({
+            url: `/pages/wardrobe-edit/index?id=${item._id}`,
+          });
           break;
         case "删除":
           void handleDeleteItem(item);

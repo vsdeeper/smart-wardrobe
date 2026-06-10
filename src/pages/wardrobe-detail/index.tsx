@@ -2,7 +2,7 @@ import { View, Text, ScrollView } from "@tarojs/components";
 import Taro from "@tarojs/taro";
 import { Loading, NavBar } from "@nutui/nutui-react-taro";
 import { useWardrobeDetail } from "@/hooks/useWardrobeDetail";
-import WardrobeDetailHero from "./components/WardrobeDetailHero";
+import WardrobeDetailHero from "@/components/WardrobeDetailHero";
 import WardrobeDetailInfo from "./components/WardrobeDetailInfo";
 import "./index.scss";
 
