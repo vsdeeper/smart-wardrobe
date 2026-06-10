@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { View, Text } from "@tarojs/components";
 import Taro from "@tarojs/taro";
+import { Add } from "@nutui/icons-react-taro";
 import {
   ActionSheet,
   Dialog,
@@ -57,6 +58,7 @@ export default function WardrobeEditForm({
   const [typeSheetVisible, setTypeSheetVisible] = useState(false);
   const [newTypeDialogVisible, setNewTypeDialogVisible] = useState(false);
   const [newTypeName, setNewTypeName] = useState("");
+  const [tagDialogVisible, setTagDialogVisible] = useState(false);
   const [tagInput, setTagInput] = useState("");
 
   const typeOptions = useMemo(
@@ -113,19 +115,37 @@ export default function WardrobeEditForm({
     [onTagsChange, tags],
   );
 
-  const handleAddTag = useCallback(() => {
+  const tagAddDisabled = tags.length >= MAX_TAGS;
+
+  const openTagDialog = useCallback(() => {
+    if (tagAddDisabled) {
+      Taro.showToast({ title: `最多 ${MAX_TAGS} 个标签`, icon: "none" });
+      return;
+    }
+    setTagInput("");
+    setTagDialogVisible(true);
+  }, [tagAddDisabled]);
+
+  const handleTagDialogCancel = useCallback(() => {
+    setTagDialogVisible(false);
+    setTagInput("");
+  }, []);
+
+  const handleTagDialogConfirm = useCallback(() => {
     const trimmed = tagInput.trim();
-    if (!trimmed) return;
+    if (!trimmed) {
+      Taro.showToast({ title: "请输入标签", icon: "none" });
+      return;
+    }
     if (tags.length >= MAX_TAGS) return;
     if (tags.includes(trimmed)) {
-      setTagInput("");
+      Taro.showToast({ title: "标签已存在", icon: "none" });
       return;
     }
     onTagsChange([...tags, trimmed]);
+    setTagDialogVisible(false);
     setTagInput("");
   }, [onTagsChange, tagInput, tags]);
-
-  const tagInputDisabled = tags.length >= MAX_TAGS;
 
   return (
     <View className="wardrobe-edit-form">
@@ -171,17 +191,20 @@ export default function WardrobeEditForm({
               {tag}
             </Tag>
           ))}
-          <View className="sw-field-input sw-field-input--sm wardrobe-edit-form__tag-input">
-            <Input
-              value={tagInput}
-              disabled={tagInputDisabled}
-              placeholder={
-                tagInputDisabled ? `最多 ${MAX_TAGS} 个标签` : "输入后回车添加"
-              }
-              confirmType="done"
-              onChange={setTagInput}
-              onConfirm={handleAddTag}
-            />
+          <View
+            className={[
+              "sw-tag",
+              "sw-tag--add",
+              tagAddDisabled && "sw-tag--disabled",
+            ]
+              .filter(Boolean)
+              .join(" ")}
+            onClick={openTagDialog}
+          >
+            <Text className="sw-tag__text">添加</Text>
+            <View className="sw-tag__icon">
+              <Add color="currentColor" />
+            </View>
           </View>
         </View>
       </FormRow>
@@ -222,6 +245,27 @@ export default function WardrobeEditForm({
             maxLength={20}
             placeholder="请输入类别名称"
             onChange={setNewTypeName}
+          />
+        </View>
+      </Dialog>
+
+      <Dialog
+        title="添加标签"
+        visible={tagDialogVisible}
+        confirmText="确定"
+        cancelText="取消"
+        onConfirm={handleTagDialogConfirm}
+        onCancel={handleTagDialogCancel}
+        onClose={handleTagDialogCancel}
+      >
+        <View className="sw-field-input wardrobe-edit-form__dialog-input">
+          <Input
+            value={tagInput}
+            maxLength={20}
+            placeholder="请输入标签"
+            confirmType="done"
+            onChange={setTagInput}
+            onConfirm={handleTagDialogConfirm}
           />
         </View>
       </Dialog>

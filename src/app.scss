@@ -71,11 +71,60 @@ page .nut-avatar .avatar-img {
   font-weight: 500;
 }
 
-// 衣物 NutUI Tag（列表卡片 / 详情 / 编辑共用）
+// 衣物 Tag（列表卡片 / 详情 / 编辑共用；NutUI Tag 与自定义可点击 Tag）
 .sw-tag {
   flex-shrink: 0;
-  font-size: var(--nutui-font-size-2) !important;
-  padding: 4px 10px !important;
+  height: auto !important;
+  box-sizing: border-box;
+  font-size: var(--sw-tag-font-size) !important;
+  font-weight: var(--sw-tag-font-weight);
+  line-height: 1 !important;
+  padding: var(--sw-tag-padding-y) var(--sw-tag-padding-x) !important;
+
+  &__text {
+    font-size: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+    color: inherit;
+  }
+
+  &__icon {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: var(--sw-tag-icon-size);
+    line-height: 1;
+
+    .nut-icon {
+      width: var(--sw-tag-icon-size) !important;
+      height: var(--sw-tag-icon-size) !important;
+      font-size: var(--sw-tag-icon-size) !important;
+      line-height: 1;
+      margin-left: 8px !important;
+    }
+  }
+
+  // 可点击「添加」变体（虚线描边，盒模型与 NutUI Tag 一致）
+  &--add {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--sw-tag-radius);
+    color: var(--sw-color-tag-text);
+    background: transparent;
+    border: 1px dashed var(--sw-color-tag-text);
+
+    &:active:not(.sw-tag--disabled) {
+      opacity: 0.85;
+    }
+  }
+
+  &--disabled {
+    opacity: 0.5;
+    border-color: var(--nutui-gray-4);
+    color: var(--nutui-gray-4);
+  }
 }
 
 // ========== 表单控件（Input / TextArea / Select） ==========

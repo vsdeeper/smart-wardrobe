@@ -181,6 +181,19 @@ page {
   --sw-radius-pill: 9999px;
   --sw-radius-field: var(--nutui-radius-5); // Input / TextArea 及同类表单控件
 
+  // NutUI Tag 基准（与 sw-tag--add 共用同一套尺寸）
+  --nutui-tag-height: 20px;
+  --nutui-tag-font-size: var(--nutui-font-size-2);
+  --nutui-tag-round-border-radius: 8px;
+  --nutui-tag-padding: 0 var(--nutui-spacing-1);
+
+  // 衣物 Tag 尺寸（NutUI Tag 与 sw-tag--add 共用）
+  --sw-tag-font-size: var(--nutui-tag-font-size);
+  --sw-tag-padding-y: 4px;
+  --sw-tag-padding-x: 10px;
+  --sw-tag-icon-size: 10px;
+  --sw-tag-radius: var(--nutui-tag-round-border-radius);
+
   // 表单控件（Input / TextArea / Select）
   --sw-field-bg: var(--nutui-gray-1);
   --sw-field-bg-muted: var(--nutui-gray-2);

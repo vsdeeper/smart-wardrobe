@@ -3,7 +3,11 @@ import Taro from "@tarojs/taro";
 import { Loading, NavBar } from "@nutui/nutui-react-taro";
 import WardrobeDetailHero from "@/components/WardrobeDetailHero";
 import { useWardrobeEdit } from "@/hooks/useWardrobeEdit";
-import WardrobeEditForm from "./components/WardrobeEditForm";
+import {
+  WardrobeEditFormFields,
+  WardrobeEditFormOverlays,
+  WardrobeEditFormProvider,
+} from "./components/WardrobeEditForm";
 import "./index.scss";
 
 function WardrobeEditPage() {
@@ -47,41 +51,51 @@ function WardrobeEditPage() {
         <Text className="wardrobe-edit-page__title">编辑衣物</Text>
       </NavBar>
 
-      <ScrollView
-        className="wardrobe-edit-page__scroll"
-        scrollY
-        enhanced
-        showScrollbar={false}
-      >
-        {loading && (
-          <View className="wardrobe-edit-page__state">
-            <Loading type="circular" />
-          </View>
-        )}
+      {!loading && item ? (
+        <WardrobeEditFormProvider
+          name={name}
+          typeName={typeName}
+          tags={tags}
+          outfitRecommendation={outfitRecommendation}
+          clothingTypes={clothingTypes}
+          onNameChange={setName}
+          onTypeNameChange={setTypeName}
+          onTagsChange={setTags}
+          onOutfitRecommendationChange={setOutfitRecommendation}
+        >
+          <ScrollView
+            className="wardrobe-edit-page__scroll"
+            scrollY
+            enhanced
+            showScrollbar={false}
+          >
+            <View className="wardrobe-edit-page__content">
+              <WardrobeDetailHero item={item} />
+              <WardrobeEditFormFields />
+            </View>
+          </ScrollView>
+          <WardrobeEditFormOverlays />
+        </WardrobeEditFormProvider>
+      ) : (
+        <ScrollView
+          className="wardrobe-edit-page__scroll"
+          scrollY
+          enhanced
+          showScrollbar={false}
+        >
+          {loading && (
+            <View className="wardrobe-edit-page__state">
+              <Loading type="circular" />
+            </View>
+          )}
 
-        {!loading && error && (
-          <View className="wardrobe-edit-page__state">
-            <Text className="wardrobe-edit-page__state-text">{error}</Text>
-          </View>
-        )}
-
-        {!loading && item && (
-          <View className="wardrobe-edit-page__content">
-            <WardrobeDetailHero item={item} />
-            <WardrobeEditForm
-              name={name}
-              typeName={typeName}
-              tags={tags}
-              outfitRecommendation={outfitRecommendation}
-              clothingTypes={clothingTypes}
-              onNameChange={setName}
-              onTypeNameChange={setTypeName}
-              onTagsChange={setTags}
-              onOutfitRecommendationChange={setOutfitRecommendation}
-            />
-          </View>
-        )}
-      </ScrollView>
+          {!loading && error && (
+            <View className="wardrobe-edit-page__state">
+              <Text className="wardrobe-edit-page__state-text">{error}</Text>
+            </View>
+          )}
+        </ScrollView>
+      )}
 
       {!loading && item && (
         <View className="wardrobe-edit-actions">
