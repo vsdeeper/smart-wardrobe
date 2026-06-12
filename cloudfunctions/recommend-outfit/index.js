@@ -4,7 +4,7 @@ const {
   buildRecommendUserPrompt,
   parseRecommendResult,
   buildFallbackRecommendation,
-} = require('../common/recommendOutfitRules')
+} = require('./common/recommendOutfitRules')
 
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 

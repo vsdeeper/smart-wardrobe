@@ -44,67 +44,70 @@ export function useTryOnRecommend() {
     [],
   );
 
-  const loadFresh = useCallback(async (force = false) => {
-    if (loadingRef.current) return;
-    loadingRef.current = true;
-    setStatus("loading");
-    setErrorMessage(null);
-    setFromCache(false);
-    setSavedReturn(null);
+  const loadFresh = useCallback(
+    async (force = false) => {
+      if (loadingRef.current) return;
+      loadingRef.current = true;
+      setStatus("loading");
+      setErrorMessage(null);
+      setFromCache(false);
+      setSavedReturn(null);
 
-    try {
-      const [{ items, byType }, profile] = await Promise.all([
-        fetchWardrobeItemsGroupedByType(),
-        fetchUserProfile(),
-      ]);
-
-      allItemsRef.current = items;
-
-      if (items.length === 0) {
-        setStatus("empty");
-        setRecommendation(null);
-        setSelectedPieces([]);
-        return;
-      }
-
-      let weather: WeatherSnapshot;
       try {
-        const weatherResult = await fetchWeather({ force });
-        weather = weatherResult.snapshot;
-      } catch {
-        weather = {
-          city: "当前位置",
-          conditionCode: "sunny",
-          temperature: 22,
-          humidity: 50,
-          aqi: 50,
-        };
+        const [{ items, byType }, profile] = await Promise.all([
+          fetchWardrobeItemsGroupedByType(),
+          fetchUserProfile(),
+        ]);
+
+        allItemsRef.current = items;
+
+        if (items.length === 0) {
+          setStatus("empty");
+          setRecommendation(null);
+          setSelectedPieces([]);
+          return;
+        }
+
+        let weather: WeatherSnapshot;
+        try {
+          const weatherResult = await fetchWeather({ force });
+          weather = weatherResult.snapshot;
+        } catch {
+          weather = {
+            city: "当前位置",
+            conditionCode: "sunny",
+            temperature: 22,
+            humidity: 50,
+            aqi: 50,
+          };
+        }
+        setWeatherSnapshot(weather);
+
+        const rec = await recommendOutfit({
+          weather,
+          season: getCurrentSeason(),
+          profile,
+          wardrobeByType: byType,
+        });
+
+        const pieces = resolveSelectedPieces(rec, items);
+        applyRecommendation(rec, items);
+        writeTryOnCache({
+          recommendation: rec,
+          selectedPieces: pieces,
+        });
+        setStatus("success");
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "推荐失败，请稍后重试";
+        setErrorMessage(message);
+        setStatus("error");
+      } finally {
+        loadingRef.current = false;
       }
-      setWeatherSnapshot(weather);
-
-      const rec = await recommendOutfit({
-        weather,
-        season: getCurrentSeason(),
-        profile,
-        wardrobeByType: byType,
-      });
-
-      const pieces = resolveSelectedPieces(rec, items);
-      applyRecommendation(rec, items);
-      writeTryOnCache({
-        recommendation: rec,
-        selectedPieces: pieces,
-      });
-      setStatus("success");
-    } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "推荐失败，请稍后重试";
-      setErrorMessage(message);
-      setStatus("error");
-    } finally {
-      loadingRef.current = false;
-    }
-  }, [applyRecommendation]);
+    },
+    [applyRecommendation],
+  );
 
   const loadFromCache = useCallback(() => {
     const cache = readTryOnCache();

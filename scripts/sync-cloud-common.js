@@ -12,6 +12,8 @@ const SOURCE_DIR = path.join(ROOT, 'cloudfunctions', 'common')
 const SYNC_MAP = {
   'recognize-clothing': ['recognitionRules.js', 'wardrobeSave.js'],
   'save-wardrobe-items': ['wardrobeSave.js'],
+  'recommend-outfit': ['recommendOutfitRules.js'],
+  'generate-tryon-image': ['doubaoVision.js', 'tryonImageRules.js'],
 }
 
 function sync() {

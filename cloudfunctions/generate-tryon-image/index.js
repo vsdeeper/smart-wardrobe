@@ -2,12 +2,12 @@ const cloud = require('wx-server-sdk')
 const {
   resolveImageUrls,
   chatCompletions,
-} = require('../common/doubaoVision')
+} = require('./common/doubaoVision')
 const {
   buildTryonSystemPrompt,
   buildTryonUserPrompt,
   extractImageFromContent,
-} = require('../common/tryonImageRules')
+} = require('./common/tryonImageRules')
 
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 
