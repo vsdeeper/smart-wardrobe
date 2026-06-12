@@ -26,6 +26,3 @@ export const TRY_ON_OUTFIT_TIPS = [
   { id: 1, icon: "☀️", label: "高紫外线" },
   { id: 2, icon: "🌬️", label: "微风夜晚" },
 ];
-
-export const TRY_ON_HERO_IMAGE =
-  "https://lh3.googleusercontent.com/aida-public/AB6AXuA8K-x4y62yK7S3I0Q2U7xQ1P5iw8vcF3kYcE3JLKFKOHY9bcMe387S2mSv6_CQfpLm8kPlby4z0xKBqFjjaFFLdzGDrUwQJXz11SsbkIPxeQ-REFofqE0pPIM_Zdl4lQvG0gSRBl9cAmBoWZxsl7vsal8LGFJhp2kfNQZ7dHC_E-flSNvm0GMOBoO3yVFIQHm8InY21qHKOnkRLzacEczz5WaVparbMDByJ5Mlc8A9FMsxZEOxX-YekWysIeNTQabn6uVBdWvDQMS5";

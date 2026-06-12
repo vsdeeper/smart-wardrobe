@@ -1,7 +1,6 @@
 import { View, Text } from "@tarojs/components";
 import { Image, Loading } from "@nutui/nutui-react-taro";
 import type { TryOnPreviewStatus } from "@/data/tryOn";
-import { TRY_ON_HERO_IMAGE } from "@/data/mock/try-on";
 
 export interface OutfitHeroProps {
   title: string;
@@ -18,16 +17,17 @@ export default function OutfitHero({
   heroImageUrl,
   previewStatus,
 }: OutfitHeroProps) {
-  const imageSrc = heroImageUrl || TRY_ON_HERO_IMAGE;
   const isLoading = previewStatus === "loading";
 
   return (
     <View className="outfit-hero">
-      <Image
-        className="outfit-hero__image"
-        src={imageSrc}
-        mode="aspectFill"
-      />
+      {heroImageUrl ? (
+        <Image
+          className="outfit-hero__image"
+          src={heroImageUrl}
+          mode="aspectFill"
+        />
+      ) : null}
       {isLoading && (
         <View className="outfit-hero__loading">
           <Loading type="circular" />
