@@ -36,6 +36,50 @@
   color: var(--nutui-gray-5);
 }
 
+.outfit-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 280px;
+  padding: var(--nutui-spacing-10) var(--nutui-spacing-7);
+  text-align: center;
+
+  &__title {
+    font-family: var(--sw-font-heading);
+    font-size: var(--nutui-font-size-7);
+    font-weight: 600;
+    color: var(--nutui-gray-7);
+  }
+
+  &__desc {
+    margin-top: var(--nutui-spacing-4);
+    font-size: var(--nutui-font-size-3);
+    color: var(--nutui-gray-5);
+    line-height: 1.5;
+  }
+
+  &__cta {
+    margin-top: var(--nutui-spacing-8);
+    padding: 12px 28px;
+    border-radius: var(--sw-radius-pill);
+    background: var(--nutui-brand-6);
+    box-shadow: var(--sw-shadow-fab);
+
+    &:active {
+      opacity: 0.92;
+      transform: scale(0.98);
+    }
+  }
+
+  &__cta-text {
+    font-family: var(--sw-font-heading);
+    font-size: var(--nutui-font-size-4);
+    font-weight: 500;
+    color: var(--sw-color-on-primary);
+  }
+}
+
 // ========== 单品网格 ==========
 .match-grid {
   display: grid;

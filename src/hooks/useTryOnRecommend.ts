@@ -128,6 +128,14 @@ export function useTryOnRecommend() {
       const cache = readTryOnCache();
       if (cache) {
         setRecommendation(cache.recommendation);
+      } else {
+        setRecommendation({
+          outfitName: draft.outfitName ?? "我的搭配",
+          description: "",
+          matchScore: 90,
+          slots: [],
+          tips: [],
+        });
       }
       setSelectedPieces(draft.selectedPieces);
       allItemsRef.current = draft.selectedPieces;
