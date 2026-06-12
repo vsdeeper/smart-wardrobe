@@ -15,6 +15,27 @@
   }
 }
 
+.outfit-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 120px;
+  padding: var(--nutui-spacing-10);
+
+  &--inline {
+    grid-column: 1 / -1;
+    min-height: 80px;
+  }
+}
+
+.outfit-empty-hint {
+  grid-column: 1 / -1;
+  padding: var(--nutui-spacing-10);
+  text-align: center;
+  font-size: var(--nutui-font-size-3);
+  color: var(--nutui-gray-5);
+}
+
 // ========== 单品网格 ==========
 .match-grid {
   display: grid;

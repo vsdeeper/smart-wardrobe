@@ -14,6 +14,8 @@ export interface WardrobeItem {
   imageFileId: string
   imageUrl?: string
   tags?: string[]
+  /** 保暖等级 1–5，识别阶段写入 */
+  warmthLevel?: number
   createdAt: number
   updatedAt?: number
   outfitRecommendation?: string

@@ -50,32 +50,40 @@ async function saveRecognizedItem(openid, fileID, recognized) {
   const { type, isNewType } = await upsertClothingType(openid, recognized.typeName)
   const now = db.serverDate()
 
-  const itemRes = await db.collection('wardrobe_items').add({
-    data: {
-      _openid: openid,
-      name: recognized.name,
-      typeId: type._id,
-      typeName: recognized.typeName,
-      imageFileId: fileID,
-      tags: recognized.tags,
-      createdAt: now,
-      updatedAt: now,
-      outfitRecommendation: '',
-    },
-  })
+  const itemData = {
+    _openid: openid,
+    name: recognized.name,
+    typeId: type._id,
+    typeName: recognized.typeName,
+    imageFileId: fileID,
+    tags: recognized.tags,
+    createdAt: now,
+    updatedAt: now,
+    outfitRecommendation: '',
+  }
+  if (recognized.warmthLevel !== undefined) {
+    itemData.warmthLevel = recognized.warmthLevel
+  }
+
+  const itemRes = await db.collection('wardrobe_items').add({ data: itemData })
+
+  const savedItem = {
+    _id: itemRes._id,
+    name: recognized.name,
+    typeId: type._id,
+    typeName: recognized.typeName,
+    imageFileId: fileID,
+    tags: recognized.tags,
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+    outfitRecommendation: '',
+  }
+  if (recognized.warmthLevel !== undefined) {
+    savedItem.warmthLevel = recognized.warmthLevel
+  }
 
   return {
-    item: {
-      _id: itemRes._id,
-      name: recognized.name,
-      typeId: type._id,
-      typeName: recognized.typeName,
-      imageFileId: fileID,
-      tags: recognized.tags,
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-      outfitRecommendation: '',
-    },
+    item: savedItem,
     type,
     isNewType,
   }

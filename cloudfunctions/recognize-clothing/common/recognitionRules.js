@@ -86,11 +86,16 @@ function buildSystemPrompt() {
 - 正例：${formatPromptExample(positiveB)}
 - 反例：name ${negative.name}，tags ${JSON.stringify(negative.tags)}（${negative.reason}）
 
+【保暖等级 warmthLevel】
+- 整数 1–5：1 极薄（背心/吊带）→ 5 极厚（羽绒服/厚大衣）
+- 根据面料厚度与季节属性综合判断
+
 只返回 JSON，不要其他文字。格式：
 {
   "typeName": "从上述列表选择一项",
   "name": "款式结构描述，不含颜色季节风格",
-  "tags": ["颜色", "季节", "风格或材质"]
+  "tags": ["颜色", "季节", "风格或材质"],
+  "warmthLevel": 3
 }`
 }
 
@@ -108,7 +113,19 @@ function parseRecognitionResult(parsed) {
     throw new Error('AI 返回缺少必要字段')
   }
 
-  return { typeName, name, tags }
+  let warmthLevel
+  if (parsed.warmthLevel !== undefined && parsed.warmthLevel !== null) {
+    const level = parseInt(String(parsed.warmthLevel), 10)
+    if (!Number.isNaN(level)) {
+      warmthLevel = Math.min(5, Math.max(1, level))
+    }
+  }
+
+  const result = { typeName, name, tags }
+  if (warmthLevel !== undefined) {
+    result.warmthLevel = warmthLevel
+  }
+  return result
 }
 
 module.exports = {

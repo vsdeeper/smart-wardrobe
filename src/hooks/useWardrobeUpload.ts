@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState } from "react";
 
 import Taro from "@tarojs/taro";
+import { setTryOnDraft } from "@/services/tryOnDraft";
 
 import { WARDROBE_BATCH_UPLOAD_MAX, type AiStatus } from "@/data/wardrobe";
 
@@ -203,7 +204,8 @@ export function useWardrobeUpload({
   }, [adding, scrollToTop, setAiStatus, uploadFlowRef]);
 
   const handleAIStyling = useCallback(() => {
-    Taro.showToast({ title: "AI 正在搭配中...", icon: "none" });
+    setTryOnDraft({ mode: "wardrobe-cta" });
+    Taro.redirectTo({ url: "/pages/try-on/index" });
   }, []);
 
   return {

@@ -160,6 +160,33 @@
   }
 }
 
+// ========== 加载 / 空态 ==========
+.try-on-loading,
+.try-on-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--nutui-spacing-5);
+  min-height: 200px;
+  padding: var(--nutui-spacing-10) var(--nutui-spacing-5);
+  text-align: center;
+}
+
+.try-on-loading__text,
+.try-on-empty__desc {
+  font-family: var(--sw-font-body);
+  font-size: var(--nutui-font-size-3);
+  color: var(--nutui-gray-5);
+}
+
+.try-on-empty__title {
+  font-family: var(--sw-font-heading);
+  font-size: var(--nutui-font-size-5);
+  font-weight: var(--nutui-font-weight-bold);
+  color: var(--nutui-gray-7);
+}
+
 // ========== 主推荐卡片 ==========
 .outfit-hero {
   position: relative;
@@ -174,6 +201,16 @@
     inset: 0;
     width: 100%;
     height: 100%;
+  }
+
+  &__loading {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.35);
   }
 
   &__gradient {
@@ -408,5 +445,10 @@
   &:active {
     opacity: 0.92;
     transform: scale(0.98);
+  }
+
+  &--disabled {
+    opacity: 0.6;
+    pointer-events: none;
   }
 }

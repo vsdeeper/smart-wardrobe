@@ -302,3 +302,23 @@ wx.cloud
 | `Cannot find module '../common/wardrobeSave'` | 未同步 common；见第 6 节 |
 | `缺少待入库衣物数据` | `items` 为空或非数组 |
 | `无法获取用户身份` | 未登录或未初始化云开发 |
+
+## 7. 试穿相关云函数
+
+### recommend-outfit
+
+右键 `cloudfunctions/recommend-outfit` → **上传并部署：云端安装依赖**。
+
+复用 `chat` 同款文本 LLM 环境变量（`DEEPSEEK_*` 或 `DOUBAO_*` + `LLM_DEFAULT_PROVIDER`）。
+
+入参：`weather`、`season`、`profile`、`wardrobeByType`（按 typeName 分组的衣橱摘要）。
+
+### generate-tryon-image
+
+右键 `cloudfunctions/generate-tryon-image` → **上传并部署：云端安装依赖**。
+
+环境变量：与 `recognize-clothing` 共用 `DOUBAO_API_KEY`、`DOUBAO_API_BASE_URL`、`DOUBAO_VISION_MODEL`。
+
+入参：`imageFileIds[]`、`heightCm`、`weightKg`、`outfitName`、`description`。
+
+若模型暂未返回图片，云函数回退为首件单品图作为 Hero 拼贴。

@@ -71,8 +71,41 @@ function normalizeWardrobeItem(raw: Record<string, unknown>): WardrobeItem {
   if (typeof raw.outfitRecommendation === "string") {
     item.outfitRecommendation = raw.outfitRecommendation;
   }
+  if (typeof raw.warmthLevel === "number") {
+    item.warmthLevel = raw.warmthLevel;
+  }
 
   return item;
+}
+
+export type WardrobeItemsByType = Record<string, WardrobeItem[]>;
+
+/** 拉取全部衣橱单品并按 typeName 分组，供 AI 推荐使用 */
+export async function fetchWardrobeItemsGroupedByType(): Promise<{
+  items: WardrobeItem[];
+  byType: WardrobeItemsByType;
+}> {
+  const db = Taro.cloud.database();
+  const MAX = 100;
+  const res = await db
+    .collection("wardrobe_items")
+    .orderBy("createdAt", "desc")
+    .limit(MAX)
+    .get();
+
+  const items = (res.data as Record<string, unknown>[]).map(
+    normalizeWardrobeItem,
+  );
+  const withUrls = await resolveImageUrls(items);
+  const byType: WardrobeItemsByType = {};
+
+  for (const item of withUrls) {
+    const key = item.typeName || "其他";
+    if (!byType[key]) byType[key] = [];
+    byType[key].push(item);
+  }
+
+  return { items: withUrls, byType };
 }
 
 function normalizeClothingType(raw: Record<string, unknown>): ClothingType {

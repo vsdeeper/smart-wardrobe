@@ -11,6 +11,13 @@
   padding-bottom: var(--nutui-spacing-8);
 }
 
+.profile-diary-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 120px;
+}
+
 // ========== 头像与简介 ==========
 .profile-header {
   display: flex;

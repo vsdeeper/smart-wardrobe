@@ -2,15 +2,13 @@ import { useState } from "react";
 import { View, Text } from "@tarojs/components";
 import Taro from "@tarojs/taro";
 import { ArrowRight, Edit, Photograph } from "@nutui/icons-react-taro";
-import { Image } from "@nutui/nutui-react-taro";
+import { Image, Loading } from "@nutui/nutui-react-taro";
 import AppNavbar from "@/components/AppNavbar";
 import { MOCK_AVATAR_SRC } from "@/data/mock/constants";
-import {
-  PROFILE_DIARY_ENTRIES,
-  PROFILE_STATS,
-  PROFILE_STYLE_TAGS,
-} from "@/data/mock/profile";
+import { WORK_SCENE_OPTIONS } from "@/data/profile";
 import { useMainTabNavigation } from "@/hooks/useMainTabNavigation";
+import { useUserProfile } from "@/hooks/useUserProfile";
+import { useVisualDiary } from "@/hooks/useVisualDiary";
 import Main from "@/layouts/Main";
 import "./index.scss";
 
@@ -21,6 +19,8 @@ type DiaryLayout = "grid" | "list";
 function ProfilePage() {
   const { activeTab, onTabChange } = useMainTabNavigation(3);
   const [diaryLayout, setDiaryLayout] = useState<DiaryLayout>("grid");
+  const { profile, itemCount, loading: profileLoading } = useUserProfile();
+  const { entries, loading: diaryLoading } = useVisualDiary();
 
   const handleEditAvatar = () => {
     Taro.showToast({ title: "编辑头像", icon: "none" });
@@ -31,7 +31,7 @@ function ProfilePage() {
   };
 
   const handleAddDiary = () => {
-    Taro.showToast({ title: "添加记录", icon: "none" });
+    Taro.showToast({ title: "请从试穿页记录穿搭", icon: "none" });
   };
 
   const handleToggleDiaryLayout = () => {
@@ -40,6 +40,20 @@ function ProfilePage() {
 
   const diaryToggleIcon =
     diaryLayout === "grid" ? "icon-list" : "icon-category";
+
+  const sceneLabel =
+    WORK_SCENE_OPTIONS.find((o) => o.value === profile.workScenes[0])?.label ??
+    "办公室";
+
+  const stats = [
+    { key: "height", label: "身高", value: `${profile.heightCm} cm`, iconClass: "icon-height" },
+    { key: "weight", label: "体重", value: `${profile.weightKg} kg`, iconClass: "icon-weight" },
+    { key: "items", label: "单品", value: String(itemCount), iconClass: "icon-wardrobe" },
+    { key: "outfits", label: "搭配", value: String(entries.length), iconClass: "icon-like" },
+  ];
+
+  const styleTags =
+    profile.styleTags.length > 0 ? profile.styleTags : ["极简主义", "天然材质"];
 
   return (
     <Main
@@ -64,20 +78,26 @@ function ProfilePage() {
                 <Edit color="var(--sw-color-on-primary)" size={18} />
               </View>
             </View>
-            <Text className="profile-header__name">Elena Sterling</Text>
+            <Text className="profile-header__name">
+              {profile.occupation || "衣橱用户"}
+            </Text>
             <Text className="profile-header__bio">
-              专注于可持续亚麻材质与建筑感廓形，致力于打造有意识的简约衣橱。
+              {profile.occupation
+                ? `${sceneLabel}场景 · ${profile.heightCm}cm / ${profile.weightKg}kg`
+                : "完善个人画像，获得更精准的 AI 穿搭推荐。"}
             </Text>
           </View>
 
           <View className="profile-stats">
-            {PROFILE_STATS.map((stat) => (
+            {stats.map((stat) => (
               <View key={stat.key} className="profile-stat card">
                 <Text
                   className={`iconfont ${stat.iconClass} profile-stat__icon`}
                 />
                 <Text className="profile-stat__label">{stat.label}</Text>
-                <Text className="profile-stat__value">{stat.value}</Text>
+                <Text className="profile-stat__value">
+                  {profileLoading && stat.key !== "items" ? "…" : stat.value}
+                </Text>
               </View>
             ))}
           </View>
@@ -91,7 +111,7 @@ function ProfilePage() {
               </View>
             </View>
             <View className="profile-tags">
-              {PROFILE_STYLE_TAGS.map((tag) => (
+              {styleTags.map((tag) => (
                 <View key={tag} className="profile-tag">
                   <Text className="profile-tag__text">{tag}</Text>
                 </View>
@@ -111,13 +131,17 @@ function ProfilePage() {
                 />
               </View>
             </View>
-            {diaryLayout === "grid" ? (
+            {diaryLoading ? (
+              <View className="profile-diary-loading">
+                <Loading type="circular" />
+              </View>
+            ) : diaryLayout === "grid" ? (
               <View className="profile-diary">
-                {PROFILE_DIARY_ENTRIES.map((entry) => (
-                  <View key={entry.id} className="profile-diary__item">
+                {entries.map((entry) => (
+                  <View key={entry._id} className="profile-diary__item">
                     <Image
                       className="profile-diary__image"
-                      src={entry.image}
+                      src={entry.coverUrl ?? ""}
                       mode="aspectFill"
                       radius="0"
                     />
@@ -130,12 +154,12 @@ function ProfilePage() {
               </View>
             ) : (
               <View className="profile-diary profile-diary--list">
-                {PROFILE_DIARY_ENTRIES.map((entry) => (
-                  <View key={entry.id} className="profile-diary-row card">
+                {entries.map((entry) => (
+                  <View key={entry._id} className="profile-diary-row card">
                     <View className="profile-diary-row__media">
                       <Image
                         className="profile-diary-row__image"
-                        src={entry.image}
+                        src={entry.coverUrl ?? ""}
                         mode="aspectFill"
                         radius="0"
                       />

@@ -1,0 +1,9 @@
+{
+  "name": "recommend-outfit",
+  "version": "1.0.0",
+  "description": "AI 穿搭推荐",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

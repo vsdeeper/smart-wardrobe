@@ -1,13 +1,13 @@
 import { View, Text } from "@tarojs/components";
 import { Check } from "@nutui/icons-react-taro";
 import { Image } from "@nutui/nutui-react-taro";
-import type { MatchItem } from "@/data/mock/outfit";
+import type { WardrobeItem } from "@/data/wardrobe";
 import "./index.scss";
 
 export interface MatchItemCardProps {
-  item: MatchItem;
+  item: WardrobeItem;
   selected: boolean;
-  onToggle: (item: MatchItem) => void;
+  onToggle: (item: WardrobeItem) => void;
 }
 
 export default function MatchItemCard({
@@ -15,6 +15,8 @@ export default function MatchItemCard({
   selected,
   onToggle,
 }: MatchItemCardProps) {
+  const series = item.tags?.[0] ?? item.typeName;
+
   return (
     <View
       className={["match-card", selected && "match-card--selected"]
@@ -25,7 +27,7 @@ export default function MatchItemCard({
       <View className="match-card__image-wrap">
         <Image
           className="match-card__image"
-          src={item.image}
+          src={item.imageUrl ?? ""}
           mode="aspectFill"
           radius="0"
         />
@@ -36,7 +38,7 @@ export default function MatchItemCard({
         )}
       </View>
       <View className="match-card__body">
-        <Text className="match-card__series">{item.series}</Text>
+        <Text className="match-card__series">{series}</Text>
         <Text className="match-card__name">{item.name}</Text>
       </View>
     </View>
