@@ -30,7 +30,7 @@ tcb fn deploy chat -e cloudbase-d6gkz1xlx9adbfe51
 | `DEEPSEEK_MODEL`        | 可选，默认 `deepseek-v4-flash`（简单对话）            |
 | `DOUBAO_API_KEY`        | 火山方舟 API Key                                      |
 | `DOUBAO_API_BASE_URL`   | 可选，默认 `https://ark.cn-beijing.volces.com/api/v3` |
-| `DOUBAO_MODEL`          | 方舟推理接入点 ID（`ep-` 前缀）                       |
+| `DOUBAO_MODEL`          | 方舟文本对话模型 ID（`/chat/completions` 的 `model` 字段） |
 
 API Key 仅配置在控制台，勿提交到 Git。
 
@@ -224,10 +224,10 @@ tcb fn deploy recognize-clothing -e cloudbase-d6gkz1xlx9adbfe51
 | --------------------- | -------------------------------------------------- |
 | `DOUBAO_API_KEY`      | 火山方舟 API Key（可与 chat 共用）                 |
 | `DOUBAO_API_BASE_URL` | 可选，默认 `https://ark.cn-beijing.volces.com/api/v3` |
-| `DOUBAO_VISION_MODEL` | 方舟**多模态**推理接入点 ID（`ep-` 前缀，与文本模型不同） |
-| `DOUBAO_VISION_TEMPERATURE` | 可选，识别采样温度，默认 `0.1`，范围 0–2 |
+| `DOUBAO_SEED_MODEL` | 方舟 Seed 模型 ID，示例 `doubao-seed-2-0-lite-260428` |
+| `DOUBAO_SEED_TEMPERATURE` | 可选，识别采样温度，默认 `0.1`，范围 0–2 |
 
-须在[火山方舟控制台](https://console.volcengine.com/ark)创建支持图像理解的推理接入点，并将接入点 ID 填入 `DOUBAO_VISION_MODEL`。
+在[火山方舟控制台](https://console.volcengine.com/ark)模型列表中查看模型 ID，填入 `DOUBAO_SEED_MODEL`（与 `generate-tryon-image` 使用相同模型 ID）。
 
 识别规则（typeName 白名单、Prompt 文案）见 [`cloudfunctions/common/recognitionRules.js`](common/recognitionRules.js)。修改后须 `pnpm cf:sync-common` 并重新部署 `recognize-clothing`（`save-wardrobe-items` 仅需同步 `wardrobeSave.js` 变更时部署）。
 
@@ -253,10 +253,10 @@ wx.cloud
 | ------------ | -------- |
 | `145 code exit unexpected` | SDK 在 `cloud.init()` 前调用 `cloud.database()`；确保已部署最新代码后重新「上传并部署：云端安装依赖」 |
 | `Cannot find module '../common/wardrobeSave'` | 未同步 common；见第 6 节，运行 `pnpm cf:sync-common` 后重新部署 |
-| `未配置 DOUBAO_VISION_MODEL` | 未设置多模态接入点环境变量 |
+| `未配置 DOUBAO_SEED_MODEL` | 未设置 Seed 模型 ID 环境变量 |
 | `无法获取图片临时链接` | fileID 无效或云存储权限问题 |
 | `AI 返回格式无效` | Vision 模型未按 JSON 格式返回，检查 prompt 或换模型 |
-| `LLM_API_ERROR` | API Key 无效、接入点未开通 Vision、或配额用尽 |
+| `LLM_API_ERROR` | API Key 无效、模型 ID 错误或 API 与模型不匹配、或配额用尽 |
 
 页面内通过衣橱页 FAB 上传触发：`chooseMedia` → `uploadFile` → `callFunction('recognize-clothing')`（预览不入库，确认后由 `save-wardrobe-items` 批量入库）。
 
@@ -317,7 +317,7 @@ wx.cloud
 
 右键 `cloudfunctions/generate-tryon-image` → **上传并部署：云端安装依赖**。
 
-环境变量：与 `recognize-clothing` 共用 `DOUBAO_API_KEY`、`DOUBAO_API_BASE_URL`、`DOUBAO_VISION_MODEL`。
+环境变量：`DOUBAO_API_KEY`、`DOUBAO_API_BASE_URL`、`DOUBAO_SEED_MODEL`（示例 `doubao-seed-2-0-lite-260428`，与 `recognize-clothing` 相同）。
 
 入参：`imageFileIds[]`、`heightCm`、`weightKg`、`outfitName`、`description`。
 

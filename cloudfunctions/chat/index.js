@@ -28,7 +28,7 @@ function resolveProvider(name) {
     }
   }
   if (provider === 'doubao' && !config.model) {
-    return { error: '未配置 DOUBAO_MODEL 环境变量（方舟推理接入点 ID）', provider }
+    return { error: '未配置 DOUBAO_MODEL 环境变量（方舟模型 ID）', provider }
   }
   return { provider, config }
 }

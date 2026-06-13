@@ -20,7 +20,7 @@ async function resolveImageUrl(fileID) {
 }
 
 function resolveVisionTemperature() {
-  const raw = process.env.DOUBAO_VISION_TEMPERATURE
+  const raw = process.env.DOUBAO_SEED_TEMPERATURE
   const parsed = raw === undefined || raw === '' ? DEFAULT_TEMPERATURE : parseFloat(raw)
   if (Number.isNaN(parsed)) return DEFAULT_TEMPERATURE
   return Math.min(2, Math.max(0, parsed))
@@ -54,13 +54,13 @@ exports.main = async (event) => {
 
     const apiKey = process.env.DOUBAO_API_KEY
     const baseUrl = process.env.DOUBAO_API_BASE_URL || DEFAULT_BASE_URL
-    const model = process.env.DOUBAO_VISION_MODEL
+    const model = process.env.DOUBAO_SEED_MODEL
 
     if (!apiKey) {
       return { error: 'PROVIDER_CONFIG', message: '未配置 DOUBAO_API_KEY 环境变量' }
     }
     if (!model) {
-      return { error: 'PROVIDER_CONFIG', message: '未配置 DOUBAO_VISION_MODEL 环境变量' }
+      return { error: 'PROVIDER_CONFIG', message: '未配置 DOUBAO_SEED_MODEL 环境变量' }
     }
 
     const imageUrl = await resolveImageUrl(fileID)
