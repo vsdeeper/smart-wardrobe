@@ -1,21 +1,18 @@
 const cloud = require('wx-server-sdk')
 const {
   resolveImageUrls,
-  chatCompletions,
+  generateSeedreamImage,
 } = require('./common/doubaoVision')
-const {
-  buildTryonSystemPrompt,
-  buildTryonUserPrompt,
-  extractImageFromContent,
-} = require('./common/tryonImageRules')
+const { buildTryonPrompt } = require('./common/tryonImageRules')
 
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 
 async function uploadBase64ToCloud(base64Data, openid) {
-  const match = base64Data.match(/^data:image\/(\w+);base64,(.+)$/)
-  if (!match) throw new Error('无效 base64 图片')
-  const ext = match[1] === 'jpeg' ? 'jpg' : match[1]
-  const buffer = Buffer.from(match[2], 'base64')
+  const raw = String(base64Data ?? '').trim()
+  const match = raw.match(/^data:image\/(\w+);base64,(.+)$/)
+  const ext = match ? (match[1] === 'jpeg' ? 'jpg' : match[1]) : 'png'
+  const base64Body = match ? match[2] : raw
+  const buffer = Buffer.from(base64Body, 'base64')
   const cloudPath = `tryon/${openid}/${Date.now()}.${ext}`
   const uploadRes = await cloud.uploadFile({
     cloudPath,
@@ -55,34 +52,28 @@ exports.main = async (event) => {
       }
     }
 
-    const userContent = [
-      ...imageUrls.map((url) => ({
-        type: 'image_url',
-        image_url: { url },
-      })),
-      {
-        type: 'text',
-        text: buildTryonUserPrompt({ heightCm, weightKg, outfitName, description }),
-      },
-    ]
-
     let coverFileId = fileIds[0]
     let coverUrl = imageUrls[0]
 
     try {
-      const content = await chatCompletions({
-        messages: [
-          { role: 'system', content: buildTryonSystemPrompt() },
-          { role: 'user', content: userContent },
-        ],
-        temperature: 0.4,
+      const result = await generateSeedreamImage({
+        prompt: buildTryonPrompt({
+          heightCm,
+          weightKg,
+          outfitName,
+          description,
+          imageCount: imageUrls.length,
+        }),
+        imageUrls,
       })
 
-      const extracted = extractImageFromContent(content)
-      if (extracted?.type === 'url') {
-        coverUrl = extracted.value
-      } else if (extracted?.type === 'base64') {
-        coverFileId = await uploadBase64ToCloud(extracted.value, openid)
+      if (result.url) {
+        coverUrl = result.url
+      } else if (result.b64) {
+        const b64Value = result.b64.startsWith('data:')
+          ? result.b64
+          : `data:image/png;base64,${result.b64}`
+        coverFileId = await uploadBase64ToCloud(b64Value, openid)
         const [resolved] = await resolveImageUrls(cloud, [coverFileId])
         if (resolved) coverUrl = resolved
       }

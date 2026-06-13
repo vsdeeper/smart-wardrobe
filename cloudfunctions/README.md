@@ -317,7 +317,9 @@ wx.cloud
 
 右键 `cloudfunctions/generate-tryon-image` → **上传并部署：云端安装依赖**。
 
-部署前若修改过 `cloudfunctions/common/doubaoVision.js`，须先执行 `pnpm cf:sync-common`。
+部署前若修改过 `cloudfunctions/common/doubaoVision.js` 或 `tryonImageRules.js`，须先执行 `pnpm cf:sync-common`。
+
+调用火山方舟 **Seedream 图像生成 API**：`POST {DOUBAO_API_BASE_URL}/images/generations`（非 `/chat/completions`）。参考衣物图通过 `image` 参数传入，文本需求通过 `prompt` 描述。
 
 环境变量（云开发控制台 → `generate-tryon-image` → 配置）：
 
@@ -325,12 +327,14 @@ wx.cloud
 | ------ | ---- |
 | `DOUBAO_API_KEY` | 火山方舟 API Key（可与其它云函数共用） |
 | `DOUBAO_API_BASE_URL` | 可选，默认 `https://ark.cn-beijing.volces.com/api/v3` |
-| `DOUBAO_SEEDREAM_MODEL` | Hero 试穿图专用 Seedream 模型 ID（与 `recognize-clothing` 的 `DOUBAO_SEED_MODEL` 分离配置） |
+| `DOUBAO_SEEDREAM_MODEL` | Hero 试穿图专用 Seedream 模型 ID，示例 `doubao-seedream-5-0-260128` |
+| `DOUBAO_SEEDREAM_SIZE` | 可选，输出尺寸，默认 `2K` |
 
 入参：`imageFileIds[]`、`heightCm`、`weightKg`、`outfitName`、`description`。
 
-若模型暂未返回图片，云函数回退为首件单品图作为 Hero 拼贴。
+成功时解析响应 `data[0].url`；失败时回退为首件单品图作为 Hero 拼贴。
 
 | 返回 message | 常见原因 |
 | ------------ | -------- |
 | `未配置 DOUBAO_SEEDREAM_MODEL` | 未在 `generate-tryon-image` 云函数配置 Hero 专用模型 ID |
+| `Seedream 未返回图片` | 模型 ID 无图像生成权限，或 prompt/参考图不符合要求 |

@@ -1,4 +1,6 @@
 const DEFAULT_BASE_URL = 'https://ark.cn-beijing.volces.com/api/v3'
+const DEFAULT_SIZE = '2K'
+const MAX_REFERENCE_IMAGES = 10
 
 async function resolveImageUrl(cloud, fileID) {
   const res = await cloud.getTempFileURL({ fileList: [fileID] })
@@ -22,25 +24,57 @@ async function resolveImageUrls(cloud, fileIDs) {
   return unique.map((id) => map.get(id)).filter(Boolean)
 }
 
-function getVisionConfig() {
+function getSeedreamConfig() {
   const apiKey = process.env.DOUBAO_API_KEY
   const baseUrl = process.env.DOUBAO_API_BASE_URL || DEFAULT_BASE_URL
   const model = process.env.DOUBAO_SEEDREAM_MODEL
-  return { apiKey, baseUrl, model }
+  const size = process.env.DOUBAO_SEEDREAM_SIZE || DEFAULT_SIZE
+  return { apiKey, baseUrl, model, size }
 }
 
-async function chatCompletions({ messages, temperature = 0.3 }) {
-  const { apiKey, baseUrl, model } = getVisionConfig()
+function parseSeedreamResponse(data) {
+  const item = data?.data?.[0]
+  if (!item) {
+    throw new Error('Seedream 未返回图片')
+  }
+  if (item.url) {
+    return { url: item.url, b64: null }
+  }
+  if (item.b64_json) {
+    return { url: null, b64: item.b64_json }
+  }
+  throw new Error('Seedream 响应缺少 url 或 b64_json')
+}
+
+async function generateSeedreamImage({ prompt, imageUrls = [] }) {
+  const { apiKey, baseUrl, model, size } = getSeedreamConfig()
   if (!apiKey) throw new Error('未配置 DOUBAO_API_KEY')
   if (!model) throw new Error('未配置 DOUBAO_SEEDREAM_MODEL')
 
-  const response = await fetch(`${baseUrl}/chat/completions`, {
+  const refs = imageUrls.filter(Boolean).slice(0, MAX_REFERENCE_IMAGES)
+  const body = {
+    model,
+    prompt,
+    sequential_image_generation: 'disabled',
+    response_format: 'url',
+    size,
+    stream: false,
+    watermark: false,
+  }
+
+  if (refs.length === 1) {
+    body.image = refs[0]
+  } else if (refs.length > 1) {
+    body.image = refs
+  }
+
+  const response = await fetch(`${baseUrl}/images/generations`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${apiKey}`,
     },
-    body: JSON.stringify({ model, temperature, messages }),
+    body: JSON.stringify(body),
   })
 
   const data = await response.json()
@@ -49,13 +83,13 @@ async function chatCompletions({ messages, temperature = 0.3 }) {
     throw new Error(errMsg)
   }
 
-  return data?.choices?.[0]?.message?.content ?? ''
+  return parseSeedreamResponse(data)
 }
 
 module.exports = {
   DEFAULT_BASE_URL,
   resolveImageUrl,
   resolveImageUrls,
-  getVisionConfig,
-  chatCompletions,
+  getSeedreamConfig,
+  generateSeedreamImage,
 }
