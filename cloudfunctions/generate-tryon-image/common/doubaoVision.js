@@ -1,5 +1,6 @@
 const DEFAULT_BASE_URL = 'https://ark.cn-beijing.volces.com/api/v3'
-const DEFAULT_SIZE = '2K'
+// Hero 区域有效比例 335×480；1600x2304 为 Seedream 5.0 像素下限内最小近似尺寸
+const DEFAULT_SIZE = '1600x2304'
 const MAX_REFERENCE_IMAGES = 10
 
 async function resolveImageUrl(cloud, fileID) {

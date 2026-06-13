@@ -343,7 +343,7 @@ LLM 失败时回退规则推荐 `buildFallbackRecommendation`。
 | `DOUBAO_API_KEY` | 火山方舟 API Key（可与其它云函数共用） |
 | `DOUBAO_API_BASE_URL` | 可选，默认 `https://ark.cn-beijing.volces.com/api/v3` |
 | `DOUBAO_SEEDREAM_MODEL` | Hero 试穿图专用 Seedream 模型 ID，示例 `doubao-seedream-5-0-260128` |
-| `DOUBAO_SEEDREAM_SIZE` | 可选，输出尺寸，默认 `2K` |
+| `DOUBAO_SEEDREAM_SIZE` | 可选，输出尺寸，默认 `1600x2304`（Hero 335×480，Seedream 5.0 最小合规尺寸；若控制台仍配 `2K` 或 `1920x2752` 会覆盖代码默认值） |
 
 入参：`imageFileIds[]`、`heightCm`、`weightKg`、`outfitName`、`description`。
 

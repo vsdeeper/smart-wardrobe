@@ -28,11 +28,7 @@ export default function OutfitHero({
   return (
     <View className="outfit-hero">
       {heroSrc ? (
-        <Image
-          className="outfit-hero__image"
-          src={heroSrc}
-          mode="aspectFill"
-        />
+        <Image className="outfit-hero__image" src={heroSrc} mode="aspectFill" />
       ) : null}
       {isLoading && (
         <View className="outfit-hero__loading">

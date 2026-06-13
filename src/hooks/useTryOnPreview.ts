@@ -18,8 +18,6 @@ interface UseTryOnPreviewOptions {
 
 export function useTryOnPreview({
   selectedPieces,
-  outfitName,
-  description,
   fromCache,
   savedReturn,
   recommendReady,
@@ -92,8 +90,12 @@ export function useTryOnPreview({
         imageFileIds: fileIds,
         heightCm: profile.heightCm,
         weightKg: profile.weightKg,
-        outfitName,
-        description,
+        pieceLabels: selectedPieces
+          .map((p) => p.name || p.typeName)
+          .filter(Boolean),
+        pieceTypeNames: selectedPieces
+          .map((p) => p.typeName)
+          .filter(Boolean),
       });
 
       if (result.error) {
@@ -126,7 +128,7 @@ export function useTryOnPreview({
     } finally {
       loadingRef.current = false;
     }
-  }, [selectedPieces, outfitName, description, applyHero]);
+  }, [selectedPieces, applyHero]);
 
   useEffect(() => {
     if (!recommendReady || selectedPieces.length === 0) return;

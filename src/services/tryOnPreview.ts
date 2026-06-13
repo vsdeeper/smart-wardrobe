@@ -4,8 +4,8 @@ export interface GenerateTryonInput {
   imageFileIds: string[];
   heightCm: number;
   weightKg: number;
-  outfitName: string;
-  description: string;
+  pieceLabels?: string[];
+  pieceTypeNames?: string[];
 }
 
 export interface GenerateTryonResult {
