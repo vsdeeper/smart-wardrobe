@@ -25,14 +25,14 @@ async function resolveImageUrls(cloud, fileIDs) {
 function getVisionConfig() {
   const apiKey = process.env.DOUBAO_API_KEY
   const baseUrl = process.env.DOUBAO_API_BASE_URL || DEFAULT_BASE_URL
-  const model = process.env.DOUBAO_SEED_MODEL
+  const model = process.env.DOUBAO_SEEDREAM_MODEL
   return { apiKey, baseUrl, model }
 }
 
 async function chatCompletions({ messages, temperature = 0.3 }) {
   const { apiKey, baseUrl, model } = getVisionConfig()
   if (!apiKey) throw new Error('未配置 DOUBAO_API_KEY')
-  if (!model) throw new Error('未配置 DOUBAO_SEED_MODEL')
+  if (!model) throw new Error('未配置 DOUBAO_SEEDREAM_MODEL')
 
   const response = await fetch(`${baseUrl}/chat/completions`, {
     method: 'POST',

@@ -227,7 +227,7 @@ tcb fn deploy recognize-clothing -e cloudbase-d6gkz1xlx9adbfe51
 | `DOUBAO_SEED_MODEL` | 方舟 Seed 模型 ID，示例 `doubao-seed-2-0-lite-260428` |
 | `DOUBAO_SEED_TEMPERATURE` | 可选，识别采样温度，默认 `0.1`，范围 0–2 |
 
-在[火山方舟控制台](https://console.volcengine.com/ark)模型列表中查看模型 ID，填入 `DOUBAO_SEED_MODEL`（与 `generate-tryon-image` 使用相同模型 ID）。
+在[火山方舟控制台](https://console.volcengine.com/ark)模型列表中查看模型 ID，填入 `DOUBAO_SEED_MODEL`。
 
 识别规则（typeName 白名单、Prompt 文案）见 [`cloudfunctions/common/recognitionRules.js`](common/recognitionRules.js)。修改后须 `pnpm cf:sync-common` 并重新部署 `recognize-clothing`（`save-wardrobe-items` 仅需同步 `wardrobeSave.js` 变更时部署）。
 
@@ -317,8 +317,20 @@ wx.cloud
 
 右键 `cloudfunctions/generate-tryon-image` → **上传并部署：云端安装依赖**。
 
-环境变量：`DOUBAO_API_KEY`、`DOUBAO_API_BASE_URL`、`DOUBAO_SEED_MODEL`（示例 `doubao-seed-2-0-lite-260428`，与 `recognize-clothing` 相同）。
+部署前若修改过 `cloudfunctions/common/doubaoVision.js`，须先执行 `pnpm cf:sync-common`。
+
+环境变量（云开发控制台 → `generate-tryon-image` → 配置）：
+
+| 变量名 | 说明 |
+| ------ | ---- |
+| `DOUBAO_API_KEY` | 火山方舟 API Key（可与其它云函数共用） |
+| `DOUBAO_API_BASE_URL` | 可选，默认 `https://ark.cn-beijing.volces.com/api/v3` |
+| `DOUBAO_SEEDREAM_MODEL` | Hero 试穿图专用 Seedream 模型 ID（与 `recognize-clothing` 的 `DOUBAO_SEED_MODEL` 分离配置） |
 
 入参：`imageFileIds[]`、`heightCm`、`weightKg`、`outfitName`、`description`。
 
 若模型暂未返回图片，云函数回退为首件单品图作为 Hero 拼贴。
+
+| 返回 message | 常见原因 |
+| ------------ | -------- |
+| `未配置 DOUBAO_SEEDREAM_MODEL` | 未在 `generate-tryon-image` 云函数配置 Hero 专用模型 ID |
