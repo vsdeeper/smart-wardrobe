@@ -309,9 +309,24 @@ wx.cloud
 
 右键 `cloudfunctions/recommend-outfit` → **上传并部署：云端安装依赖**。
 
-复用 `chat` 同款文本 LLM 环境变量（`DEEPSEEK_*` 或 `DOUBAO_*` + `LLM_DEFAULT_PROVIDER`）。
+调用火山方舟 Seed 文本模型：`POST {DOUBAO_API_BASE_URL}/chat/completions`。
+
+环境变量（云开发控制台 → `recommend-outfit` → 配置）：
+
+| 变量名 | 说明 |
+| ------ | ---- |
+| `DOUBAO_API_KEY` | 火山方舟 API Key（可与其它云函数共用） |
+| `DOUBAO_API_BASE_URL` | 可选，默认 `https://ark.cn-beijing.volces.com/api/v3` |
+| `DOUBAO_SEED_MODEL` | Seed 模型 ID，可与 `recognize-clothing` 相同 |
+| `DOUBAO_SEED_TEMPERATURE` | 可选，采样温度，默认 `0.3`，范围 0–2 |
 
 入参：`weather`、`season`、`profile`、`wardrobeByType`（按 typeName 分组的衣橱摘要）。
+
+LLM 失败时回退规则推荐 `buildFallbackRecommendation`。
+
+| 返回 message | 常见原因 |
+| ------------ | -------- |
+| `未配置 DOUBAO_SEED_MODEL` | 未设置 Seed 模型 ID 环境变量 |
 
 ### generate-tryon-image
 

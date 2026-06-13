@@ -8,44 +8,22 @@ const {
 
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 
-const DEFAULT_BASE_URL = 'https://api.deepseek.com'
-const DEEPSEEK_CHAT_URL = 'https://api.deepseek.com/chat/completions'
-const DOUBAO_CHAT_PATH = '/chat/completions'
+const DEFAULT_BASE_URL = 'https://ark.cn-beijing.volces.com/api/v3'
+const DEFAULT_TEMPERATURE = 0.3
 
-async function callTextLLM(systemPrompt, userPrompt) {
-  const provider = process.env.LLM_DEFAULT_PROVIDER || 'deepseek'
+function resolveSeedTemperature() {
+  const raw = process.env.DOUBAO_SEED_TEMPERATURE
+  const parsed = raw === undefined || raw === '' ? DEFAULT_TEMPERATURE : parseFloat(raw)
+  if (Number.isNaN(parsed)) return DEFAULT_TEMPERATURE
+  return Math.min(2, Math.max(0, parsed))
+}
 
-  if (provider === 'doubao') {
-    const apiKey = process.env.DOUBAO_API_KEY
-    const baseUrl = process.env.DOUBAO_API_BASE_URL || 'https://ark.cn-beijing.volces.com/api/v3'
-    const model = process.env.DOUBAO_MODEL
-    if (!apiKey || !model) throw new Error('未配置豆包文本模型')
-
-    const res = await fetch(`${baseUrl}${DOUBAO_CHAT_PATH}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt },
-        ],
-      }),
-    })
-    const data = await res.json()
-    if (!res.ok) {
-      throw new Error(data?.error?.message || data?.message || `HTTP ${res.status}`)
-    }
-    return data?.choices?.[0]?.message?.content ?? ''
-  }
-
-  const apiKey = process.env.DEEPSEEK_API_KEY
-  const baseUrl = process.env.DEEPSEEK_API_BASE_URL || DEFAULT_BASE_URL
-  const model = process.env.DEEPSEEK_MODEL || 'deepseek-chat'
-  if (!apiKey) throw new Error('未配置 DEEPSEEK_API_KEY')
+async function callSeedChat(systemPrompt, userPrompt) {
+  const apiKey = process.env.DOUBAO_API_KEY
+  const baseUrl = process.env.DOUBAO_API_BASE_URL || DEFAULT_BASE_URL
+  const model = process.env.DOUBAO_SEED_MODEL
+  if (!apiKey) throw new Error('未配置 DOUBAO_API_KEY')
+  if (!model) throw new Error('未配置 DOUBAO_SEED_MODEL')
 
   const res = await fetch(`${baseUrl}/chat/completions`, {
     method: 'POST',
@@ -55,11 +33,11 @@ async function callTextLLM(systemPrompt, userPrompt) {
     },
     body: JSON.stringify({
       model,
+      temperature: resolveSeedTemperature(),
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt },
       ],
-      thinking: { type: 'disabled' },
     }),
   })
   const data = await res.json()
@@ -108,7 +86,7 @@ exports.main = async (event) => {
 
     let recommendation
     try {
-      const content = await callTextLLM(
+      const content = await callSeedChat(
         buildRecommendSystemPrompt(),
         buildRecommendUserPrompt(payload),
       )
