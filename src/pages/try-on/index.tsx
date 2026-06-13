@@ -105,6 +105,7 @@ function TryOnPage() {
           description={recommendation?.description ?? ""}
           matchScore={recommendation?.matchScore ?? 90}
           heroImageUrl={heroImageUrl}
+          heroCoverFileId={heroCoverFileId}
           previewStatus={previewStatus}
         />
         <OutfitPieceList pieces={selectedPieces} onEditOutfit={handleEditOutfit} />

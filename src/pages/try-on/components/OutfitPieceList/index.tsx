@@ -33,7 +33,7 @@ export default function OutfitPieceList({
             <View className="outfit-piece__image-wrap">
               <Image
                 className="outfit-piece__image"
-                src={piece.imageUrl ?? ""}
+                src={piece.imageUrl || piece.imageFileId}
                 mode="aspectFill"
               />
             </View>

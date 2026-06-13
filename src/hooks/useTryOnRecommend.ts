@@ -16,7 +16,10 @@ import {
   writeTryOnCache,
 } from "@/services/tryOnCache";
 import { consumeTryOnDraft } from "@/services/tryOnDraft";
-import { fetchWardrobeItemsGroupedByType } from "@/services/wardrobe";
+import {
+  fetchWardrobeItemsGroupedByType,
+  resolveImageUrls,
+} from "@/services/wardrobe";
 import { getCurrentSeason } from "@/utils/season";
 
 export interface SavedReturnMeta {
@@ -109,14 +112,15 @@ export function useTryOnRecommend() {
     [applyRecommendation],
   );
 
-  const loadFromCache = useCallback(() => {
+  const loadFromCache = useCallback(async () => {
     const cache = readTryOnCache();
     if (!cache) {
       return false;
     }
-    allItemsRef.current = cache.selectedPieces;
+    const pieces = await resolveImageUrls(cache.selectedPieces);
+    allItemsRef.current = pieces;
     setRecommendation(cache.recommendation);
-    setSelectedPieces(cache.selectedPieces);
+    setSelectedPieces(pieces);
     setFromCache(true);
     setSavedReturn(null);
     setStatus("success");
@@ -124,10 +128,11 @@ export function useTryOnRecommend() {
     return true;
   }, []);
 
-  const handleShow = useCallback(() => {
+  const handleShow = useCallback(async () => {
     const draft = consumeTryOnDraft();
 
     if (draft?.mode === "saved" && draft.selectedPieces) {
+      const pieces = await resolveImageUrls(draft.selectedPieces);
       const cache = readTryOnCache();
       if (cache) {
         setRecommendation(cache.recommendation);
@@ -140,8 +145,8 @@ export function useTryOnRecommend() {
           tips: [],
         });
       }
-      setSelectedPieces(draft.selectedPieces);
-      allItemsRef.current = draft.selectedPieces;
+      setSelectedPieces(pieces);
+      allItemsRef.current = pieces;
       setFromCache(false);
       setSavedReturn({
         piecesChanged: draft.piecesChanged === true,
@@ -157,7 +162,7 @@ export function useTryOnRecommend() {
       return;
     }
 
-    if (isTryOnCacheValid() && loadFromCache()) {
+    if (isTryOnCacheValid() && (await loadFromCache())) {
       return;
     }
 
@@ -165,7 +170,7 @@ export function useTryOnRecommend() {
   }, [loadFresh, loadFromCache]);
 
   useDidShow(() => {
-    handleShow();
+    void handleShow();
   });
 
   const refreshRecommend = useCallback(() => {

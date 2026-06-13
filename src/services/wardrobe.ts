@@ -173,6 +173,21 @@ export async function resolveImageUrls(
   }));
 }
 
+/** 单个云存储 fileID 解析为临时 HTTPS URL */
+export async function resolveCloudFileUrl(
+  fileId: string,
+): Promise<string | null> {
+  const id = fileId.trim();
+  if (!id) return null;
+
+  const res = await Taro.cloud.getTempFileURL({ fileList: [id] });
+  const file = res.fileList[0];
+  if (file?.status === 0 && file.tempFileURL) {
+    return file.tempFileURL;
+  }
+  return null;
+}
+
 /** 为预览项批量解析图片临时 URL */
 export async function resolvePreviewImageUrls(
   items: RecognizedPreviewItem[],

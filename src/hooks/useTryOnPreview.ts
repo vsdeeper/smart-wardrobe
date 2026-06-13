@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { TryOnPreviewStatus } from "@/data/tryOn";
 import type { WardrobeItem } from "@/data/wardrobe";
 import { fetchUserProfile } from "@/services/profile";
+import { resolveCloudFileUrl } from "@/services/wardrobe";
 import {
   buildCollageHeroUrl,
   generateTryonImage,
@@ -43,17 +44,34 @@ export function useTryOnPreview({
     [],
   );
 
-  const loadHeroFromCache = useCallback(() => {
+  const loadHeroFromCache = useCallback(async () => {
     const cache = readTryOnCache();
-    if (cache?.heroImageUrl || cache?.heroCoverFileId) {
-      applyHero(
-        cache.heroImageUrl ?? null,
-        cache.heroCoverFileId ?? null,
-        true,
-      );
-      return true;
+    if (!cache?.heroImageUrl && !cache?.heroCoverFileId) {
+      return false;
     }
-    return false;
+
+    const coverFileId = cache.heroCoverFileId ?? null;
+    let coverUrl = cache.heroImageUrl ?? null;
+
+    if (coverFileId) {
+      const freshUrl = await resolveCloudFileUrl(coverFileId);
+      if (freshUrl) {
+        coverUrl = freshUrl;
+      }
+    }
+
+    applyHero(coverUrl, coverFileId, true);
+
+    if (coverUrl && cache) {
+      writeTryOnCache({
+        recommendation: cache.recommendation,
+        selectedPieces: cache.selectedPieces,
+        heroCoverFileId: coverFileId ?? undefined,
+        heroImageUrl: coverUrl,
+      });
+    }
+
+    return Boolean(coverUrl || coverFileId);
   }, [applyHero]);
 
   const generatePreview = useCallback(async () => {
@@ -118,27 +136,41 @@ export function useTryOnPreview({
 
     if (handledKeyRef.current === triggerKey) return;
 
-    if (savedReturn) {
-      if (!savedReturn.piecesChanged) {
-        if (loadHeroFromCache()) {
+    let cancelled = false;
+
+    const run = async () => {
+      if (savedReturn) {
+        if (!savedReturn.piecesChanged) {
+          if (await loadHeroFromCache()) {
+            if (!cancelled) handledKeyRef.current = triggerKey;
+            return;
+          }
+        }
+        if (!cancelled) {
           handledKeyRef.current = triggerKey;
+          generatePreview();
+        }
+        return;
+      }
+
+      if (fromCache) {
+        if (await loadHeroFromCache()) {
+          if (!cancelled) handledKeyRef.current = triggerKey;
           return;
         }
       }
-      handledKeyRef.current = triggerKey;
-      generatePreview();
-      return;
-    }
 
-    if (fromCache) {
-      if (loadHeroFromCache()) {
+      if (!cancelled) {
         handledKeyRef.current = triggerKey;
-        return;
+        generatePreview();
       }
-    }
+    };
 
-    handledKeyRef.current = triggerKey;
-    generatePreview();
+    void run();
+
+    return () => {
+      cancelled = true;
+    };
   }, [
     recommendReady,
     selectedPieces,

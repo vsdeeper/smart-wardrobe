@@ -7,6 +7,7 @@ export interface OutfitHeroProps {
   description: string;
   matchScore: number;
   heroImageUrl: string | null;
+  heroCoverFileId: string | null;
   previewStatus: TryOnPreviewStatus;
 }
 
@@ -15,16 +16,18 @@ export default function OutfitHero({
   description,
   matchScore,
   heroImageUrl,
+  heroCoverFileId,
   previewStatus,
 }: OutfitHeroProps) {
   const isLoading = previewStatus === "loading";
+  const heroSrc = heroImageUrl || heroCoverFileId;
 
   return (
     <View className="outfit-hero">
-      {heroImageUrl ? (
+      {heroSrc ? (
         <Image
           className="outfit-hero__image"
-          src={heroImageUrl}
+          src={heroSrc}
           mode="aspectFill"
         />
       ) : null}
