@@ -3,10 +3,7 @@ import type { TryOnPreviewStatus } from "@/data/tryOn";
 import type { WardrobeItem } from "@/data/wardrobe";
 import { fetchUserProfile } from "@/services/profile";
 import { resolveCloudFileUrl } from "@/services/wardrobe";
-import {
-  buildCollageHeroUrl,
-  generateTryonImage,
-} from "@/services/tryOnPreview";
+import { generateTryonImage } from "@/services/tryOnPreview";
 import { readTryOnCache, writeTryOnCache } from "@/services/tryOnCache";
 import type { SavedReturnMeta } from "@/hooks/useTryOnRecommend";
 
@@ -31,6 +28,9 @@ export function useTryOnPreview({
   const [heroImageUrl, setHeroImageUrl] = useState<string | null>(null);
   const [heroCoverFileId, setHeroCoverFileId] = useState<string | null>(null);
   const [heroFromCache, setHeroFromCache] = useState(false);
+  const [previewErrorMessage, setPreviewErrorMessage] = useState<string | null>(
+    null,
+  );
   const loadingRef = useRef(false);
   const handledKeyRef = useRef<string | null>(null);
 
@@ -60,6 +60,7 @@ export function useTryOnPreview({
       }
     }
 
+    setPreviewErrorMessage(null);
     applyHero(coverUrl, coverFileId, true);
 
     if (coverUrl && cache) {
@@ -79,6 +80,7 @@ export function useTryOnPreview({
     loadingRef.current = true;
     setStatus("loading");
     setHeroFromCache(false);
+    setPreviewErrorMessage(null);
 
     try {
       const profile = await fetchUserProfile();
@@ -94,15 +96,15 @@ export function useTryOnPreview({
         description,
       });
 
-      if (result.error && !result.coverUrl && !result.coverFileId) {
+      if (result.error) {
         throw new Error(result.message || result.error);
       }
 
-      let coverUrl = result.coverUrl ?? null;
+      const coverUrl = result.coverUrl ?? null;
       const coverFileId = result.coverFileId ?? null;
 
-      if (!coverUrl) {
-        coverUrl = buildCollageHeroUrl(selectedPieces);
+      if (!coverUrl && !coverFileId) {
+        throw new Error("试穿图生成未返回图片");
       }
 
       applyHero(coverUrl, coverFileId, false);
@@ -116,9 +118,11 @@ export function useTryOnPreview({
           heroImageUrl: coverUrl ?? undefined,
         });
       }
-    } catch {
-      const fallback = buildCollageHeroUrl(selectedPieces);
-      applyHero(fallback, selectedPieces[0]?.imageFileId ?? null, false);
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "试穿图生成失败，请稍后重试";
+      setPreviewErrorMessage(message);
+      applyHero(null, null, false);
     } finally {
       loadingRef.current = false;
     }
@@ -185,6 +189,7 @@ export function useTryOnPreview({
     heroImageUrl,
     heroCoverFileId,
     heroFromCache,
+    previewErrorMessage,
     generatePreview,
   };
 }

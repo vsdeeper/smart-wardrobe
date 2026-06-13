@@ -1,5 +1,4 @@
 import Taro from "@tarojs/taro";
-import type { WardrobeItem } from "@/data/wardrobe";
 
 export interface GenerateTryonInput {
   imageFileIds: string[];
@@ -12,7 +11,6 @@ export interface GenerateTryonInput {
 export interface GenerateTryonResult {
   coverFileId?: string;
   coverUrl?: string;
-  fallback?: boolean;
   error?: string;
   message?: string;
 }
@@ -25,10 +23,4 @@ export async function generateTryonImage(
     data: input,
   });
   return result as GenerateTryonResult;
-}
-
-/** Hero 拼贴回退：取第一件有图的单品 */
-export function buildCollageHeroUrl(pieces: WardrobeItem[]): string | null {
-  const first = pieces.find((p) => p.imageUrl || p.imageFileId);
-  return first?.imageUrl ?? null;
 }

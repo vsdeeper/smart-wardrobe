@@ -213,6 +213,33 @@
     background: rgba(255, 255, 255, 0.35);
   }
 
+  &__error {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 32px;
+    background: rgba(255, 255, 255, 0.92);
+    text-align: center;
+  }
+
+  &__error-title {
+    font-family: var(--sw-font-heading);
+    font-size: var(--nutui-font-size-6);
+    font-weight: var(--nutui-font-weight-bold);
+    color: var(--nutui-gray-7);
+  }
+
+  &__error-desc {
+    font-size: var(--nutui-font-size-3);
+    color: var(--nutui-gray-6);
+    line-height: 1.5;
+  }
+
   &__gradient {
     position: absolute;
     inset: 0;

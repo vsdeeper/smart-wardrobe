@@ -347,7 +347,7 @@ LLM 失败时回退规则推荐 `buildFallbackRecommendation`。
 
 入参：`imageFileIds[]`、`heightCm`、`weightKg`、`outfitName`、`description`。
 
-成功时解析响应 `data[0].url`；失败时回退为首件单品图作为 Hero 拼贴。
+成功时返回 `{ coverFileId, coverUrl }`，解析响应 `data[0].url` 或 `b64_json`。失败时返回 `{ error, message }`。
 
 | 返回 message | 常见原因 |
 | ------------ | -------- |

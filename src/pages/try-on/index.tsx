@@ -33,8 +33,12 @@ function TryOnPage() {
 
   const recommendReady = recommendStatus === "success";
 
-  const { status: previewStatus, heroImageUrl, heroCoverFileId } =
-    useTryOnPreview({
+  const {
+    status: previewStatus,
+    heroImageUrl,
+    heroCoverFileId,
+    previewErrorMessage,
+  } = useTryOnPreview({
       selectedPieces,
       outfitName: recommendation?.outfitName ?? "今日推荐",
       description: recommendation?.description ?? "",
@@ -107,11 +111,16 @@ function TryOnPage() {
           heroImageUrl={heroImageUrl}
           heroCoverFileId={heroCoverFileId}
           previewStatus={previewStatus}
+          previewErrorMessage={previewErrorMessage}
         />
         <OutfitPieceList pieces={selectedPieces} onEditOutfit={handleEditOutfit} />
         <OutfitTips tips={recommendation?.tips ?? []} />
         <WearCta
-          disabled={saving || previewStatus === "loading"}
+          disabled={
+            saving ||
+            previewStatus === "loading" ||
+            previewStatus === "error"
+          }
           onWear={handleWearOutfit}
         />
       </>
