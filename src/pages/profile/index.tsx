@@ -4,7 +4,6 @@ import Taro from "@tarojs/taro";
 import { ArrowRight, Edit, Photograph } from "@nutui/icons-react-taro";
 import { Image, Loading } from "@nutui/nutui-react-taro";
 import AppNavbar from "@/components/AppNavbar";
-import { MOCK_AVATAR_SRC } from "@/data/mock/constants";
 import { WORK_SCENE_OPTIONS } from "@/data/profile";
 import { useMainTabNavigation } from "@/hooks/useMainTabNavigation";
 import { useUserProfile } from "@/hooks/useUserProfile";
@@ -67,12 +66,9 @@ function ProfilePage() {
           <View className="profile-header">
             <View className="profile-avatar">
               <View className="profile-avatar__ring">
-                <Image
-                  className="profile-avatar__image"
-                  src={MOCK_AVATAR_SRC}
-                  mode="aspectFill"
-                  radius="50%"
-                />
+                <View className="profile-avatar__image">
+                  <Text className="iconfont icon-totoro profile-avatar__icon" />
+                </View>
               </View>
               <View className="profile-avatar__edit" onClick={handleEditAvatar}>
                 <Edit color="var(--sw-color-on-primary)" size={18} />

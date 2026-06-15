@@ -15,9 +15,21 @@
   gap: 10px;
 
   &__avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
     border: 2px solid var(--nutui-brand-5);
     border-radius: var(--sw-radius-pill);
     box-sizing: border-box;
+    background: var(--sw-color-image-bg);
+  }
+
+  &__avatar-icon {
+    font-size: 20px;
+    color: var(--nutui-brand-6);
+    line-height: 1;
   }
 
   &__title {

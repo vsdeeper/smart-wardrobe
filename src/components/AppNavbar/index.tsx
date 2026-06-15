@@ -1,6 +1,7 @@
 import { View, Text } from "@tarojs/components";
-import { NavBar, Avatar } from "@nutui/nutui-react-taro";
-import { MOCK_AVATAR_SRC } from "@/data/mock/constants";
+
+import { NavBar } from "@nutui/nutui-react-taro";
+
 import "./index.scss";
 
 function AppNavbar() {
@@ -10,11 +11,10 @@ function AppNavbar() {
       className="app-navbar"
       left={
         <View className="navbar-brand">
-          <Avatar
-            size="small"
-            className="navbar-brand__avatar"
-            src={MOCK_AVATAR_SRC}
-          />
+          <View className="navbar-brand__avatar">
+            <Text className="iconfont icon-totoro navbar-brand__avatar-icon" />
+          </View>
+
           <Text className="navbar-brand__title">Botanica</Text>
         </View>
       }
