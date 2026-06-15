@@ -32,3 +32,11 @@ export const DEFAULT_USER_PROFILE: UserProfile = {
   workScenes: ["office"],
   styleTags: [],
 };
+
+export const DEFAULT_USER_DISPLAY_NAME = "衣橱用户";
+
+export function getUserDisplayName(
+  profile: Pick<UserProfile, "occupation">
+): string {
+  return profile.occupation || DEFAULT_USER_DISPLAY_NAME;
+}

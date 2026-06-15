@@ -4,7 +4,7 @@ import Taro from "@tarojs/taro";
 import { ArrowRight, Edit, Photograph } from "@nutui/icons-react-taro";
 import { Image, Loading } from "@nutui/nutui-react-taro";
 import DefaultAvatar from "@/components/DefaultAvatar";
-import { WORK_SCENE_OPTIONS } from "@/data/profile";
+import { getUserDisplayName, WORK_SCENE_OPTIONS } from "@/data/profile";
 import { useMainTabNavigation } from "@/hooks/useMainTabNavigation";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { useVisualDiary } from "@/hooks/useVisualDiary";
@@ -72,7 +72,7 @@ function ProfilePage() {
               </View>
             </View>
             <Text className="profile-header__name">
-              {profile.occupation || "衣橱用户"}
+              {getUserDisplayName(profile)}
             </Text>
             <Text className="profile-header__bio">
               {profile.occupation

@@ -124,6 +124,12 @@
 
 // ========== 区块标题 ==========
 .profile-section {
+  margin-bottom: var(--nutui-spacing-10);
+
+  &--diary {
+    margin-bottom: 0;
+  }
+
   &__head {
     display: flex;
     align-items: center;
