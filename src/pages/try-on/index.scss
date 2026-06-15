@@ -339,13 +339,13 @@
   }
 
   &__grid {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: var(--nutui-spacing-5);
   }
 }
 
 .outfit-piece {
-  flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
