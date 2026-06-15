@@ -110,6 +110,9 @@ exports.main = async (event) => {
         typeName: recognized.typeName,
         tags: recognized.tags,
         imageFileId: fileID,
+        ...(recognized.warmthLevel !== undefined && {
+          warmthLevel: recognized.warmthLevel,
+        }),
       },
     }
   } catch (err) {

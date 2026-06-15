@@ -100,7 +100,7 @@ function buildSystemPrompt() {
 }
 
 const USER_PROMPT =
-  `请识别这件衣物的类型、名称和标签。严格按 system 规则返回 JSON，typeName 不得超出给定列表。name 只描述款式结构，颜色/季节/风格/材质只写在 tags，且 tags 不得与 name 重复；每个 tag 不超过${RECOGNITION_LIMITS.maxTagLength}个字。`
+  `请识别这件衣物的类型、名称和标签。严格按 system 规则返回 JSON，typeName 不得超出给定列表。name 只描述款式结构，颜色/季节/风格/材质只写在 tags，且 tags 不得与 name 重复；每个 tag 不超过${RECOGNITION_LIMITS.maxTagLength}个字。同时返回 warmthLevel（1–5 保暖等级）。`
 
 function parseRecognitionResult(parsed) {
   const typeName = String(parsed.typeName ?? '').trim()

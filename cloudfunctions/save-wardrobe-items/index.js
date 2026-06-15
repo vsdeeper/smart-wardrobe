@@ -16,12 +16,19 @@ function normalizeItemInput(raw) {
 
   if (!name || !typeName || !imageFileId) return null
 
-  return {
-    name,
-    typeName,
-    imageFileId,
-    tags,
+  let warmthLevel
+  if (raw.warmthLevel !== undefined && raw.warmthLevel !== null) {
+    const level = parseInt(String(raw.warmthLevel), 10)
+    if (!Number.isNaN(level)) {
+      warmthLevel = Math.min(5, Math.max(1, level))
+    }
   }
+
+  const result = { name, typeName, imageFileId, tags }
+  if (warmthLevel !== undefined) {
+    result.warmthLevel = warmthLevel
+  }
+  return result
 }
 
 exports.main = async (event) => {

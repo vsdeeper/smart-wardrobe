@@ -24,6 +24,7 @@ interface RecognizePreviewCloudResult {
     typeName: string;
     tags: string[];
     imageFileId: string;
+    warmthLevel?: number;
   };
 }
 
@@ -246,6 +247,9 @@ export async function uploadAndRecognize(
     typeName: data.preview.typeName,
     tags: data.preview.tags,
     imageFileId: data.preview.imageFileId,
+    ...(typeof data.preview.warmthLevel === "number" && {
+      warmthLevel: data.preview.warmthLevel,
+    }),
   };
 
   const [withUrl] = await resolvePreviewImageUrls([preview]);
@@ -305,11 +309,12 @@ export async function saveWardrobeItems(
   const { result } = await Taro.cloud.callFunction({
     name: "save-wardrobe-items",
     data: {
-      items: items.map(({ name, typeName, tags, imageFileId }) => ({
+      items: items.map(({ name, typeName, tags, imageFileId, warmthLevel }) => ({
         name,
         typeName,
         tags,
         imageFileId,
+        ...(warmthLevel !== undefined && { warmthLevel }),
       })),
     },
   });
