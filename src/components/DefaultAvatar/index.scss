@@ -15,6 +15,7 @@
   &--sm {
     width: 32px;
     height: 32px;
+    padding: 4px;
     border: 2px solid var(--nutui-brand-5);
     border-radius: var(--sw-radius-pill);
   }
@@ -22,6 +23,7 @@
   &--lg {
     width: 100%;
     height: 100%;
+    padding: 8px;
     border: 4px solid var(--sw-color-on-primary);
     border-radius: 50%;
   }
