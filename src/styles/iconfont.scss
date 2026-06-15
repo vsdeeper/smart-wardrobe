@@ -1,9 +1,9 @@
 @font-face {
   font-family: "iconfont"; /* Project id 5187712 */
   src:
-    url("@/assets/iconfont/iconfont.woff2?t=1780733346201") format("woff2"),
-    url("@/assets/iconfont/iconfont.woff?t=1780733346201") format("woff"),
-    url("@/assets/iconfont/iconfont.ttf?t=1780733346201") format("truetype");
+    url("@/assets/iconfont/iconfont.woff2?t=1781516281849") format("woff2"),
+    url("@/assets/iconfont/iconfont.woff?t=1781516281849") format("woff"),
+    url("@/assets/iconfont/iconfont.ttf?t=1781516281849") format("truetype");
 }
 
 .iconfont {
@@ -12,6 +12,10 @@
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-totoro:before {
+  content: "\e724";
 }
 
 .icon-snowy:before {
@@ -66,7 +70,7 @@
   content: "\e708";
 }
 
-.icon-outfit:before {
+.icon-try-on:before {
   content: "\e600";
 }
 
@@ -74,7 +78,7 @@
   content: "\e6a7";
 }
 
-.icon-magic-wand:before {
+.icon-outfit:before {
   content: "\e7c6";
 }
 
