@@ -6,9 +6,11 @@ import { Image, Loading } from "@nutui/nutui-react-taro";
 import DefaultAvatar from "@/components/DefaultAvatar";
 import { getUserDisplayName, WORK_SCENE_OPTIONS } from "@/data/profile";
 import { useMainTabNavigation } from "@/hooks/useMainTabNavigation";
+import { useProfileStatsActions } from "@/hooks/useProfileStatsActions";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { useVisualDiary } from "@/hooks/useVisualDiary";
 import Main from "@/layouts/Main";
+import ProfileMetricDialog from "./components/ProfileMetricDialog";
 import "./index.scss";
 
 const ICON_PRIMARY = "var(--nutui-brand-6)";
@@ -18,8 +20,17 @@ type DiaryLayout = "grid" | "list";
 function ProfilePage() {
   const { activeTab, onTabChange } = useMainTabNavigation(3);
   const [diaryLayout, setDiaryLayout] = useState<DiaryLayout>("grid");
-  const { profile, itemCount, loading: profileLoading } = useUserProfile();
+  const { profile, itemCount, loading: profileLoading, updating, updateProfile } =
+    useUserProfile();
   const { entries, loading: diaryLoading } = useVisualDiary();
+  const {
+    metricDialog,
+    metricDialogVisible,
+    metricInitialValue,
+    handleStatClick,
+    handleMetricClose,
+    handleMetricConfirm,
+  } = useProfileStatsActions({ profile, updating, updateProfile });
 
   const handleEditAvatar = () => {
     Taro.showToast({ title: "编辑头像", icon: "none" });
@@ -83,7 +94,11 @@ function ProfilePage() {
 
           <View className="profile-stats">
             {stats.map((stat) => (
-              <View key={stat.key} className="profile-stat card">
+              <View
+                key={stat.key}
+                className="profile-stat card"
+                onClick={() => handleStatClick(stat.key)}
+              >
                 <Text
                   className={`iconfont ${stat.iconClass} profile-stat__icon`}
                 />
@@ -179,6 +194,14 @@ function ProfilePage() {
           </View>
         </View>
       </Main.Scroll>
+      <ProfileMetricDialog
+        visible={metricDialogVisible}
+        metric={metricDialog}
+        initialValue={metricInitialValue}
+        saving={updating}
+        onClose={handleMetricClose}
+        onConfirm={handleMetricConfirm}
+      />
     </Main>
   );
 }

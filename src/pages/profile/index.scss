@@ -96,6 +96,10 @@
   text-align: center;
   box-shadow: 0 -10px 40px rgba(176, 196, 222, 0.15);
 
+  &:active {
+    opacity: 0.85;
+  }
+
   &__icon {
     font-size: 24px;
     color: var(--nutui-brand-6);

@@ -147,6 +147,9 @@ page {
   --nutui-tabs-tabpane-background-color: transparent;
   --nutui-tabs-tabpane-backgroundColor: transparent; // 兼容旧 camelCase
 
+  // Dialog
+  --nutui-dialog-content-margin: 10px 0 12px 0;
+
   // ========== 应用语义令牌（页面样式优先使用） ==========
   --sw-font-heading:
     "Plus Jakarta Sans", "PingFang SC", "Microsoft YaHei", sans-serif;

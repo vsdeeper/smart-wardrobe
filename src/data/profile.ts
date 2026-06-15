@@ -25,6 +25,11 @@ export interface UserProfile {
   updatedAt?: number;
 }
 
+export const PROFILE_HEIGHT_CM = { min: 100, max: 250 } as const;
+export const PROFILE_WEIGHT_KG = { min: 30, max: 200 } as const;
+
+export type ProfileMetric = "height" | "weight";
+
 export const DEFAULT_USER_PROFILE: UserProfile = {
   heightCm: 170,
   weightKg: 60,
