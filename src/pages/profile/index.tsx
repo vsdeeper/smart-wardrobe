@@ -3,7 +3,7 @@ import { View, Text } from "@tarojs/components";
 import Taro from "@tarojs/taro";
 import { ArrowRight, Edit, Photograph } from "@nutui/icons-react-taro";
 import { Image, Loading } from "@nutui/nutui-react-taro";
-import AppNavbar from "@/components/AppNavbar";
+import DefaultAvatar from "@/components/DefaultAvatar";
 import { WORK_SCENE_OPTIONS } from "@/data/profile";
 import { useMainTabNavigation } from "@/hooks/useMainTabNavigation";
 import { useUserProfile } from "@/hooks/useUserProfile";
@@ -59,16 +59,13 @@ function ProfilePage() {
       activeTab={activeTab}
       onTabChange={onTabChange}
       scrollClassName="main-scroll--profile"
-      header={<AppNavbar />}
     >
       <Main.Scroll>
         <View className="profile">
           <View className="profile-header">
             <View className="profile-avatar">
               <View className="profile-avatar__ring">
-                <View className="profile-avatar__image">
-                  <Text className="iconfont icon-totoro profile-avatar__icon" />
-                </View>
+                <DefaultAvatar size="lg" />
               </View>
               <View className="profile-avatar__edit" onClick={handleEditAvatar}>
                 <Edit color="var(--sw-color-on-primary)" size={18} />

@@ -1,9 +1,9 @@
 @font-face {
   font-family: "iconfont"; /* Project id 5187712 */
   src:
-    url("@/assets/iconfont/iconfont.woff2?t=1781516281849") format("woff2"),
-    url("@/assets/iconfont/iconfont.woff?t=1781516281849") format("woff"),
-    url("@/assets/iconfont/iconfont.ttf?t=1781516281849") format("truetype");
+    url("@/assets/iconfont/iconfont.woff2?t=1781530755547") format("woff2"),
+    url("@/assets/iconfont/iconfont.woff?t=1781530755547") format("woff"),
+    url("@/assets/iconfont/iconfont.ttf?t=1781530755547") format("truetype");
 }
 
 .iconfont {
@@ -12,10 +12,6 @@
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-}
-
-.icon-totoro:before {
-  content: "\e724";
 }
 
 .icon-snowy:before {

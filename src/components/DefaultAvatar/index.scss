@@ -1,0 +1,28 @@
+.default-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  overflow: hidden;
+  background: var(--sw-color-image-bg);
+
+  &__image {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  &--sm {
+    width: 32px;
+    height: 32px;
+    border: 2px solid var(--nutui-brand-5);
+    border-radius: var(--sw-radius-pill);
+  }
+
+  &--lg {
+    width: 100%;
+    height: 100%;
+    border: 4px solid var(--sw-color-on-primary);
+    border-radius: 50%;
+  }
+}

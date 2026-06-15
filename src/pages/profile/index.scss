@@ -4,6 +4,7 @@
 
 .main-scroll--profile {
   background: transparent;
+  padding-top: max(env(safe-area-inset-top), var(--sw-status-bar-height, 0px));
 }
 
 .profile {
@@ -42,24 +43,6 @@
       var(--nutui-brand-5) 100%
     );
     box-sizing: border-box;
-  }
-
-  &__image {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    height: 100%;
-    border: 4px solid var(--sw-color-on-primary);
-    border-radius: 50%;
-    box-sizing: border-box;
-    background: var(--sw-color-image-bg);
-  }
-
-  &__icon {
-    font-size: 56px;
-    color: var(--nutui-brand-6);
-    line-height: 1;
   }
 
   &__edit {
