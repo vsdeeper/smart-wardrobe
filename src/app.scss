@@ -235,7 +235,6 @@ page .nut-avatar .avatar-img {
 
   &--loading {
     opacity: var(--sw-btn-disabled-opacity);
-    pointer-events: none;
   }
 
   &:active:not(.sw-fab--loading) {
