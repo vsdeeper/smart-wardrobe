@@ -15,7 +15,7 @@ export default function AiStatusBanner({ aiStatus }: AiStatusBannerProps) {
     <View className="ai-status">
       <View className="ai-status__content">
         <View className="ai-status__icon-wrap">
-          <Text className="iconfont icon-magic-wand ai-status__icon" />
+          <Text className="iconfont icon-outfit ai-status__icon" />
         </View>
         <View className="ai-status__text">
           <Text className="ai-status__label">AI 智能分类</Text>
