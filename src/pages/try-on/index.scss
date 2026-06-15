@@ -442,39 +442,8 @@
   padding-bottom: calc(75px + var(--sw-safe-area-bottom, 0px));
 }
 
-// ========== 主操作按钮 ==========
+// ========== 主操作按钮容器（外观见 app.scss .sw-btn） ==========
 .wear-btn-wrap {
   padding: 0 20px 30px;
   box-sizing: border-box;
-}
-
-.wear-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 52px;
-  margin-bottom: 0;
-  box-sizing: border-box;
-  border-radius: var(--sw-radius-pill);
-  background: var(--nutui-brand-6);
-  box-shadow: var(--sw-shadow-fab);
-
-  &__text {
-    font-family: var(--sw-font-heading);
-    font-size: var(--nutui-font-size-4);
-    font-weight: var(--nutui-font-weight-bold);
-    color: var(--sw-color-on-primary);
-    line-height: 1.2;
-  }
-
-  &:active {
-    opacity: 0.92;
-    transform: scale(0.98);
-  }
-
-  &--disabled {
-    opacity: 0.6;
-    pointer-events: none;
-  }
 }

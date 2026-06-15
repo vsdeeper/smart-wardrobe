@@ -9,12 +9,15 @@ export default function WearCta({ disabled, onWear }: WearCtaProps) {
   return (
     <View className="wear-btn-wrap">
       <View
-        className={["wear-btn", disabled && "wear-btn--disabled"]
+        className={[
+          "sw-btn sw-btn--block sw-btn--primary",
+          disabled && "sw-btn--disabled",
+        ]
           .filter(Boolean)
           .join(" ")}
         onClick={disabled ? undefined : onWear}
       >
-        <Text className="wear-btn__text">就穿这一身</Text>
+        <Text className="sw-btn__text sw-btn__text--primary">就穿这一身</Text>
       </View>
     </View>
   );

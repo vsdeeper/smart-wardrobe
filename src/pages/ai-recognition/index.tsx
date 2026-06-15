@@ -129,25 +129,23 @@ function AiRecognitionPage() {
         </View>
       </ScrollView>
 
-      <View className="ai-recognition-actions">
+      <View className="sw-action-bar">
         <View
           className={[
-            "ai-recognition-actions__btn",
-            "ai-recognition-actions__btn--secondary",
-            submitting && "ai-recognition-actions__btn--disabled",
+            "sw-btn sw-btn--block sw-btn--secondary",
+            submitting && "sw-btn--disabled",
           ]
             .filter(Boolean)
             .join(" ")}
           onClick={handleDiscard}
         >
-          <Text className="ai-recognition-actions__btn-text">放弃</Text>
+          <Text className="sw-btn__text">放弃</Text>
         </View>
         <View
           className={[
-            "ai-recognition-actions__btn",
-            "ai-recognition-actions__btn--primary",
-            (submitting || items.length === 0) &&
-              "ai-recognition-actions__btn--disabled",
+            "sw-btn sw-btn--block sw-btn--primary",
+            items.length === 0 && "sw-btn--disabled",
+            submitting && "sw-btn--loading",
           ]
             .filter(Boolean)
             .join(" ")}
@@ -157,12 +155,10 @@ function AiRecognitionPage() {
             <Loading
               type="circular"
               color="var(--sw-color-on-primary)"
-              className="ai-recognition-actions__loading"
+              className="sw-btn-loading"
             />
           ) : (
-            <Text className="ai-recognition-actions__btn-text ai-recognition-actions__btn-text--primary">
-              确认
-            </Text>
+            <Text className="sw-btn__text sw-btn__text--primary">确认</Text>
           )}
         </View>
       </View>

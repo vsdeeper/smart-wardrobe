@@ -127,6 +127,137 @@ page .nut-avatar .avatar-img {
   }
 }
 
+// ========== 交互按钮（块级 CTA / FAB / 底栏） ==========
+.sw-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  border-radius: var(--sw-radius-pill);
+
+  &--block {
+    flex: 1;
+    width: 100%;
+    height: var(--sw-btn-height);
+  }
+
+  &--primary {
+    background: var(--nutui-brand-6);
+    box-shadow: var(--sw-shadow-fab);
+  }
+
+  &--secondary {
+    background: var(--nutui-gray-1);
+    border: 1px solid var(--nutui-gray-4);
+  }
+
+  &--loading,
+  &--disabled {
+    opacity: var(--sw-btn-disabled-opacity);
+    pointer-events: none;
+  }
+
+  &:active:not(.sw-btn--disabled):not(.sw-btn--loading) {
+    opacity: var(--sw-btn-active-opacity);
+    transform: scale(0.98);
+  }
+
+  &__text {
+    font-family: var(--sw-font-heading);
+    font-size: var(--nutui-font-size-4);
+    font-weight: var(--nutui-font-weight-bold);
+    color: var(--nutui-gray-7);
+    line-height: 1.2;
+
+    &--primary {
+      color: var(--sw-color-on-primary);
+    }
+  }
+}
+
+// NutUI Loading 包裹（块级按钮 / FAB 共用）
+.sw-btn-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  --nutui-loading-icon-size: var(--sw-btn-loading-size);
+  --nutui-loading-icon-color: var(--sw-color-on-primary);
+
+  .nut-loading {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+  }
+
+  .nut-loading-icon-box {
+    font-size: 0;
+    line-height: 0;
+  }
+
+  .nut-loading-icon,
+  .nut-icon {
+    color: var(--sw-color-on-primary);
+    background-color: currentColor;
+  }
+}
+
+.sw-fab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--sw-fab-size);
+  height: var(--sw-fab-size);
+  border-radius: var(--sw-radius-pill);
+  background: var(--nutui-brand-6);
+  box-shadow: var(--sw-shadow-fab);
+
+  &__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--sw-fab-icon-size);
+    height: var(--sw-fab-icon-size);
+  }
+
+  .sw-btn-loading {
+    width: var(--sw-fab-icon-size);
+    height: var(--sw-fab-icon-size);
+    --nutui-loading-icon-size: var(--sw-fab-loading-size);
+
+    .nut-loading-icon,
+    .nut-icon {
+      width: var(--sw-fab-loading-size);
+      height: var(--sw-fab-loading-size);
+    }
+  }
+
+  &--loading {
+    opacity: var(--sw-btn-disabled-opacity);
+    pointer-events: none;
+  }
+
+  &:active:not(.sw-fab--loading) {
+    transform: scale(0.95);
+  }
+}
+
+.sw-action-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 50;
+  display: flex;
+  gap: var(--nutui-spacing-5);
+  padding: 12px var(--nutui-spacing-5)
+    calc(12px + var(--sw-safe-area-bottom, 0px));
+  background: var(--nutui-gray-1);
+  border-top: 1px solid var(--sw-color-progress-track);
+  box-sizing: border-box;
+}
+
 // Dialog 内容区 + 自定义 footer（全局，穿透 NutUI Dialog 组件样式隔离）
 .sw-dialog-body {
   width: 100%;

@@ -42,68 +42,12 @@
   gap: var(--nutui-spacing-8);
 }
 
-// ========== 页面 FAB（添加单品） ==========
+// ========== 页面 FAB 定位（外观见 app.scss .sw-fab） ==========
 .wardrobe-fab {
   position: fixed;
   right: 24px;
   bottom: calc(96px + var(--sw-safe-area-bottom, 0px));
   z-index: 40;
-  width: 56px;
-  height: 56px;
-  border-radius: var(--sw-radius-pill);
-  background: var(--nutui-brand-6);
-  box-shadow: var(--sw-shadow-fab);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
-
-  &__icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 30px;
-    height: 30px;
-  }
-
-  &__loading {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 30px;
-    height: 30px;
-    --nutui-loading-icon-size: 30px;
-    --nutui-loading-icon-color: var(--sw-color-on-primary);
-
-    .nut-loading {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-      height: 100%;
-    }
-
-    .nut-loading-icon-box {
-      font-size: 0;
-      line-height: 0;
-    }
-
-    .nut-loading-icon,
-    .nut-icon {
-      width: 30px;
-      height: 30px;
-      color: var(--sw-color-on-primary);
-      background-color: currentColor;
-    }
-  }
-
-  &:active {
-    transform: scale(0.95);
-  }
-
-  &--loading {
-    pointer-events: none;
-  }
 }
 
 // ========== 长按操作 ActionSheet ==========

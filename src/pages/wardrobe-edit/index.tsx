@@ -98,24 +98,22 @@ function WardrobeEditPage() {
       )}
 
       {!loading && item && (
-        <View className="wardrobe-edit-actions">
+        <View className="sw-action-bar">
           <View
             className={[
-              "wardrobe-edit-actions__btn",
-              "wardrobe-edit-actions__btn--secondary",
-              saving && "wardrobe-edit-actions__btn--disabled",
+              "sw-btn sw-btn--block sw-btn--secondary",
+              saving && "sw-btn--disabled",
             ]
               .filter(Boolean)
               .join(" ")}
             onClick={handleCancel}
           >
-            <Text className="wardrobe-edit-actions__btn-text">取消</Text>
+            <Text className="sw-btn__text">取消</Text>
           </View>
           <View
             className={[
-              "wardrobe-edit-actions__btn",
-              "wardrobe-edit-actions__btn--primary",
-              saving && "wardrobe-edit-actions__btn--disabled",
+              "sw-btn sw-btn--block sw-btn--primary",
+              saving && "sw-btn--loading",
             ]
               .filter(Boolean)
               .join(" ")}
@@ -125,12 +123,10 @@ function WardrobeEditPage() {
               <Loading
                 type="circular"
                 color="var(--sw-color-on-primary)"
-                className="wardrobe-edit-actions__loading"
+                className="sw-btn-loading"
               />
             ) : (
-              <Text className="wardrobe-edit-actions__btn-text wardrobe-edit-actions__btn-text--primary">
-                保存
-              </Text>
+              <Text className="sw-btn__text sw-btn__text--primary">保存</Text>
             )}
           </View>
         </View>

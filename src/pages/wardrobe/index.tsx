@@ -100,7 +100,7 @@ function WardrobePage() {
       </Main.Scroll>
 
       <View
-        className={["wardrobe-fab", adding && "wardrobe-fab--loading"]
+        className={["sw-fab wardrobe-fab", adding && "sw-fab--loading"]
           .filter(Boolean)
           .join(" ")}
         onClick={handleAddItem}
@@ -109,11 +109,11 @@ function WardrobePage() {
           <Loading
             type="circular"
             color="var(--sw-color-on-primary)"
-            className="wardrobe-fab__loading"
+            className="sw-btn-loading"
           />
         ) : (
           <Add
-            className="wardrobe-fab__icon"
+            className="sw-fab__icon"
             color="var(--sw-color-on-primary)"
             size={30}
           />
