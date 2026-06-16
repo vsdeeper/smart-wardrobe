@@ -1,6 +1,7 @@
 import Taro from "@tarojs/taro";
 import {
   DEFAULT_USER_PROFILE,
+  type Gender,
   type UserProfile,
   type WorkScene,
 } from "@/data/profile";
@@ -13,12 +14,21 @@ const ALLOWED_SCENES = new Set<WorkScene>([
   "social",
 ]);
 
+const ALLOWED_GENDERS = new Set<Gender>(["male", "female", "unknown"]);
+
 function normalizeWorkScenes(raw: unknown): WorkScene[] {
   if (!Array.isArray(raw)) return DEFAULT_USER_PROFILE.workScenes;
   const scenes = raw
     .map((item) => String(item ?? "").trim())
     .filter((item): item is WorkScene => ALLOWED_SCENES.has(item as WorkScene));
   return scenes.length > 0 ? scenes : DEFAULT_USER_PROFILE.workScenes;
+}
+
+function normalizeGender(raw: unknown): Gender {
+  if (typeof raw === "string" && ALLOWED_GENDERS.has(raw as Gender)) {
+    return raw as Gender;
+  }
+  return DEFAULT_USER_PROFILE.gender ?? "unknown";
 }
 
 function normalizeProfile(raw: Record<string, unknown>): UserProfile {
@@ -40,6 +50,12 @@ function normalizeProfile(raw: Record<string, unknown>): UserProfile {
     styleTags: Array.isArray(raw.styleTags)
       ? raw.styleTags.map(String)
       : DEFAULT_USER_PROFILE.styleTags,
+    avatarFileId:
+      typeof raw.avatarFileId === "string" ? raw.avatarFileId : undefined,
+    nickname: typeof raw.nickname === "string" ? raw.nickname : undefined,
+    gender: normalizeGender(raw.gender),
+    phoneNumber:
+      typeof raw.phoneNumber === "string" ? raw.phoneNumber : undefined,
     updatedAt:
       typeof raw.updatedAt === "number"
         ? raw.updatedAt
@@ -66,6 +82,10 @@ export async function saveUserProfile(
     occupation: profile.occupation.trim(),
     workScenes: profile.workScenes,
     styleTags: profile.styleTags,
+    avatarFileId: profile.avatarFileId ?? "",
+    nickname: profile.nickname?.trim() ?? "",
+    gender: profile.gender ?? DEFAULT_USER_PROFILE.gender,
+    phoneNumber: profile.phoneNumber ?? "",
     updatedAt: now,
   };
 

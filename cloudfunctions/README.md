@@ -353,3 +353,13 @@ LLM 失败时回退规则推荐 `buildFallbackRecommendation`。
 | ------------ | -------- |
 | `未配置 DOUBAO_SEEDREAM_MODEL` | 未在 `generate-tryon-image` 云函数配置 Hero 专用模型 ID |
 | `Seedream 未返回图片` | 模型 ID 无图像生成权限，或 prompt/参考图不符合要求 |
+
+### get-phone-number
+
+右键 `cloudfunctions/get-phone-number` → **上传并部署：云端安装依赖**。
+
+[`config.json`](cloudfunctions/get-phone-number/config.json) 已声明 OpenAPI 权限 `phonenumber.getPhoneNumber`，用于解密小程序 `getPhoneNumber` 返回的 `code`。
+
+入参：`{ code }`（来自 `Button openType="getPhoneNumber"` 的 `e.detail.code`）。
+
+成功时返回 `{ phoneNumber }`；失败时返回 `{ error }`。

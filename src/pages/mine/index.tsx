@@ -20,7 +20,7 @@ type DiaryLayout = "grid" | "list";
 function MinePage() {
   const { activeTab, onTabChange } = useMainTabNavigation(3);
   const [diaryLayout, setDiaryLayout] = useState<DiaryLayout>("grid");
-  const { profile, itemCount, loading: profileLoading, updating, updateProfile } =
+  const { profile, avatarUrl, itemCount, loading: profileLoading, updating, updateProfile } =
     useUserProfile();
   const { entries, loading: diaryLoading } = useVisualDiary();
   const {
@@ -32,8 +32,8 @@ function MinePage() {
     handleMetricConfirm,
   } = useMineStatsActions({ profile, updating, updateProfile });
 
-  const handleEditAvatar = () => {
-    Taro.showToast({ title: "编辑头像", icon: "none" });
+  const handleOpenProfile = () => {
+    Taro.navigateTo({ url: "/pages/mine-profile/index" });
   };
 
   const handleRetest = () => {
@@ -74,11 +74,11 @@ function MinePage() {
       <Main.Scroll>
         <View className="mine">
           <View className="mine-header">
-            <View className="mine-avatar">
+            <View className="mine-avatar" onClick={handleOpenProfile}>
               <View className="mine-avatar__ring">
-                <DefaultAvatar size="lg" />
+                <DefaultAvatar size="lg" src={avatarUrl} />
               </View>
-              <View className="mine-avatar__edit" onClick={handleEditAvatar}>
+              <View className="mine-avatar__edit">
                 <Edit color="var(--sw-color-on-primary)" size={18} />
               </View>
             </View>

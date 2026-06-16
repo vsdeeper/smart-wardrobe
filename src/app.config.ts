@@ -7,6 +7,7 @@ export default defineAppConfig({
     'pages/try-on/index',
     'pages/outfit/index',
     'pages/mine/index',
+    'pages/mine-profile/index',
   ],
   permission: {
     'scope.userLocation': {
