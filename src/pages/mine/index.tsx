@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { View, Text } from "@tarojs/components";
 import Taro from "@tarojs/taro";
-import { ArrowRight, Edit, Photograph } from "@nutui/icons-react-taro";
+import { ArrowRight, Edit } from "@nutui/icons-react-taro";
 import { Image, Loading } from "@nutui/nutui-react-taro";
 import DefaultAvatar from "@/components/DefaultAvatar";
-import { getUserDisplayName, WORK_SCENE_OPTIONS } from "@/data/profile";
+import { getUserDisplayName } from "@/data/profile";
 import { useMainTabNavigation } from "@/hooks/useMainTabNavigation";
 import { useMineStatsActions } from "@/hooks/useMineStatsActions";
 import { useUserProfile } from "@/hooks/useUserProfile";
@@ -40,20 +40,12 @@ function MinePage() {
     Taro.showToast({ title: "风格测试即将上线", icon: "none" });
   };
 
-  const handleAddDiary = () => {
-    Taro.showToast({ title: "请从试穿页记录穿搭", icon: "none" });
-  };
-
   const handleToggleDiaryLayout = () => {
     setDiaryLayout((prev) => (prev === "grid" ? "list" : "grid"));
   };
 
   const diaryToggleIcon =
     diaryLayout === "grid" ? "icon-list" : "icon-category";
-
-  const sceneLabel =
-    WORK_SCENE_OPTIONS.find((o) => o.value === profile.workScenes[0])?.label ??
-    "办公室";
 
   const stats = [
     { key: "height", label: "身高", value: `${profile.heightCm} cm`, iconClass: "icon-height" },
@@ -87,7 +79,7 @@ function MinePage() {
             </Text>
             <Text className="mine-header__bio">
               {profile.occupation
-                ? `${sceneLabel}场景 · ${profile.heightCm}cm / ${profile.weightKg}kg`
+                ? `${profile.occupation} · ${profile.heightCm}cm / ${profile.weightKg}kg`
                 : "完善个人画像，获得更精准的 AI 穿搭推荐。"}
             </Text>
           </View>
@@ -143,6 +135,13 @@ function MinePage() {
               <View className="mine-diary-loading">
                 <Loading type="circular" />
               </View>
+            ) : entries.length === 0 ? (
+              <View className="mine-diary-empty">
+                <Text className="mine-diary-empty__title">还没有穿搭记录</Text>
+                <Text className="mine-diary-empty__desc">
+                  试穿后点击「就穿这一身」，记录将出现在这里
+                </Text>
+              </View>
             ) : diaryLayout === "grid" ? (
               <View className="mine-diary">
                 {entries.map((entry) => (
@@ -155,10 +154,6 @@ function MinePage() {
                     />
                   </View>
                 ))}
-                <View className="mine-diary__add" onClick={handleAddDiary}>
-                  <Photograph color="var(--nutui-gray-5)" size={32} />
-                  <Text className="mine-diary__add-text">添加记录</Text>
-                </View>
               </View>
             ) : (
               <View className="mine-diary mine-diary--list">
@@ -182,13 +177,6 @@ function MinePage() {
                     </View>
                   </View>
                 ))}
-                <View
-                  className="mine-diary-row mine-diary-row--add"
-                  onClick={handleAddDiary}
-                >
-                  <Photograph color="var(--nutui-gray-5)" size={32} />
-                  <Text className="mine-diary-row__add-text">添加记录</Text>
-                </View>
               </View>
             )}
           </View>

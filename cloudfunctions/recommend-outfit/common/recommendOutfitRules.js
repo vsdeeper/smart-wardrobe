@@ -1,13 +1,5 @@
-const WORK_SCENE_LABELS = {
-  office: '办公室',
-  'client-meeting': '客户会面',
-  field: '外勤',
-  casual: '休闲日常',
-  social: '社交活动',
-}
-
 function buildRecommendSystemPrompt() {
-  return `你是专业穿搭顾问。根据用户天气、季节、职业与工作场景，从用户衣橱中为每个类别挑选最合适的单品组合。
+  return `你是专业穿搭顾问。根据用户天气、季节、职业与风格偏好，从用户衣橱中为每个类别挑选最合适的单品组合。
 
 规则：
 1. 每个 slot 的 selectedId 必须来自对应 typeName 下的衣橱 id
@@ -31,9 +23,6 @@ function buildRecommendSystemPrompt() {
 
 function buildRecommendUserPrompt(payload) {
   const { weather, season, profile, wardrobeByType } = payload
-  const scenes = (profile.workScenes || [])
-    .map((s) => WORK_SCENE_LABELS[s] || s)
-    .join('、')
 
   const wardrobeText = Object.entries(wardrobeByType || {})
     .map(([typeName, items]) => {
@@ -47,7 +36,7 @@ function buildRecommendUserPrompt(payload) {
 
   return `当前季节：${season}
 天气：${weather.conditionCode} ${weather.temperature}°C 湿度${weather.humidity}% 城市${weather.city}
-用户：身高${profile.heightCm}cm 体重${profile.weightKg}kg 职业「${profile.occupation || '未填写'}」 场景「${scenes || '办公室'}」 风格标签 ${JSON.stringify(profile.styleTags || [])}
+用户：身高${profile.heightCm}cm 体重${profile.weightKg}kg 职业「${profile.occupation || '未填写'}」 风格标签 ${JSON.stringify(profile.styleTags || [])}
 
 衣橱单品（按类别）：
 ${wardrobeText}

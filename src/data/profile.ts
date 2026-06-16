@@ -1,19 +1,3 @@
-/** 工作场景枚举 */
-export type WorkScene =
-  | "office"
-  | "client-meeting"
-  | "field"
-  | "casual"
-  | "social";
-
-export const WORK_SCENE_OPTIONS: { value: WorkScene; label: string }[] = [
-  { value: "office", label: "办公室" },
-  { value: "client-meeting", label: "客户会面" },
-  { value: "field", label: "外勤" },
-  { value: "casual", label: "休闲日常" },
-  { value: "social", label: "社交活动" },
-];
-
 export type Gender = "male" | "female" | "unknown";
 
 export const GENDER_OPTIONS: { value: Gender; label: string }[] = [
@@ -28,7 +12,6 @@ export interface UserProfile {
   heightCm: number;
   weightKg: number;
   occupation: string;
-  workScenes: WorkScene[];
   styleTags: string[];
   avatarFileId?: string;
   nickname?: string;
@@ -46,7 +29,6 @@ export const DEFAULT_USER_PROFILE: UserProfile = {
   heightCm: 170,
   weightKg: 60,
   occupation: "",
-  workScenes: ["office"],
   styleTags: [],
   gender: "unknown",
 };

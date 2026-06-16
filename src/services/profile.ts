@@ -3,26 +3,9 @@ import {
   DEFAULT_USER_PROFILE,
   type Gender,
   type UserProfile,
-  type WorkScene,
 } from "@/data/profile";
 
-const ALLOWED_SCENES = new Set<WorkScene>([
-  "office",
-  "client-meeting",
-  "field",
-  "casual",
-  "social",
-]);
-
 const ALLOWED_GENDERS = new Set<Gender>(["male", "female", "unknown"]);
-
-function normalizeWorkScenes(raw: unknown): WorkScene[] {
-  if (!Array.isArray(raw)) return DEFAULT_USER_PROFILE.workScenes;
-  const scenes = raw
-    .map((item) => String(item ?? "").trim())
-    .filter((item): item is WorkScene => ALLOWED_SCENES.has(item as WorkScene));
-  return scenes.length > 0 ? scenes : DEFAULT_USER_PROFILE.workScenes;
-}
 
 function normalizeGender(raw: unknown): Gender {
   if (typeof raw === "string" && ALLOWED_GENDERS.has(raw as Gender)) {
@@ -46,7 +29,6 @@ function normalizeProfile(raw: Record<string, unknown>): UserProfile {
       typeof raw.occupation === "string"
         ? raw.occupation
         : DEFAULT_USER_PROFILE.occupation,
-    workScenes: normalizeWorkScenes(raw.workScenes),
     styleTags: Array.isArray(raw.styleTags)
       ? raw.styleTags.map(String)
       : DEFAULT_USER_PROFILE.styleTags,
@@ -80,7 +62,6 @@ export async function saveUserProfile(
     heightCm: profile.heightCm,
     weightKg: profile.weightKg,
     occupation: profile.occupation.trim(),
-    workScenes: profile.workScenes,
     styleTags: profile.styleTags,
     avatarFileId: profile.avatarFileId ?? "",
     nickname: profile.nickname?.trim() ?? "",

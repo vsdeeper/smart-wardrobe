@@ -12,11 +12,32 @@
   padding-bottom: var(--nutui-spacing-8);
 }
 
-.mine-diary-loading {
+.mine-diary-loading,
+.mine-diary-empty {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   min-height: 120px;
+  padding: var(--nutui-spacing-10) var(--nutui-spacing-8);
+  gap: var(--nutui-spacing-3);
+}
+
+.mine-diary-empty {
+  &__title {
+    font-family: var(--sw-font-heading);
+    font-size: var(--nutui-font-size-5);
+    font-weight: var(--nutui-font-weight-bold);
+    color: var(--nutui-gray-7);
+  }
+
+  &__desc {
+    font-family: var(--sw-font-body);
+    font-size: var(--nutui-font-size-3);
+    color: var(--nutui-gray-5);
+    text-align: center;
+    line-height: var(--nutui-line-height-base);
+  }
 }
 
 // ========== 头像与简介 ==========
@@ -222,25 +243,6 @@
     height: 100%;
     display: block;
   }
-
-  &__add {
-    aspect-ratio: 4 / 5;
-    border-radius: var(--sw-radius-card);
-    border: 2px dashed var(--nutui-gray-4);
-    background: var(--sw-color-image-bg);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: var(--nutui-spacing-3);
-  }
-
-  &__add-text {
-    font-family: var(--sw-font-body);
-    font-size: var(--nutui-font-size-2);
-    font-weight: 500;
-    color: var(--nutui-gray-5);
-  }
 }
 
 .mine-diary-row {
@@ -291,23 +293,5 @@
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
     overflow: hidden;
-  }
-
-  &--add {
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: var(--nutui-spacing-3);
-    border: 2px dashed var(--nutui-gray-4);
-    background: var(--sw-color-image-bg);
-    box-shadow: none;
-    padding: var(--nutui-spacing-8) var(--nutui-spacing-5);
-  }
-
-  &__add-text {
-    font-family: var(--sw-font-body);
-    font-size: var(--nutui-font-size-2);
-    font-weight: 500;
-    color: var(--nutui-gray-5);
   }
 }

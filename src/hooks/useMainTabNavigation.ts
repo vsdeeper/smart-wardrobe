@@ -9,24 +9,21 @@ import Taro from "@tarojs/taro";
  * | 2     | outfit   | /pages/outfit/index      | 搭配 |
  * | 3     | mine     | /pages/mine/index        | 我的 |
  */
-const TAB_ROUTES: (string | null)[] = [
+const TAB_ROUTES = [
   "/pages/wardrobe/index",
   "/pages/try-on/index",
   "/pages/outfit/index",
   "/pages/mine/index",
-];
+] as const;
 
 export function useMainTabNavigation(currentTab: number) {
   const handleTabChange = (index: number) => {
     if (index === currentTab) return;
 
     const route = TAB_ROUTES[index];
-    if (route) {
-      Taro.redirectTo({ url: route });
-      return;
-    }
+    if (!route) return;
 
-    Taro.showToast({ title: "即将上线", icon: "none" });
+    Taro.redirectTo({ url: route });
   };
 
   return { activeTab: currentTab, onTabChange: handleTabChange };
