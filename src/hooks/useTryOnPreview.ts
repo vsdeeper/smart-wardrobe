@@ -90,6 +90,7 @@ export function useTryOnPreview({
         imageFileIds: fileIds,
         heightCm: profile.heightCm,
         weightKg: profile.weightKg,
+        gender: profile.gender,
         pieceLabels: selectedPieces
           .map((p) => p.name || p.typeName)
           .filter(Boolean),

@@ -1,9 +1,11 @@
+import type { Gender } from "@/data/profile";
 import Taro from "@tarojs/taro";
 
 export interface GenerateTryonInput {
   imageFileIds: string[];
   heightCm: number;
   weightKg: number;
+  gender?: Gender;
   pieceLabels?: string[];
   pieceTypeNames?: string[];
 }

@@ -26,6 +26,7 @@ exports.main = async (event) => {
     imageFileIds = [],
     heightCm = 170,
     weightKg = 60,
+    gender = 'unknown',
     pieceLabels = [],
     pieceTypeNames = [],
   } = event || {}
@@ -56,6 +57,7 @@ exports.main = async (event) => {
         prompt: buildTryonPrompt({
           heightCm,
           weightKg,
+          gender,
           pieceLabels,
           pieceTypeNames,
           imageCount: imageUrls.length,
