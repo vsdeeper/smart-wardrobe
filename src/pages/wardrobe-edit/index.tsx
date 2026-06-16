@@ -27,6 +27,7 @@ function WardrobeEditPage() {
     setOutfitRecommendation,
     handleCancel,
     handleSave,
+    isRecognitionMode,
   } = useWardrobeEdit();
 
   const { statusBarHeight, safeArea } = Taro.getWindowInfo();
@@ -58,6 +59,7 @@ function WardrobeEditPage() {
           tags={tags}
           outfitRecommendation={outfitRecommendation}
           clothingTypes={clothingTypes}
+          hideOutfitRecommendation={isRecognitionMode}
           onNameChange={setName}
           onTypeNameChange={setTypeName}
           onTagsChange={setTags}

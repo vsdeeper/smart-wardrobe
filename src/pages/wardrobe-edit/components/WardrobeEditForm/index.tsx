@@ -67,6 +67,7 @@ export interface WardrobeEditFormProps {
   tags: string[];
   outfitRecommendation: string;
   clothingTypes: ClothingType[];
+  hideOutfitRecommendation?: boolean;
   onNameChange: (value: string) => void;
   onTypeNameChange: (value: string) => void;
   onTagsChange: (tags: string[]) => void;
@@ -78,6 +79,7 @@ interface WardrobeEditFormContextValue {
   typeName: string;
   tags: string[];
   outfitRecommendation: string;
+  hideOutfitRecommendation: boolean;
   tagAddDisabled: boolean;
   onNameChange: (value: string) => void;
   onOutfitRecommendationChange: (value: string) => void;
@@ -128,6 +130,7 @@ export function WardrobeEditFormProvider({
   tags,
   outfitRecommendation,
   clothingTypes,
+  hideOutfitRecommendation = false,
   onNameChange,
   onTypeNameChange,
   onTagsChange,
@@ -232,6 +235,7 @@ export function WardrobeEditFormProvider({
       typeName,
       tags,
       outfitRecommendation,
+      hideOutfitRecommendation,
       tagAddDisabled,
       onNameChange,
       onOutfitRecommendationChange,
@@ -258,6 +262,7 @@ export function WardrobeEditFormProvider({
       typeName,
       tags,
       outfitRecommendation,
+      hideOutfitRecommendation,
       tagAddDisabled,
       onNameChange,
       onOutfitRecommendationChange,
@@ -292,6 +297,7 @@ export function WardrobeEditFormFields() {
     typeName,
     tags,
     outfitRecommendation,
+    hideOutfitRecommendation,
     tagAddDisabled,
     onNameChange,
     onOutfitRecommendationChange,
@@ -362,17 +368,19 @@ export function WardrobeEditFormFields() {
         </View>
       </FormRow>
 
-      <View className="wardrobe-edit-form__outfit">
-        <Text className="sw-form-label">搭配推荐</Text>
-        <View className="sw-field-box">
-          <TextArea
-            value={outfitRecommendation}
-            placeholder={OUTFIT_PLACEHOLDER}
-            autoSize
-            onChange={onOutfitRecommendationChange}
-          />
+      {!hideOutfitRecommendation && (
+        <View className="wardrobe-edit-form__outfit">
+          <Text className="sw-form-label">搭配推荐</Text>
+          <View className="sw-field-box">
+            <TextArea
+              value={outfitRecommendation}
+              placeholder={OUTFIT_PLACEHOLDER}
+              autoSize
+              onChange={onOutfitRecommendationChange}
+            />
+          </View>
         </View>
-      </View>
+      )}
     </View>
   );
 }

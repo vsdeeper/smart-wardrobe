@@ -1,10 +1,15 @@
 import { useCallback, useRef, useState } from "react";
-import Taro, { useLoad, useUnload } from "@tarojs/taro";
+import Taro, { useDidShow, useLoad, useUnload } from "@tarojs/taro";
 import type { RecognizedPreviewItem } from "@/data/wardrobe";
 import {
   clearRecognitionDraft,
   consumeRecognitionDraft,
 } from "@/services/recognitionDraft";
+import {
+  clearRecognitionSession,
+  getRecognitionSession,
+  initRecognitionSession,
+} from "@/services/recognitionSession";
 import { deleteCloudFiles, saveWardrobeItems } from "@/services/wardrobe";
 
 export function useAiRecognitionList() {
@@ -24,8 +29,14 @@ export function useAiRecognitionList() {
     }
 
     allFileIdsRef.current = draft.map((item) => item.imageFileId);
+    initRecognitionSession(draft);
     setItems(draft);
     setInitialized(true);
+  });
+
+  useDidShow(() => {
+    if (!initialized) return;
+    setItems(getRecognitionSession());
   });
 
   useUnload(() => {
@@ -33,6 +44,7 @@ export function useAiRecognitionList() {
 
     void deleteCloudFiles(allFileIdsRef.current);
     clearRecognitionDraft();
+    clearRecognitionSession();
   });
 
   const handleRemove = useCallback((tempId: string) => {
@@ -44,7 +56,15 @@ export function useAiRecognitionList() {
           target.imageFileId,
         ];
       }
-      return prev.filter((item) => item.tempId !== tempId);
+      const next = prev.filter((item) => item.tempId !== tempId);
+      initRecognitionSession(next);
+      return next;
+    });
+  }, []);
+
+  const handleEdit = useCallback((tempId: string) => {
+    Taro.navigateTo({
+      url: `/pages/wardrobe-edit/index?source=recognition&tempId=${tempId}`,
     });
   }, []);
 
@@ -52,6 +72,7 @@ export function useAiRecognitionList() {
     handledRef.current = true;
     await deleteCloudFiles(allFileIdsRef.current);
     clearRecognitionDraft();
+    clearRecognitionSession();
     Taro.navigateBack();
   }, []);
 
@@ -83,6 +104,7 @@ export function useAiRecognitionList() {
         await deleteCloudFiles(removedFileIdsRef.current);
       }
       clearRecognitionDraft();
+      clearRecognitionSession();
 
       if (failed.length > 0) {
         Taro.showToast({
@@ -110,6 +132,7 @@ export function useAiRecognitionList() {
     submitting,
     initialized,
     handleRemove,
+    handleEdit,
     handleDiscard,
     handleConfirm,
   };

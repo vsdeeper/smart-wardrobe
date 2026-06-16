@@ -1,7 +1,7 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useRef } from "react";
 import { View, Text, ScrollView } from "@tarojs/components";
 import Taro from "@tarojs/taro";
-import { ImagePreview, Loading, NavBar, Swipe } from "@nutui/nutui-react-taro";
+import { Loading, NavBar, Swipe } from "@nutui/nutui-react-taro";
 import { useAiRecognitionList } from "@/hooks/useAiRecognitionList";
 import RecognitionItemCard from "./components/RecognitionItemCard";
 import "./index.scss";
@@ -12,17 +12,10 @@ function AiRecognitionPage() {
     submitting,
     initialized,
     handleRemove,
+    handleEdit,
     handleDiscard,
     handleConfirm,
   } = useAiRecognitionList();
-
-  const [previewVisible, setPreviewVisible] = useState(false);
-  const [previewIndex, setPreviewIndex] = useState(0);
-
-  const previewImages = useMemo(
-    () => items.map((item) => ({ src: item.imageUrl || item.imageFileId })),
-    [items],
-  );
 
   const swipeRefs = useRef(new Map<string, { close: () => void }>());
   const openSwipeIdRef = useRef<string | null>(null);
@@ -49,18 +42,20 @@ function AiRecognitionPage() {
     openSwipeIdRef.current = null;
   }, []);
 
-  const openPreview = useCallback((index: number) => {
-    setPreviewIndex(index);
-    setPreviewVisible(true);
-  }, []);
-
   const handleDelete = useCallback(
     (tempId: string) => {
       swipeRefs.current.get(tempId)?.close();
-      setPreviewVisible(false);
       handleRemove(tempId);
     },
     [handleRemove],
+  );
+
+  const handleEditItem = useCallback(
+    (tempId: string) => {
+      swipeRefs.current.get(tempId)?.close();
+      handleEdit(tempId);
+    },
+    [handleEdit],
   );
 
   const { statusBarHeight, safeArea } = Taro.getWindowInfo();
@@ -96,7 +91,7 @@ function AiRecognitionPage() {
         showScrollbar={false}
       >
         <View className="ai-recognition-page__list">
-          {items.map((item, index) => (
+          {items.map((item) => (
             <Swipe
               key={item.tempId}
               name={item.tempId}
@@ -104,18 +99,23 @@ function AiRecognitionPage() {
               onOpen={() => handleSwipeOpen(item.tempId)}
               onClose={handleSwipeClose}
               rightAction={
-                <View
-                  className="ai-recognition-page__delete"
-                  onClick={() => handleDelete(item.tempId)}
-                >
-                  <Text className="ai-recognition-page__delete-text">删除</Text>
+                <View className="ai-recognition-page__swipe-actions">
+                  <View
+                    className="ai-recognition-page__edit"
+                    onClick={() => handleEditItem(item.tempId)}
+                  >
+                    <Text className="ai-recognition-page__edit-text">编辑</Text>
+                  </View>
+                  <View
+                    className="ai-recognition-page__delete"
+                    onClick={() => handleDelete(item.tempId)}
+                  >
+                    <Text className="ai-recognition-page__delete-text">删除</Text>
+                  </View>
                 </View>
               }
             >
-              <RecognitionItemCard
-                item={item}
-                onImageClick={() => openPreview(index)}
-              />
+              <RecognitionItemCard item={item} />
             </Swipe>
           ))}
 
@@ -162,17 +162,6 @@ function AiRecognitionPage() {
           )}
         </View>
       </View>
-
-      <ImagePreview
-        key={previewIndex}
-        visible={previewVisible}
-        images={previewImages}
-        defaultValue={previewIndex + 1}
-        closeIcon
-        pagination
-        showMenuByLongpress
-        onClose={() => setPreviewVisible(false)}
-      />
     </View>
   );
 }

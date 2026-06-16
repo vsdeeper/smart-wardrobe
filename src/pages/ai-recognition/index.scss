@@ -35,6 +35,27 @@
     gap: var(--nutui-spacing-5);
   }
 
+  &__swipe-actions {
+    display: flex;
+    height: 100%;
+  }
+
+  &__edit {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 72px;
+    height: 100%;
+    background: var(--nutui-gray-6);
+  }
+
+  &__edit-text {
+    font-family: var(--sw-font-body);
+    font-size: var(--nutui-font-size-3);
+    font-weight: 500;
+    color: var(--sw-color-on-primary);
+  }
+
   &__delete {
     display: flex;
     align-items: center;
@@ -66,6 +87,11 @@
 .ai-recognition-page__list .nut-swipe-right {
   height: 100%;
 
+  .ai-recognition-page__swipe-actions {
+    height: 100%;
+  }
+
+  .ai-recognition-page__edit,
   .ai-recognition-page__delete {
     height: 100%;
   }
