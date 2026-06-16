@@ -3,7 +3,6 @@ import { View, Text } from "@tarojs/components";
 import Taro from "@tarojs/taro";
 import { ArrowRight, Edit, Photograph } from "@nutui/icons-react-taro";
 import { Image, Loading } from "@nutui/nutui-react-taro";
-import AppNavbar from "@/components/AppNavbar";
 import DefaultAvatar from "@/components/DefaultAvatar";
 import { getUserDisplayName, WORK_SCENE_OPTIONS } from "@/data/profile";
 import { useMainTabNavigation } from "@/hooks/useMainTabNavigation";
@@ -70,7 +69,6 @@ function MinePage() {
     <Main
       activeTab={activeTab}
       onTabChange={onTabChange}
-      header={<AppNavbar />}
       scrollClassName="main-scroll--mine"
     >
       <Main.Scroll>

@@ -4,6 +4,7 @@
 
 .main-scroll--mine {
   background: transparent;
+  padding-top: max(env(safe-area-inset-top), var(--sw-status-bar-height, 0px));
 }
 
 .mine {
