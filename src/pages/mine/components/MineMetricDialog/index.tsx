@@ -10,7 +10,7 @@ import {
 
 export type { ProfileMetric };
 
-export interface ProfileMetricDialogProps {
+export interface MineMetricDialogProps {
   visible: boolean;
   metric: ProfileMetric | null;
   initialValue: number;
@@ -50,14 +50,14 @@ function isValidMetric(metric: ProfileMetric, value: number): boolean {
   return value >= PROFILE_WEIGHT_KG.min && value <= PROFILE_WEIGHT_KG.max;
 }
 
-function ProfileMetricDialog({
+function MineMetricDialog({
   visible,
   metric,
   initialValue,
   saving = false,
   onClose,
   onConfirm,
-}: ProfileMetricDialogProps) {
+}: MineMetricDialogProps) {
   const [inputValue, setInputValue] = useState(String(initialValue));
 
   useEffect(() => {
@@ -127,4 +127,4 @@ function ProfileMetricDialog({
   );
 }
 
-export default ProfileMetricDialog;
+export default MineMetricDialog;

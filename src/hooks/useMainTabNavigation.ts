@@ -7,13 +7,13 @@ import Taro from "@tarojs/taro";
  * | 0     | wardrobe | /pages/wardrobe/index    | 衣橱 |
  * | 1     | try-on   | /pages/try-on/index     | 试穿 |
  * | 2     | outfit   | /pages/outfit/index      | 搭配 |
- * | 3     | profile  | /pages/profile/index     | 我的 |
+ * | 3     | mine     | /pages/mine/index        | 我的 |
  */
 const TAB_ROUTES: (string | null)[] = [
   "/pages/wardrobe/index",
   "/pages/try-on/index",
   "/pages/outfit/index",
-  "/pages/profile/index",
+  "/pages/mine/index",
 ];
 
 export function useMainTabNavigation(currentTab: number) {

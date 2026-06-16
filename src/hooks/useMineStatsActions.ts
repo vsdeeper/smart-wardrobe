@@ -7,17 +7,17 @@ const STAT_ROUTES: Record<string, string> = {
   outfits: "/pages/outfit/index",
 };
 
-interface UseProfileStatsActionsOptions {
+interface UseMineStatsActionsOptions {
   profile: UserProfile;
   updating: boolean;
   updateProfile: (patch: Partial<UserProfile>) => Promise<boolean>;
 }
 
-export function useProfileStatsActions({
+export function useMineStatsActions({
   profile,
   updating,
   updateProfile,
-}: UseProfileStatsActionsOptions) {
+}: UseMineStatsActionsOptions) {
   const [metricDialog, setMetricDialog] = useState<ProfileMetric | null>(null);
 
   const handleStatClick = useCallback((key: string) => {

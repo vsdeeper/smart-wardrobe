@@ -52,7 +52,7 @@ export function useTryOnWear({
 
       Taro.showToast({ title: "已记录到视觉日记", icon: "success" });
       setTimeout(() => {
-        Taro.redirectTo({ url: "/pages/profile/index" });
+        Taro.redirectTo({ url: "/pages/mine/index" });
       }, 400);
     } catch (err) {
       const message =

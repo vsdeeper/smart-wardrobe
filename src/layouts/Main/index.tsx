@@ -9,7 +9,7 @@ const BOTTOM_TABS = [
   { key: "wardrobe", label: "衣橱", iconClass: "icon-wardrobe" },
   { key: "try-on", label: "试穿", iconClass: "icon-try-on" },
   { key: "outfit", label: "搭配", iconClass: "icon-outfit" },
-  { key: "profile", label: "我的", iconClass: "icon-profile" },
+  { key: "mine", label: "我的", iconClass: "icon-mine" },
 ] as const;
 
 export interface MainScrollProps {

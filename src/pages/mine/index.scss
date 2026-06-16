@@ -2,16 +2,16 @@
 // 我的页面 — 对齐 Botanica 设计稿 / code.html
 // ============================================================
 
-.main-scroll--profile {
+.main-scroll--mine {
   background: transparent;
 }
 
-.profile {
+.mine {
   padding-top: var(--nutui-spacing-5);
   padding-bottom: var(--nutui-spacing-8);
 }
 
-.profile-diary-loading {
+.mine-diary-loading {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -19,7 +19,7 @@
 }
 
 // ========== 头像与简介 ==========
-.profile-header {
+.mine-header {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -27,7 +27,7 @@
   margin-bottom: var(--nutui-spacing-10);
 }
 
-.profile-avatar {
+.mine-avatar {
   position: relative;
   margin-bottom: var(--nutui-spacing-8);
 
@@ -60,7 +60,7 @@
   }
 }
 
-.profile-header__name {
+.mine-header__name {
   font-family: var(--sw-font-heading);
   font-size: var(--nutui-font-size-10);
   font-weight: var(--nutui-font-weight-bold);
@@ -70,7 +70,7 @@
   margin-bottom: var(--nutui-spacing-1);
 }
 
-.profile-header__bio {
+.mine-header__bio {
   font-family: var(--sw-font-body);
   font-size: var(--nutui-font-size-4);
   line-height: var(--nutui-line-height-base);
@@ -80,14 +80,14 @@
 }
 
 // ========== 数据卡片 2×2 ==========
-.profile-stats {
+.mine-stats {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: var(--nutui-spacing-5);
   margin-bottom: var(--nutui-spacing-10);
 }
 
-.profile-stat {
+.mine-stat {
   padding: var(--nutui-spacing-8);
   display: flex;
   flex-direction: column;
@@ -126,7 +126,7 @@
 }
 
 // ========== 区块标题 ==========
-.profile-section {
+.mine-section {
   margin-bottom: var(--nutui-spacing-10);
 
   &--diary {
@@ -163,13 +163,13 @@
 }
 
 // ========== 风格标签 ==========
-.profile-tags {
+.mine-tags {
   display: flex;
   flex-wrap: wrap;
   gap: var(--nutui-spacing-3);
 }
 
-.profile-tag {
+.mine-tag {
   padding: var(--nutui-spacing-4) var(--nutui-spacing-5);
   border-radius: var(--sw-radius-pill);
   background: rgba(123, 192, 67, 0.1);
@@ -185,7 +185,7 @@
 }
 
 // ========== 视觉日记 ==========
-.profile-diary-toggle {
+.mine-diary-toggle {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -198,7 +198,7 @@
   }
 }
 
-.profile-diary {
+.mine-diary {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: var(--nutui-spacing-5);
@@ -242,7 +242,7 @@
   }
 }
 
-.profile-diary-row {
+.mine-diary-row {
   display: flex;
   flex-direction: row;
   align-items: stretch;

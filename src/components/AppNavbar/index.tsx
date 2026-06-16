@@ -7,16 +7,16 @@ import { useUserProfile } from "@/hooks/useUserProfile";
 
 import "./index.scss";
 
-const PROFILE_ROUTE = "pages/profile/index";
+const MINE_ROUTE = "pages/mine/index";
 
 function AppNavbar() {
   const { profile } = useUserProfile();
   const handleBrandClick = () => {
     const pages = Taro.getCurrentPages();
     const currentRoute = pages[pages.length - 1]?.route;
-    if (currentRoute === PROFILE_ROUTE) return;
+    if (currentRoute === MINE_ROUTE) return;
 
-    Taro.redirectTo({ url: "/pages/profile/index" });
+    Taro.redirectTo({ url: "/pages/mine/index" });
   };
 
   return (

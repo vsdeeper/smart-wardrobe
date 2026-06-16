@@ -6,7 +6,7 @@ export default defineAppConfig({
     'pages/ai-recognition/index',
     'pages/try-on/index',
     'pages/outfit/index',
-    'pages/profile/index',
+    'pages/mine/index',
   ],
   permission: {
     'scope.userLocation': {
