@@ -101,11 +101,10 @@ function Main({
           className="main-tabbar"
           onSwitch={handleSwitch}
         >
-          {BOTTOM_TABS.map((tab, idx) => (
+          {BOTTOM_TABS.map((tab) => (
             <Tabbar.Item
               key={tab.key}
               title={tab.label}
-              value={idx}
               icon={
                 <View className="main-tabbar-icon">
                   <Text className={`iconfont ${tab.iconClass}`} />
