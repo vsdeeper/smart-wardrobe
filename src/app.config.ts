@@ -8,6 +8,7 @@ export default defineAppConfig({
     'pages/outfit/index',
     'pages/mine/index',
     'pages/mine-profile/index',
+    'pages/mine-profile-field/index',
   ],
   permission: {
     'scope.userLocation': {
@@ -15,6 +16,7 @@ export default defineAppConfig({
     },
   },
   requiredPrivateInfos: ['getLocation'],
+  __usePrivacyCheck__: true,
   window: {
     backgroundTextStyle: 'light',
     navigationBarBackgroundColor: '#fff',

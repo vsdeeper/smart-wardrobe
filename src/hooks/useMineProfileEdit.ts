@@ -1,16 +1,11 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback } from "react";
 import Taro from "@tarojs/taro";
-import type { BaseEventOrig } from "@tarojs/components";
-import type { InputProps } from "@tarojs/components/types/Input";
-import type { ActionSheetProps } from "@nutui/nutui-react-taro";
-import {
-  GENDER_OPTIONS,
-  type Gender,
-  type ProfileMetric,
-} from "@/data/profile";
+import type { ProfileEditableField } from "@/data/profile";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { fetchPhoneNumberByCode } from "@/services/phoneAuth";
 import { uploadAvatar } from "@/services/profileAvatar";
+import { openProfileFieldEdit } from "@/utils/openProfileFieldEdit";
+import { getPhoneAuthErrorToast } from "@/utils/phoneAuthError";
 
 function isWeapp(): boolean {
   return Taro.getEnv() === Taro.ENV_TYPE.WEAPP;
@@ -19,19 +14,18 @@ function isWeapp(): boolean {
 export function useMineProfileEdit() {
   const { profile, avatarUrl, loading, updating, updateProfile } =
     useUserProfile();
-  const [genderSheetVisible, setGenderSheetVisible] = useState(false);
-  const [metricDialog, setMetricDialog] = useState<ProfileMetric | null>(null);
-  const [nicknameDraft, setNicknameDraft] = useState("");
-  const [occupationDraft, setOccupationDraft] = useState("");
-
-  useEffect(() => {
-    setNicknameDraft(profile.nickname ?? "");
-    setOccupationDraft(profile.occupation ?? "");
-  }, [profile.nickname, profile.occupation]);
 
   const handleBack = useCallback(() => {
     Taro.navigateBack();
   }, []);
+
+  const openFieldEdit = useCallback(
+    (field: ProfileEditableField) => {
+      if (updating) return;
+      openProfileFieldEdit(field);
+    },
+    [updating],
+  );
 
   const handleChooseAvatar = useCallback(
     async (e: { detail: { avatarUrl?: string } }) => {
@@ -60,27 +54,6 @@ export function useMineProfileEdit() {
     [updateProfile, updating],
   );
 
-  const handleNicknameBlur = useCallback(
-    async (e: BaseEventOrig<InputProps.inputValueEventDetail>) => {
-      if (updating) return;
-
-      const value = (e.detail.value ?? nicknameDraft).trim();
-      if (value === (profile.nickname ?? "").trim()) return;
-
-      await updateProfile({ nickname: value });
-    },
-    [nicknameDraft, profile.nickname, updateProfile, updating],
-  );
-
-  const handleOccupationBlur = useCallback(async () => {
-    if (updating) return;
-
-    const value = occupationDraft.trim();
-    if (value === profile.occupation.trim()) return;
-
-    await updateProfile({ occupation: value });
-  }, [occupationDraft, profile.occupation, updateProfile, updating]);
-
   const handleGetPhoneNumber = useCallback(
     async (e: {
       detail: { errMsg?: string; code?: string };
@@ -91,7 +64,13 @@ export function useMineProfileEdit() {
       }
       if (updating) return;
 
-      if (e.detail.errMsg !== "getPhoneNumber:ok") return;
+      if (e.detail.errMsg !== "getPhoneNumber:ok") {
+        const toast = getPhoneAuthErrorToast(e.detail.errMsg);
+        if (toast) {
+          Taro.showToast({ title: toast, icon: "none", duration: 3000 });
+        }
+        return;
+      }
 
       const code = e.detail.code;
       if (!code) {
@@ -115,91 +94,14 @@ export function useMineProfileEdit() {
     [updateProfile, updating],
   );
 
-  const handleGenderSelect = useCallback<
-    NonNullable<ActionSheetProps["onSelect"]>
-  >(
-    (item, _index) => {
-      setGenderSheetVisible(false);
-      if (updating) return;
-
-      const label = typeof item.name === "string" ? item.name : "";
-      const option = GENDER_OPTIONS.find((o) => o.label === label);
-      if (!option || option.value === profile.gender) return;
-
-      void updateProfile({ gender: option.value as Gender });
-    },
-    [profile.gender, updateProfile, updating],
-  );
-
-  const openGenderSheet = useCallback(() => {
-    if (updating) return;
-    setGenderSheetVisible(true);
-  }, [updating]);
-
-  const openMetricDialog = useCallback(
-    (metric: ProfileMetric) => {
-      if (updating) return;
-      setMetricDialog(metric);
-    },
-    [updating],
-  );
-
-  const handleMetricClose = useCallback(() => {
-    if (updating) return;
-    setMetricDialog(null);
-  }, [updating]);
-
-  const handleMetricConfirm = useCallback(
-    async (value: number) => {
-      if (updating || !metricDialog) return;
-
-      const patch =
-        metricDialog === "height"
-          ? { heightCm: value }
-          : { weightKg: value };
-
-      const ok = await updateProfile(patch);
-      if (ok) {
-        Taro.showToast({ title: "已保存", icon: "success" });
-        setMetricDialog(null);
-      }
-    },
-    [metricDialog, updateProfile, updating],
-  );
-
-  const metricInitialValue =
-    metricDialog === "height"
-      ? profile.heightCm
-      : metricDialog === "weight"
-        ? profile.weightKg
-        : 0;
-
-  const genderActionOptions = GENDER_OPTIONS.map((o) => ({ name: o.label }));
-
   return {
     profile,
     avatarUrl,
     loading,
     updating,
-    nicknameDraft,
-    occupationDraft,
-    setNicknameDraft,
-    setOccupationDraft,
-    genderSheetVisible,
-    setGenderSheetVisible,
-    genderActionOptions,
-    metricDialog,
-    metricDialogVisible: metricDialog !== null,
-    metricInitialValue,
     handleBack,
+    openFieldEdit,
     handleChooseAvatar,
-    handleNicknameBlur,
-    handleOccupationBlur,
     handleGetPhoneNumber,
-    handleGenderSelect,
-    openGenderSheet,
-    openMetricDialog,
-    handleMetricClose,
-    handleMetricConfirm,
   };
 }

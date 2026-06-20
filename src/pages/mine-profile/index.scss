@@ -57,34 +57,19 @@
   text-align: right;
 }
 
-.mine-profile-cell__input {
-  flex: 1;
-  min-width: 0;
-  text-align: right;
-  font-size: var(--nutui-font-size-3);
-  color: var(--nutui-gray-7);
+.mine-profile-cell-wrap--overlay {
+  position: relative;
 }
 
-.mine-profile-cell__avatar-btn {
+.mine-profile-cell__overlay-btn {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
   padding: 0;
   margin: 0;
   border: none;
   background: transparent;
-  line-height: 1;
-
-  &::after {
-    border: none;
-  }
-}
-
-.mine-profile-cell__phone-btn {
-  padding: 0;
-  margin: 0;
-  border: none;
-  background: transparent;
-  line-height: 1;
-  font-size: var(--nutui-font-size-3);
-  color: var(--nutui-gray-5);
+  opacity: 0;
 
   &::after {
     border: none;
@@ -92,8 +77,8 @@
 }
 
 .mine-profile-cell__avatar-preview {
-  width: 40px;
-  height: 40px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   overflow: hidden;
   display: block;

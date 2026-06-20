@@ -10,7 +10,6 @@ import { useMineStatsActions } from "@/hooks/useMineStatsActions";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { useVisualDiary } from "@/hooks/useVisualDiary";
 import Main from "@/layouts/Main";
-import MineMetricDialog from "./components/MineMetricDialog";
 import "./index.scss";
 
 const ICON_PRIMARY = "var(--nutui-brand-6)";
@@ -20,17 +19,10 @@ type DiaryLayout = "grid" | "list";
 function MinePage() {
   const { activeTab, onTabChange } = useMainTabNavigation(3);
   const [diaryLayout, setDiaryLayout] = useState<DiaryLayout>("grid");
-  const { profile, avatarUrl, itemCount, loading: profileLoading, updating, updateProfile } =
+  const { profile, avatarUrl, itemCount, loading: profileLoading } =
     useUserProfile();
   const { entries, loading: diaryLoading } = useVisualDiary();
-  const {
-    metricDialog,
-    metricDialogVisible,
-    metricInitialValue,
-    handleStatClick,
-    handleMetricClose,
-    handleMetricConfirm,
-  } = useMineStatsActions({ profile, updating, updateProfile });
+  const { handleStatClick } = useMineStatsActions();
 
   const handleOpenProfile = () => {
     Taro.navigateTo({ url: "/pages/mine-profile/index" });
@@ -182,14 +174,6 @@ function MinePage() {
           </View>
         </View>
       </Main.Scroll>
-      <MineMetricDialog
-        visible={metricDialogVisible}
-        metric={metricDialog}
-        initialValue={metricInitialValue}
-        saving={updating}
-        onClose={handleMetricClose}
-        onConfirm={handleMetricConfirm}
-      />
     </Main>
   );
 }
