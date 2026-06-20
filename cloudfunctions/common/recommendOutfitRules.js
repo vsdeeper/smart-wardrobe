@@ -1,13 +1,21 @@
 function buildRecommendSystemPrompt() {
-  return `你是专业穿搭顾问。根据用户天气、季节、职业与风格偏好，从用户衣橱中为每个类别挑选最合适的单品组合。
+  return `你是专业穿搭顾问。根据用户天气、季节、职业与风格偏好，从用户衣橱中组成一套可实际同穿的合理搭配。
 
 规则：
-1. 每个 slot 的 selectedId 必须来自对应 typeName 下的衣橱 id
-2. alternatives 为同类别其他候选 id（0–3 个），不得重复 selectedId
-3. matchScore 为 0–100 整数
-4. tips 为 2–4 条穿搭提示，含 emoji icon
-5. 考虑温度与 warmthLevel（1 极薄 → 5 极厚）匹配
-6. 只返回 JSON，无其他文字
+1. slots 只包含本次会一起穿着的单品，不要求覆盖衣橱全部类别（通常 2–5 件）
+2. 每个 slot 的 selectedId 必须来自对应 typeName 下的衣橱 id
+3. alternatives 为同类别其他候选 id（0–3 个），不得重复 selectedId
+4. matchScore 为 0–100 整数
+5. tips 为 2–4 条穿搭提示，含 emoji icon
+6. 考虑温度与 warmthLevel（1 极薄 → 5 极厚）匹配
+7. description 须与 slots 实际选品一致，勿描述未选入 slots 的单品
+8. 只返回 JSON，无其他文字
+
+搭配常识（请自主判断，勿为凑齐类别而混搭互斥单品）：
+- 连衣裙/连体类：通常单穿，不与上装、下装同时出现
+- 分体穿搭：上装 + 下装
+- 外套：可选叠穿，叠于上装或连衣裙之上
+- 鞋靴、配饰：按需补充，非必须
 
 格式：
 {
@@ -41,7 +49,7 @@ function buildRecommendUserPrompt(payload) {
 衣橱单品（按类别）：
 ${wardrobeText}
 
-请推荐今日穿搭，slots 覆盖衣橱中有单品的类别，优先上装+下装+鞋靴（若有）。`
+请推荐今日穿搭。只选会一起穿着的单品写入 slots（通常 2–5 件），勿为凑齐类别而混搭互斥单品（如连衣裙与上装/下装不可同穿）。优先保证主体穿搭合理，再考虑鞋靴与外套。`
 }
 
 function parseRecommendResult(content) {
@@ -82,21 +90,41 @@ function parseRecommendResult(content) {
   return { outfitName, description, matchScore, slots, tips }
 }
 
+function buildSlotFromItems(typeName, items) {
+  if (!items || items.length === 0) return null
+  const selected = items[0]
+  return {
+    typeName,
+    selectedId: selected.id,
+    alternatives: items.slice(1, 4).map((i) => i.id),
+  }
+}
+
 /** 衣橱为空或 LLM 失败时的规则降级推荐 */
 function buildFallbackRecommendation(wardrobeByType, season, weather) {
+  const byType = wardrobeByType || {}
+  const getItems = (typeName) => byType[typeName] || []
   const slots = []
-  const allIds = []
 
-  for (const [typeName, items] of Object.entries(wardrobeByType || {})) {
-    if (!items || items.length === 0) continue
-    const selected = items[0]
-    const alternatives = items.slice(1, 4).map((i) => i.id)
-    slots.push({
-      typeName,
-      selectedId: selected.id,
-      alternatives,
-    })
-    allIds.push(selected.id)
+  const dressItems = getItems('连衣裙')
+  if (dressItems.length > 0) {
+    const slot = buildSlotFromItems('连衣裙', dressItems)
+    if (slot) slots.push(slot)
+  } else {
+    const topSlot = buildSlotFromItems('上装', getItems('上装'))
+    const bottomSlot = buildSlotFromItems('下装', getItems('下装'))
+    if (topSlot) slots.push(topSlot)
+    if (bottomSlot) slots.push(bottomSlot)
+  }
+
+  if (slots.length === 0) {
+    for (const [typeName, items] of Object.entries(byType)) {
+      const slot = buildSlotFromItems(typeName, items)
+      if (slot) {
+        slots.push(slot)
+        break
+      }
+    }
   }
 
   if (slots.length === 0) {
@@ -104,6 +132,15 @@ function buildFallbackRecommendation(wardrobeByType, season, weather) {
   }
 
   const temp = weather?.temperature ?? 20
+  const needsOuter = temp < 18
+  if (needsOuter) {
+    const outerSlot = buildSlotFromItems('外套', getItems('外套'))
+    if (outerSlot) slots.push(outerSlot)
+  }
+
+  const shoeSlot = buildSlotFromItems('鞋靴', getItems('鞋靴'))
+  if (shoeSlot) slots.push(shoeSlot)
+
   const tips = [
     { id: 1, icon: temp >= 28 ? '☀️' : '🌤️', label: temp >= 28 ? '注意防晒' : '舒适出行' },
     { id: 2, icon: '🍃', label: `${season}季搭配` },
