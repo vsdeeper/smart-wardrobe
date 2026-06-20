@@ -4,6 +4,10 @@ import { setTryOnDraft } from "@/services/tryOnDraft";
 import { WARDROBE_BATCH_UPLOAD_MAX, type AiStatus } from "@/data/wardrobe";
 import { setRecognitionDraft } from "@/services/recognitionDraft";
 import { uploadAndRecognizeBatch } from "@/services/wardrobe";
+import {
+  ensurePrivacyAuthorize,
+  getMediaPickerErrorToast,
+} from "@/utils/mediaPickerError";
 
 interface UseWardrobeUploadOptions {
   setAiStatus: React.Dispatch<React.SetStateAction<AiStatus>>;
@@ -35,6 +39,8 @@ export function useWardrobeUpload({
 
     try {
       uploadFlowRef.current = true;
+
+      await ensurePrivacyAuthorize();
 
       const chooseRes = await Taro.chooseMedia({
         count: WARDROBE_BATCH_UPLOAD_MAX,
@@ -129,8 +135,11 @@ export function useWardrobeUpload({
         icon: "none",
       });
     } catch (err) {
-      const message = err instanceof Error ? err.message : "识别失败";
-      Taro.showToast({ title: message, icon: "none" });
+      console.warn("[wardrobe-upload]", err);
+      const toast = getMediaPickerErrorToast(err);
+      if (toast) {
+        Taro.showToast({ title: toast, icon: "none", duration: 3000 });
+      }
       setAiStatus((prev) => ({
         ...prev,
         phase: "idle",
