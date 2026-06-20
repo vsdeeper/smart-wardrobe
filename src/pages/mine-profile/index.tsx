@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, Button, Image } from "@tarojs/components";
+import { View, Text, ScrollView, Button, Image, Input } from "@tarojs/components";
 import Taro from "@tarojs/taro";
 import { ArrowRight } from "@nutui/icons-react-taro";
 import { Cell, Loading, NavBar } from "@nutui/nutui-react-taro";
@@ -16,6 +16,9 @@ function MineProfilePage() {
     handleBack,
     openFieldEdit,
     handleChooseAvatar,
+    nicknameDraft,
+    handleNicknameInput,
+    handleNicknameBlur,
     handleGetPhoneNumber,
   } = useMineProfileEdit();
 
@@ -30,7 +33,6 @@ function MineProfilePage() {
     ? maskPhoneNumber(profile.phoneNumber)
     : "点击授权";
 
-  const nicknameLabel = profile.nickname?.trim() || "未设置";
   const occupationLabel = profile.occupation?.trim() || "未设置";
 
   return (
@@ -87,16 +89,20 @@ function MineProfilePage() {
 
             <Cell
               title="昵称"
+              align="center"
               extra={
-                <View className="mine-profile-cell__extra">
-                  <Text className="mine-profile-cell__value">
-                    {nicknameLabel}
-                  </Text>
+                <View className="mine-profile-cell__extra mine-profile-cell__extra--nickname">
+                  <Input
+                    className="mine-profile-cell__nickname-input"
+                    type="nickname"
+                    value={nicknameDraft}
+                    placeholder="点击授权"
+                    onInput={handleNicknameInput}
+                    onBlur={handleNicknameBlur}
+                  />
                   {cellArrow}
                 </View>
               }
-              align="center"
-              onClick={() => openFieldEdit("nickname")}
             />
 
             <Cell

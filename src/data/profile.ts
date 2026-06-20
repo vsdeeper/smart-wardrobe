@@ -26,7 +26,6 @@ export const PROFILE_WEIGHT_KG = { min: 30, max: 200 } as const;
 export type ProfileMetric = "height" | "weight";
 
 export type ProfileEditableField =
-  | "nickname"
   | "gender"
   | "height"
   | "weight"
@@ -36,7 +35,6 @@ export const PROFILE_EDITABLE_FIELDS: Record<
   ProfileEditableField,
   { title: string; placeholder?: string; hint?: string }
 > = {
-  nickname: { title: "昵称", placeholder: "请输入昵称" },
   gender: { title: "性别" },
   height: {
     title: "身高",

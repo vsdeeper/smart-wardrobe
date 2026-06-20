@@ -48,6 +48,12 @@
   justify-content: flex-end;
   gap: var(--nutui-spacing-3);
   max-width: 220px;
+
+  &--nickname {
+    max-width: 260px;
+    flex: 1;
+    min-width: 0;
+  }
 }
 
 .mine-profile-cell__value {
@@ -74,6 +80,20 @@
   &::after {
     border: none;
   }
+}
+
+.mine-profile-cell__nickname-input {
+  flex: 1;
+  min-width: 0;
+  height: 22px;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: transparent;
+  font-family: var(--sw-font-body);
+  font-size: var(--nutui-font-size-3);
+  color: var(--nutui-gray-5);
+  text-align: right;
 }
 
 .mine-profile-cell__avatar-preview {

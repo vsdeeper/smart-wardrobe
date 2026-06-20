@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, Input } from "@tarojs/components";
+import { View, Text, ScrollView } from "@tarojs/components";
 import Taro from "@tarojs/taro";
 import { Cell, Input as NutInput, Loading, NavBar } from "@nutui/nutui-react-taro";
 import { GENDER_OPTIONS } from "@/data/profile";
@@ -57,23 +57,6 @@ function MineProfileFieldPage() {
             );
           })}
         </Cell.Group>
-      );
-    }
-
-    if (field === "nickname") {
-      return (
-        <View>
-          <View className="sw-field-input">
-            <Input
-              type="nickname"
-              value={textDraft}
-              placeholder={fieldMeta.placeholder}
-              disabled={updating}
-              focus
-              onInput={(e) => setTextDraft(e.detail.value)}
-            />
-          </View>
-        </View>
       );
     }
 

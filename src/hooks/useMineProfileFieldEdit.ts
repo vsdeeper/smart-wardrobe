@@ -32,9 +32,7 @@ export function useMineProfileFieldEdit() {
   useEffect(() => {
     if (!field || loading) return;
 
-    if (field === "nickname") {
-      setTextDraft(profile.nickname ?? "");
-    } else if (field === "occupation") {
+    if (field === "occupation") {
       setTextDraft(profile.occupation ?? "");
     } else if (field === "height") {
       setTextDraft(String(profile.heightCm));
@@ -51,20 +49,6 @@ export function useMineProfileFieldEdit() {
 
   const handleSave = useCallback(async () => {
     if (updating || !field) return;
-
-    if (field === "nickname") {
-      const value = textDraft.trim();
-      if (value === (profile.nickname ?? "").trim()) {
-        Taro.navigateBack();
-        return;
-      }
-      const ok = await updateProfile({ nickname: value });
-      if (ok) {
-        Taro.showToast({ title: "已保存", icon: "success" });
-        Taro.navigateBack();
-      }
-      return;
-    }
 
     if (field === "occupation") {
       const value = textDraft.trim();
@@ -119,7 +103,6 @@ export function useMineProfileFieldEdit() {
     genderDraft,
     profile.gender,
     profile.heightCm,
-    profile.nickname,
     profile.occupation,
     profile.weightKg,
     textDraft,

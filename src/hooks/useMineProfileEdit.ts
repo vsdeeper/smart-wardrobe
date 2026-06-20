@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Taro from "@tarojs/taro";
 import type { ProfileEditableField } from "@/data/profile";
 import { useUserProfile } from "@/hooks/useUserProfile";
@@ -14,6 +14,12 @@ function isWeapp(): boolean {
 export function useMineProfileEdit() {
   const { profile, avatarUrl, loading, updating, updateProfile } =
     useUserProfile();
+
+  const [nicknameDraft, setNicknameDraft] = useState("");
+
+  useEffect(() => {
+    setNicknameDraft(profile.nickname ?? "");
+  }, [profile.nickname]);
 
   const handleBack = useCallback(() => {
     Taro.navigateBack();
@@ -52,6 +58,38 @@ export function useMineProfileEdit() {
       }
     },
     [updateProfile, updating],
+  );
+
+  const handleNicknameInput = useCallback(
+    (e: { detail: { value?: string } }) => {
+      setNicknameDraft(e.detail.value ?? "");
+    },
+    [],
+  );
+
+  const handleNicknameBlur = useCallback(
+    async (e: { detail: { value?: string } }) => {
+      if (!isWeapp()) {
+        Taro.showToast({ title: "请在微信小程序中使用", icon: "none" });
+        return;
+      }
+      if (updating) return;
+
+      const value = e.detail.value?.trim() ?? "";
+      if (!value) return;
+
+      const savedNickname = (profile.nickname ?? "").trim();
+      if (value === savedNickname) return;
+
+      setNicknameDraft(value);
+      const ok = await updateProfile({ nickname: value });
+      if (ok) {
+        Taro.showToast({ title: "昵称已更新", icon: "success" });
+      } else {
+        setNicknameDraft(savedNickname);
+      }
+    },
+    [profile.nickname, updateProfile, updating],
   );
 
   const handleGetPhoneNumber = useCallback(
@@ -102,6 +140,9 @@ export function useMineProfileEdit() {
     handleBack,
     openFieldEdit,
     handleChooseAvatar,
+    nicknameDraft,
+    handleNicknameInput,
+    handleNicknameBlur,
     handleGetPhoneNumber,
   };
 }
