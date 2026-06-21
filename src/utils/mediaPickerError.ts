@@ -1,8 +1,19 @@
 type WechatFail = { errMsg?: string; errno?: number; message?: string };
 
-function getWx(): WechatMiniprogram.Wx | undefined {
-  if (typeof wx !== "undefined") return wx;
-  return (globalThis as { wx?: WechatMiniprogram.Wx }).wx;
+/** 本文件仅用到的 wx 隐私相关 API（避免依赖 WechatMiniprogram 全局类型） */
+interface WxPrivacyApi {
+  getPrivacySetting?: (options: {
+    success?: (res: {
+      needAuthorization: boolean;
+      privacyContractName?: string;
+    }) => void;
+    fail?: () => void;
+  }) => void;
+  openPrivacyContract?: (options: Record<string, unknown>) => void;
+}
+
+function getWx(): WxPrivacyApi | undefined {
+  return (globalThis as { wx?: WxPrivacyApi }).wx;
 }
 
 function extractErrMsg(err: unknown): string | undefined {
@@ -61,12 +72,13 @@ export function checkNeedPrivacyAuthorization(): Promise<PrivacySettingResult> {
   }
 
   const wxApi = getWx();
-  if (!wxApi?.getPrivacySetting) {
+  const getPrivacySetting = wxApi?.getPrivacySetting;
+  if (!getPrivacySetting) {
     return Promise.resolve({ needAuthorization: false });
   }
 
   return new Promise((resolve) => {
-    wxApi.getPrivacySetting({
+    getPrivacySetting({
       success: (res) => {
         resolve({
           needAuthorization: Boolean(res.needAuthorization),
