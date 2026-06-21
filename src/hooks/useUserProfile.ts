@@ -6,8 +6,10 @@ import { resolveAvatarUrl } from "@/services/profileAvatar";
 import {
   clearProfileCache,
   getInitialProfileState,
+  invalidateAvatarUrl,
   prefetchUserProfile,
   readProfileCache,
+  refreshAvatarUrl,
   writeProfileCache,
 } from "@/services/profileCache";
 
@@ -63,6 +65,14 @@ export function useUserProfile() {
     }
   }, [applyCacheEntry]);
 
+  const handleAvatarLoadError = useCallback(async () => {
+    invalidateAvatarUrl();
+    const url = await refreshAvatarUrl();
+    if (url) {
+      setAvatarUrl(url);
+    }
+  }, []);
+
   const updateProfile = useCallback(async (patch: Partial<UserProfile>) => {
     setUpdating(true);
     try {
@@ -111,5 +121,6 @@ export function useUserProfile() {
     updating,
     refresh,
     updateProfile,
+    onAvatarLoadError: handleAvatarLoadError,
   };
 }

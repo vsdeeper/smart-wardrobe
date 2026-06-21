@@ -33,7 +33,9 @@ function normalizeProfile(raw: Record<string, unknown>): UserProfile {
       ? raw.styleTags.map(String)
       : DEFAULT_USER_PROFILE.styleTags,
     avatarFileId:
-      typeof raw.avatarFileId === "string" ? raw.avatarFileId : undefined,
+      typeof raw.avatarFileId === "string" && raw.avatarFileId.trim()
+        ? raw.avatarFileId
+        : undefined,
     nickname: typeof raw.nickname === "string" ? raw.nickname : undefined,
     gender: normalizeGender(raw.gender),
     phoneNumber:

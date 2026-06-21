@@ -10,7 +10,7 @@ import "./index.scss";
 const MINE_PROFILE_ROUTE = "pages/mine-profile/index";
 
 function AppNavbar() {
-  const { profile, avatarUrl } = useUserProfile();
+  const { profile, avatarUrl, onAvatarLoadError } = useUserProfile();
   const handleBrandClick = () => {
     const pages = Taro.getCurrentPages();
     const currentRoute = pages[pages.length - 1]?.route;
@@ -25,7 +25,11 @@ function AppNavbar() {
       className="app-navbar"
       left={
         <View className="navbar-brand" onClick={handleBrandClick}>
-          <DefaultAvatar size="sm" src={avatarUrl} />
+          <DefaultAvatar
+            size="sm"
+            src={avatarUrl}
+            onLoadError={onAvatarLoadError}
+          />
 
           <Text className="navbar-brand__title">
             {getUserDisplayName(profile)}

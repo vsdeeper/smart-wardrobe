@@ -64,6 +64,11 @@
       var(--nutui-brand-5) 100%
     );
     box-sizing: border-box;
+
+    .default-avatar--lg {
+      border: none;
+      padding: 8px;
+    }
   }
 
   &__edit {

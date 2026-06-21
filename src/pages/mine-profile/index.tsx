@@ -20,6 +20,7 @@ function MineProfilePage() {
     handleNicknameInput,
     handleNicknameBlur,
     handleGetPhoneNumber,
+    onAvatarLoadError,
   } = useMineProfileEdit();
 
   const { statusBarHeight, safeArea } = Taro.getWindowInfo();
@@ -69,7 +70,11 @@ function MineProfilePage() {
                 title="头像"
                 extra={
                   <View className="mine-profile-cell__extra">
-                    <DefaultAvatar size="sm" src={avatarUrl} />
+                    <DefaultAvatar
+                      size="sm"
+                      src={avatarUrl}
+                      onLoadError={onAvatarLoadError}
+                    />
                     {cellArrow}
                   </View>
                 }

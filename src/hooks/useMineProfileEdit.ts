@@ -12,7 +12,7 @@ function isWeapp(): boolean {
 }
 
 export function useMineProfileEdit() {
-  const { profile, avatarUrl, loading, updating, updateProfile } =
+  const { profile, avatarUrl, loading, updating, updateProfile, onAvatarLoadError } =
     useUserProfile();
 
   const [nicknameDraft, setNicknameDraft] = useState("");
@@ -144,5 +144,6 @@ export function useMineProfileEdit() {
     handleNicknameInput,
     handleNicknameBlur,
     handleGetPhoneNumber,
+    onAvatarLoadError,
   };
 }

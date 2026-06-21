@@ -58,13 +58,41 @@ function isAvatarUrlCacheValid(
 async function resolveAvatarUrlWithCache(
   fileId: string,
   cached: ProfileCacheEntry | null,
+  forceRefresh = false,
 ): Promise<string | undefined> {
-  if (cached && isAvatarUrlCacheValid(cached, fileId)) {
+  if (!forceRefresh && cached && isAvatarUrlCacheValid(cached, fileId)) {
     return cached.avatarUrl;
   }
 
   const url = await resolveAvatarUrl(fileId);
   return url ?? undefined;
+}
+
+export function invalidateAvatarUrl(): void {
+  const cached = readProfileCache();
+  if (!cached) return;
+
+  writeProfileCache({
+    ...cached,
+    avatarUrl: undefined,
+    cachedAt: Date.now(),
+  });
+}
+
+export async function refreshAvatarUrl(): Promise<string | undefined> {
+  const cached = readProfileCache();
+  const fileId = cached?.profile.avatarFileId;
+  if (!fileId) return undefined;
+
+  const avatarUrl = await resolveAvatarUrlWithCache(fileId, cached, true);
+  if (!cached) return avatarUrl;
+
+  writeProfileCache({
+    ...cached,
+    avatarUrl,
+    cachedAt: Date.now(),
+  });
+  return avatarUrl;
 }
 
 export function readProfileCache(): ProfileCacheEntry | null {

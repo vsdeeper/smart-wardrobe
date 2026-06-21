@@ -19,7 +19,7 @@ type DiaryLayout = "grid" | "list";
 function MinePage() {
   const { activeTab, onTabChange } = useMainTabNavigation(3);
   const [diaryLayout, setDiaryLayout] = useState<DiaryLayout>("grid");
-  const { profile, avatarUrl, itemCount, loading: profileLoading } =
+  const { profile, avatarUrl, itemCount, loading: profileLoading, onAvatarLoadError } =
     useUserProfile();
   const { entries, loading: diaryLoading } = useVisualDiary();
   const { handleStatClick } = useMineStatsActions();
@@ -60,7 +60,11 @@ function MinePage() {
           <View className="mine-header">
             <View className="mine-avatar" onClick={handleOpenProfile}>
               <View className="mine-avatar__ring">
-                <DefaultAvatar size="lg" src={avatarUrl} />
+                <DefaultAvatar
+                  size="lg"
+                  src={avatarUrl}
+                  onLoadError={onAvatarLoadError}
+                />
               </View>
               <View className="mine-avatar__edit">
                 <Edit color="var(--sw-color-on-primary)" size={18} />
