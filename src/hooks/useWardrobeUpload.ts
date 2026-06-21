@@ -68,14 +68,18 @@ export function useWardrobeUpload({
         ({ current, total, phase }) => {
           const itemSpan = 100 / total;
           const base = (current - 1) * itemSpan;
-          const progress =
-            phase === "uploading"
-              ? Math.round(base + itemSpan * 0.25)
-              : Math.min(Math.round(base + itemSpan * 0.85), 99);
+          let progress: number;
+          if (phase === "uploading") {
+            progress = Math.round(base + itemSpan * 0.2);
+          } else if (phase === "recognizing") {
+            progress = Math.round(base + itemSpan * 0.45);
+          } else {
+            progress = Math.min(Math.round(base + itemSpan * 0.95), 99);
+          }
 
           setAiStatus((prev) => ({
             ...prev,
-            phase: phase === "uploading" ? "uploading" : "recognizing",
+            phase,
             progress,
             batchCurrent: current,
             batchTotal: total,

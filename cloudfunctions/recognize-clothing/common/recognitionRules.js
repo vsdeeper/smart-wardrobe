@@ -20,6 +20,7 @@ const RECOGNITION_LIMITS = {
   minTags: 2,
   maxTags: 9,
   maxTagLength: 5,
+  maxItems: 5,
 }
 
 const PROMPT_EXAMPLES = {
@@ -55,11 +56,17 @@ function formatPromptExample(item) {
 function buildSystemPrompt() {
   const typeList = CLOTHING_TYPE_NAMES.join('、')
   const mergeExamples = formatMergeExamples()
-  const { maxNameLength, minTags, maxTags, maxTagLength } = RECOGNITION_LIMITS
+  const { maxNameLength, minTags, maxTags, maxTagLength, maxItems } = RECOGNITION_LIMITS
   const [positiveA, positiveB] = PROMPT_EXAMPLES.positive
   const negative = PROMPT_EXAMPLES.negative
 
-  return `你是一个专业的衣物识别助手。根据用户上传的衣物照片，识别衣物类型和属性。
+  return `你是一个专业的衣物识别助手。根据用户上传的衣物照片，识别图中所有可见衣物单品及其类型和属性。
+
+【识别范围】
+- 识别照片中所有可见的衣物单品（平铺、穿搭、镜拍均可）
+- 每件单品独立一条，按从左到右、从上到下的视觉顺序排列
+- 最多 ${maxItems} 件，超出时只保留最明显的 ${maxItems} 件
+- 若无法识别任何衣物，返回 "items": []
 
 【分类规则 typeName】
 - typeName 必须且只能从以下列表中选择一项：${typeList}
@@ -92,15 +99,19 @@ function buildSystemPrompt() {
 
 只返回 JSON，不要其他文字。格式：
 {
-  "typeName": "从上述列表选择一项",
-  "name": "款式结构描述，不含颜色季节风格",
-  "tags": ["颜色", "季节", "风格或材质"],
-  "warmthLevel": 3
+  "items": [
+    {
+      "typeName": "从上述列表选择一项",
+      "name": "款式结构描述，不含颜色季节风格",
+      "tags": ["颜色", "季节", "风格或材质"],
+      "warmthLevel": 3
+    }
+  ]
 }`
 }
 
 const USER_PROMPT =
-  `请识别这件衣物的类型、名称和标签。严格按 system 规则返回 JSON，typeName 不得超出给定列表。name 只描述款式结构，颜色/季节/风格/材质只写在 tags，且 tags 不得与 name 重复；每个 tag 不超过${RECOGNITION_LIMITS.maxTagLength}个字。同时返回 warmthLevel（1–5 保暖等级）。`
+  `请识别照片中所有可见衣物单品，严格按 system 规则返回 JSON 的 items 数组。typeName 不得超出给定列表；每件 name 只描述款式结构，颜色/季节/风格/材质只写在 tags，且 tags 不得与 name 重复；每个 tag 不超过${RECOGNITION_LIMITS.maxTagLength}个字。每件同时返回 warmthLevel（1–5 保暖等级）。`
 
 function parseRecognitionResult(parsed) {
   const typeName = String(parsed.typeName ?? '').trim()
@@ -128,6 +139,31 @@ function parseRecognitionResult(parsed) {
   return result
 }
 
+function parseRecognitionItems(parsed) {
+  let rawItems = parsed?.items
+
+  // 兼容模型误返回单件对象
+  if (!Array.isArray(rawItems) && (parsed?.typeName || parsed?.name)) {
+    rawItems = [parsed]
+  }
+
+  if (!Array.isArray(rawItems)) {
+    throw new Error('AI 返回缺少 items 数组')
+  }
+
+  if (rawItems.length === 0) {
+    throw new Error('未识别到衣物单品')
+  }
+
+  const maxItems = RECOGNITION_LIMITS.maxItems
+  const slice = rawItems.slice(0, maxItems)
+  if (rawItems.length > maxItems) {
+    console.warn(`[recognize-clothing] items 超出上限 ${maxItems}，已截断`)
+  }
+
+  return slice.map((item) => parseRecognitionResult(item))
+}
+
 module.exports = {
   CLOTHING_TYPE_NAMES,
   TYPE_MERGE_GROUPS,
@@ -135,4 +171,5 @@ module.exports = {
   buildSystemPrompt,
   USER_PROMPT,
   parseRecognitionResult,
+  parseRecognitionItems,
 }

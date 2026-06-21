@@ -1,6 +1,8 @@
 const DEFAULT_BASE_URL = 'https://ark.cn-beijing.volces.com/api/v3'
 // Hero 区域有效比例 335×480；1600x2304 为 Seedream 5.0 像素下限内最小近似尺寸
-const DEFAULT_SIZE = '1600x2304'
+const DEFAULT_HERO_SIZE = '1600x2304'
+// 衣橱单品卡片 1:1；1920x1920 = 3686400 像素，为 Seedream 5.0 像素下限（1024x1024 会报错）
+const DEFAULT_ITEM_DISPLAY_SIZE = '1920x1920'
 const MAX_REFERENCE_IMAGES = 10
 
 async function resolveImageUrl(cloud, fileID) {
@@ -29,38 +31,73 @@ function getSeedreamConfig() {
   const apiKey = process.env.DOUBAO_API_KEY
   const baseUrl = process.env.DOUBAO_API_BASE_URL || DEFAULT_BASE_URL
   const model = process.env.DOUBAO_SEEDREAM_MODEL
-  const size = process.env.DOUBAO_SEEDREAM_SIZE || DEFAULT_SIZE
+  const size = process.env.DOUBAO_SEEDREAM_SIZE || DEFAULT_HERO_SIZE
   return { apiKey, baseUrl, model, size }
 }
 
-function parseSeedreamResponse(data) {
-  const item = data?.data?.[0]
-  if (!item) {
-    throw new Error('Seedream 未返回图片')
-  }
+function getItemDisplaySize() {
+  return process.env.DOUBAO_ITEM_DISPLAY_SIZE || DEFAULT_ITEM_DISPLAY_SIZE
+}
+
+function parseSeedreamImageItem(item) {
+  if (!item) return null
   if (item.url) {
     return { url: item.url, b64: null }
   }
   if (item.b64_json) {
     return { url: null, b64: item.b64_json }
   }
-  throw new Error('Seedream 响应缺少 url 或 b64_json')
+  return null
 }
 
-async function generateSeedreamImage({ prompt, imageUrls = [] }) {
-  const { apiKey, baseUrl, model, size } = getSeedreamConfig()
+function parseSeedreamResponse(data) {
+  const item = parseSeedreamImageItem(data?.data?.[0])
+  if (!item) {
+    throw new Error('Seedream 未返回图片')
+  }
+  return item
+}
+
+function parseSeedreamImagesResponse(data) {
+  const list = data?.data
+  if (!Array.isArray(list) || list.length === 0) {
+    throw new Error('Seedream 未返回图片')
+  }
+  const images = list.map(parseSeedreamImageItem).filter(Boolean)
+  if (images.length === 0) {
+    throw new Error('Seedream 响应缺少 url 或 b64_json')
+  }
+  return { images }
+}
+
+async function generateSeedreamImages({
+  prompt,
+  imageUrls = [],
+  maxImages = 1,
+  size,
+}) {
+  const { apiKey, baseUrl, model } = getSeedreamConfig()
   if (!apiKey) throw new Error('未配置 DOUBAO_API_KEY')
   if (!model) throw new Error('未配置 DOUBAO_SEEDREAM_MODEL')
 
+  const count = Math.max(1, Math.min(15, parseInt(String(maxImages), 10) || 1))
+  const outputSize = size || getSeedreamConfig().size
   const refs = imageUrls.filter(Boolean).slice(0, MAX_REFERENCE_IMAGES)
+
   const body = {
     model,
     prompt,
-    sequential_image_generation: 'disabled',
     response_format: 'url',
-    size,
+    size: outputSize,
     stream: false,
     watermark: false,
+  }
+
+  if (count === 1) {
+    body.sequential_image_generation = 'disabled'
+  } else {
+    body.sequential_image_generation = 'auto'
+    body.sequential_image_generation_options = { max_images: count }
   }
 
   if (refs.length === 1) {
@@ -84,13 +121,30 @@ async function generateSeedreamImage({ prompt, imageUrls = [] }) {
     throw new Error(errMsg)
   }
 
-  return parseSeedreamResponse(data)
+  if (count === 1) {
+    return { images: [parseSeedreamResponse(data)] }
+  }
+  return parseSeedreamImagesResponse(data)
+}
+
+async function generateSeedreamImage({ prompt, imageUrls = [] }) {
+  const { images } = await generateSeedreamImages({
+    prompt,
+    imageUrls,
+    maxImages: 1,
+    size: getSeedreamConfig().size,
+  })
+  return images[0]
 }
 
 module.exports = {
   DEFAULT_BASE_URL,
+  DEFAULT_HERO_SIZE,
+  DEFAULT_ITEM_DISPLAY_SIZE,
   resolveImageUrl,
   resolveImageUrls,
   getSeedreamConfig,
+  getItemDisplaySize,
   generateSeedreamImage,
+  generateSeedreamImages,
 }

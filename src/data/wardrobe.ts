@@ -38,7 +38,7 @@ export const WARDROBE_PAGE_SIZE = 20
 /** FAB 批量上传时一次最多可选图片数 */
 export const WARDROBE_BATCH_UPLOAD_MAX = 3
 
-export type AiPhase = "idle" | "uploading" | "recognizing" | "done"
+export type AiPhase = "idle" | "uploading" | "recognizing" | "generating" | "done"
 
 export interface AiStatus {
   phase: AiPhase
@@ -49,7 +49,12 @@ export interface AiStatus {
 }
 
 export function isAiBusy(phase: AiPhase): boolean {
-  return phase === "uploading" || phase === "recognizing" || phase === "done"
+  return (
+    phase === "uploading" ||
+    phase === "recognizing" ||
+    phase === "generating" ||
+    phase === "done"
+  )
 }
 
 export function getAiStatusDesc(status: AiStatus): string {
@@ -64,7 +69,11 @@ export function getAiStatusDesc(status: AiStatus): string {
     case "recognizing":
       return batchLabel
         ? `正在识别 ${batchLabel}...`
-        : "AI 正在识别衣物类型..."
+        : "AI 正在提取单品..."
+    case "generating":
+      return batchLabel
+        ? `正在生成展示图 ${batchLabel}...`
+        : "正在生成展示图..."
     case "done":
       return "分类完成"
     default:

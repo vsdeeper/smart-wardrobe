@@ -186,17 +186,17 @@ wx.cloud
 }
 ```
 
-云函数 `recognize-clothing`（`persist: true`）与 `save-wardrobe-items` 写入时会显式设置 `_openid`；小程序端查询时规则自动过滤当前用户数据。
+云函数 `save-wardrobe-items` 写入时会显式设置 `_openid`；小程序端查询时规则自动过滤当前用户数据。
 
 ## 6. 共享代码同步（部署衣橱相关云函数前必读）
 
-`recognize-clothing` 使用 [`cloudfunctions/common/recognitionRules.js`](common/recognitionRules.js)（Prompt 规则 + 结构校验）；`recognize-clothing` 与 `save-wardrobe-items` 共用 [`cloudfunctions/common/wardrobeSave.js`](common/wardrobeSave.js)。微信云函数**按单目录独立打包上传**，同级 `common/` 不会随函数部署，须在本地同步进各函数目录：
+`recognize-clothing` 使用 [`cloudfunctions/common/recognitionRules.js`](common/recognitionRules.js)（Seed 多件 JSON）；`generate-wardrobe-display` 使用 [`itemDisplayImageRules.js`](common/itemDisplayImageRules.js)（Seedream 展示图 Prompt）、[`doubaoVision.js`](common/doubaoVision.js)（Seedream 组图）；`save-wardrobe-items` 共用 [`wardrobeSave.js`](common/wardrobeSave.js)。微信云函数**按单目录独立打包上传**，同级 `common/` 不会随函数部署，须在本地同步进各函数目录：
 
 ```bash
 pnpm cf:sync-common
 ```
 
-同步后：`recognize-clothing/common/` 含 `recognitionRules.js`、`wardrobeSave.js`；`save-wardrobe-items/common/` 仅含 `wardrobeSave.js`。**修改 `cloudfunctions/common/` 下源码后，须重新执行上述命令再上传部署。**
+同步后：`recognize-clothing/common/` 含 `recognitionRules.js`、`wardrobeSave.js`；`generate-wardrobe-display/common/` 含 `doubaoVision.js`、`itemDisplayImageRules.js`；`save-wardrobe-items/common/` 仅含 `wardrobeSave.js`。**修改 `cloudfunctions/common/` 下源码后，须重新执行上述命令再上传部署。**
 
 业务约束（typeName 白名单、name 长度、tags 规则、name/tags 互斥）由 **Prompt** 负责；云函数侧仅做 JSON 解析与非空 trim，不再做白名单归并或截断兜底。
 
@@ -224,12 +224,14 @@ tcb fn deploy recognize-clothing -e cloudbase-d6gkz1xlx9adbfe51
 | --------------------- | -------------------------------------------------- |
 | `DOUBAO_API_KEY`      | 火山方舟 API Key（可与 chat 共用）                 |
 | `DOUBAO_API_BASE_URL` | 可选，默认 `https://ark.cn-beijing.volces.com/api/v3` |
-| `DOUBAO_SEED_MODEL` | 方舟 Seed 模型 ID，示例 `doubao-seed-2-0-lite-260428` |
+| `DOUBAO_SEED_MODEL` | 方舟 Seed 全模态模型 ID，示例 `doubao-seed-2-0-lite-260428`（从原图提取 `items[]` JSON） |
 | `DOUBAO_SEED_TEMPERATURE` | 可选，识别采样温度，默认 `0.1`，范围 0–2 |
 
 在[火山方舟控制台](https://console.volcengine.com/ark)模型列表中查看模型 ID，填入 `DOUBAO_SEED_MODEL`。
 
-识别规则（typeName 白名单、Prompt 文案）见 [`cloudfunctions/common/recognitionRules.js`](common/recognitionRules.js)。修改后须 `pnpm cf:sync-common` 并重新部署 `recognize-clothing`（`save-wardrobe-items` 仅需同步 `wardrobeSave.js` 变更时部署）。
+识别规则（typeName 白名单、Prompt 文案）见 [`cloudfunctions/common/recognitionRules.js`](common/recognitionRules.js)。修改后须 `pnpm cf:sync-common` 并重新部署 `recognize-clothing`。
+
+**超时**：`config.json` 为 `timeout: 60`（仅 Seed 识别，通常 5–15s 内完成）。展示图生成已拆至 `generate-wardrobe-display`（见第 8 节）。
 
 ### Console 验证
 
@@ -239,13 +241,13 @@ tcb fn deploy recognize-clothing -e cloudbase-d6gkz1xlx9adbfe51
 wx.cloud
   .callFunction({
     name: "recognize-clothing",
-    data: { fileID: "cloud://xxx.jpg", persist: false },
+    data: { fileID: "cloud://xxx.jpg" },
   })
   .then(console.log)
   .catch(console.error);
 ```
 
-预览模式（`persist: false`，小程序默认）预期返回 `{ preview: { name, typeName, tags, imageFileId } }`；`persist: true` 时直接入库，返回 `{ item, type, isNewType }`。失败时返回 `{ error, message }`。
+预期返回 `{ items: [{ name, typeName, tags, warmthLevel? }], sourceFileId }`。失败时返回 `{ error, message }`。展示图须再调 `generate-wardrobe-display`（见第 8 节）。
 
 ### 故障排查
 
@@ -253,14 +255,73 @@ wx.cloud
 | ------------ | -------- |
 | `145 code exit unexpected` | SDK 在 `cloud.init()` 前调用 `cloud.database()`；确保已部署最新代码后重新「上传并部署：云端安装依赖」 |
 | `Cannot find module '../common/wardrobeSave'` | 未同步 common；见第 6 节，运行 `pnpm cf:sync-common` 后重新部署 |
-| `未配置 DOUBAO_SEED_MODEL` | 未设置 Seed 模型 ID 环境变量 |
+| `未配置 DOUBAO_SEED_MODEL` | 未设置 Seed 全模态模型 ID 环境变量 |
+| `未识别到衣物单品` | 原图中 Seed 未识别到衣物 |
+| `-504003` / 云函数超时 | 若仍出现在识别阶段，检查是否误将 Seedream 逻辑合并在本函数；生图超时见第 8 节 `generate-wardrobe-display` |
 | `无法获取图片临时链接` | fileID 无效或云存储权限问题 |
 | `AI 返回格式无效` | Vision 模型未按 JSON 格式返回，检查 prompt 或换模型 |
 | `LLM_API_ERROR` | API Key 无效、模型 ID 错误或 API 与模型不匹配、或配额用尽 |
 
-页面内通过衣橱页 FAB 上传触发：`chooseMedia` → `uploadFile` → `callFunction('recognize-clothing')`（预览不入库，确认后由 `save-wardrobe-items` 批量入库）。
+页面内通过衣橱页 FAB 上传触发：`chooseMedia` → `uploadFile` → `callFunction('recognize-clothing')`（Seed 提取 items）→ `callFunction('generate-wardrobe-display')`（Seedream 展示图 → 预览不入库，确认后由 `save-wardrobe-items` 批量入库）。
 
-## 8. 部署 save-wardrobe-items 云函数
+## 8. 部署 generate-wardrobe-display 云函数
+
+识别与生图已拆分为两个云函数，避免 Seed + Seedream 合计超过 60s 导致 `-504003`。
+
+1. 执行 `pnpm cf:sync-common`
+2. 微信开发者工具展开 `cloudfunctions/generate-wardrobe-display`
+3. 右键 → **上传并部署：云端安装依赖**
+
+或使用 CLI：
+
+```bash
+tcb fn deploy generate-wardrobe-display -e cloudbase-d6gkz1xlx9adbfe51
+```
+
+### 环境变量
+
+云开发控制台 → **云函数** → `generate-wardrobe-display` → **配置** → **环境变量**：
+
+| 变量名                | 说明                                               |
+| --------------------- | -------------------------------------------------- |
+| `DOUBAO_API_KEY`      | 火山方舟 API Key（可与其它云函数共用）             |
+| `DOUBAO_API_BASE_URL` | 可选，默认 `https://ark.cn-beijing.volces.com/api/v3` |
+| `DOUBAO_SEEDREAM_MODEL` | Seedream 模型 ID，示例 `doubao-seedream-5-0-260128`（按 items 从原图生成展示图） |
+| `DOUBAO_ITEM_DISPLAY_SIZE` | 可选，单品展示图尺寸，默认 `1920x1920`（1:1，像素数 ≥3686400） |
+
+**超时**：`config.json` 为 `timeout: 120`（Seedream 组图常需 40–90s）。客户端 `callFunction` 须设 `config.timeout: 120000` 与之对齐。
+
+### Console 验证
+
+先调用 `recognize-clothing` 取得 `items` 与原图 `fileID`，再：
+
+```javascript
+wx.cloud
+  .callFunction({
+    name: "generate-wardrobe-display",
+    data: {
+      fileID: "cloud://xxx.jpg",
+      items: [{ name: "基础白色T恤", typeName: "T恤", tags: ["白色"] }],
+    },
+    config: { timeout: 120000 },
+  })
+  .then(console.log)
+  .catch(console.error);
+```
+
+预期返回 `{ previews: [{ name, typeName, tags, imageFileId, warmthLevel? }], failed?: [...] }`；成功后云函数会删除原图 `fileID`。`previews.length === 0` 时返回 `{ error: 'GENERATE_FAILED', message, failed }`。
+
+### 故障排查
+
+| 返回 message | 常见原因 |
+| ------------ | -------- |
+| `未配置 DOUBAO_SEEDREAM_MODEL` | 未在 `generate-wardrobe-display` 配置 Seedream 模型 ID |
+| `SEEDREAM_FAILED` | Seedream 组图失败，检查模型 ID 与 prompt/参考图 |
+| `Seedream 未返回图片` | 模型无图像生成权限或组图参数不符合要求 |
+| `image size must be at least 3686400 pixels` | 展示图 `size` 过小；使用默认 `1920x1920` 或更大 |
+| `-504003` / 云函数超时 | 确认 `config.json` 为 `timeout: 120` 且客户端 `callFunction` timeout 为 120000 |
+
+## 9. 部署 save-wardrobe-items 云函数
 
 1. 执行 `pnpm cf:sync-common`（与 recognize-clothing 共用 common 模块）
 2. 微信开发者工具展开 `cloudfunctions/save-wardrobe-items`

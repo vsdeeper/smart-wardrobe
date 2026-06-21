@@ -16,24 +16,39 @@ export interface FetchWardrobeItemsOptions {
 interface RecognizeClothingError {
   error: string;
   message: string;
+  model?: string;
 }
 
-interface RecognizePreviewCloudResult {
-  preview: {
-    name: string;
-    typeName: string;
-    tags: string[];
-    imageFileId: string;
-    warmthLevel?: number;
-  };
+interface RecognizeItemPayload {
+  name: string;
+  typeName: string;
+  tags: string[];
+  warmthLevel?: number;
 }
 
-type RecognizeCloudResult =
-  | RecognizePreviewCloudResult
-  | RecognizeClothingError;
+interface RecognizeItemsCloudResult {
+  items: RecognizeItemPayload[];
+  sourceFileId: string;
+}
 
-function isRecognizeError(
-  result: RecognizeCloudResult,
+interface GeneratePreviewItemPayload {
+  name: string;
+  typeName: string;
+  tags: string[];
+  imageFileId: string;
+  warmthLevel?: number;
+}
+
+interface GenerateDisplayCloudResult {
+  previews: GeneratePreviewItemPayload[];
+  failed?: { index: number; message: string }[];
+}
+
+type RecognizeCloudResult = RecognizeItemsCloudResult | RecognizeClothingError;
+type GenerateCloudResult = GenerateDisplayCloudResult | RecognizeClothingError;
+
+function isCloudFunctionError(
+  result: RecognizeCloudResult | GenerateCloudResult,
 ): result is RecognizeClothingError {
   return "error" in result && typeof result.error === "string";
 }
@@ -217,8 +232,8 @@ export async function resolvePreviewImageUrls(
 /** 上传图片并调用 AI 识别（预览模式，不入库） */
 export async function uploadAndRecognize(
   filePath: string,
-  onPhase?: (phase: "uploading" | "recognizing") => void,
-): Promise<RecognizedPreviewItem> {
+  onPhase?: (phase: "uploading" | "recognizing" | "generating") => void,
+): Promise<RecognizedPreviewItem[]> {
   const ext = filePath.includes(".")
     ? filePath.slice(filePath.lastIndexOf("."))
     : ".jpg";
@@ -229,37 +244,70 @@ export async function uploadAndRecognize(
     cloudPath,
     filePath,
   });
+  const sourceFileId = uploadRes.fileID;
 
   onPhase?.("recognizing");
-  const { result } = await Taro.cloud.callFunction({
+  const { result: recognizeResult } = await Taro.cloud.callFunction({
     name: "recognize-clothing",
-    data: { fileID: uploadRes.fileID, persist: false },
+    data: { fileID: sourceFileId },
   });
 
-  const data = result as RecognizeCloudResult;
-  if (isRecognizeError(data)) {
-    throw new Error(data.message || data.error);
+  const recognizeData = recognizeResult as RecognizeCloudResult;
+  if (isCloudFunctionError(recognizeData)) {
+    throw new Error(recognizeData.message || recognizeData.error);
   }
 
-  const preview: RecognizedPreviewItem = {
-    tempId: createTempId(),
-    name: data.preview.name,
-    typeName: data.preview.typeName,
-    tags: data.preview.tags,
-    imageFileId: data.preview.imageFileId,
-    ...(typeof data.preview.warmthLevel === "number" && {
-      warmthLevel: data.preview.warmthLevel,
-    }),
-  };
+  const items = recognizeData.items ?? [];
+  if (items.length === 0) {
+    throw new Error("未识别到衣物单品");
+  }
 
-  const [withUrl] = await resolvePreviewImageUrls([preview]);
-  return withUrl ?? preview;
+  onPhase?.("generating");
+  let generateData: GenerateCloudResult;
+  try {
+    const generateRes = (await Taro.cloud.callFunction({
+      name: "generate-wardrobe-display",
+      data: { fileID: sourceFileId, items },
+      config: { timeout: 120000 },
+    } as Parameters<typeof Taro.cloud.callFunction>[0] & {
+      config?: { timeout?: number };
+    })) as { result: unknown };
+    generateData = generateRes.result as GenerateCloudResult;
+  } catch (err) {
+    await deleteCloudFiles([sourceFileId]);
+    throw err;
+  }
+
+  if (isCloudFunctionError(generateData)) {
+    await deleteCloudFiles([sourceFileId]);
+    throw new Error(generateData.message || generateData.error);
+  }
+
+  const rawPreviews = generateData.previews ?? [];
+  if (rawPreviews.length === 0) {
+    await deleteCloudFiles([sourceFileId]);
+    const partialMsg = generateData.failed?.[0]?.message;
+    throw new Error(partialMsg || "未能生成展示图");
+  }
+
+  const previews: RecognizedPreviewItem[] = rawPreviews.map((item) => ({
+    tempId: createTempId(),
+    name: item.name,
+    typeName: item.typeName,
+    tags: item.tags,
+    imageFileId: item.imageFileId,
+    ...(typeof item.warmthLevel === "number" && {
+      warmthLevel: item.warmthLevel,
+    }),
+  }));
+
+  return resolvePreviewImageUrls(previews);
 }
 
 export interface BatchRecognizeProgress {
   current: number;
   total: number;
-  phase: "uploading" | "recognizing";
+  phase: "uploading" | "recognizing" | "generating";
 }
 
 export interface BatchRecognizeResult {
@@ -280,10 +328,10 @@ export async function uploadAndRecognizeBatch(
     const current = i + 1;
 
     try {
-      const result = await uploadAndRecognize(filePaths[i], (phase) => {
+      const results = await uploadAndRecognize(filePaths[i], (phase) => {
         onProgress?.({ current, total, phase });
       });
-      succeeded.push(result);
+      succeeded.push(...results);
     } catch (err) {
       const message = err instanceof Error ? err.message : "识别失败";
       failed.push({ index: current, message });
