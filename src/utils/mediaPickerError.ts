@@ -49,60 +49,36 @@ export function getMediaPickerErrorToast(err: unknown): string | null {
   return stripped || "无法选择图片，请稍后重试";
 }
 
-/** 选图前触发微信隐私授权（weapp）；不支持时直接 resolve */
-export function ensurePrivacyAuthorize(): Promise<void> {
+export interface PrivacySettingResult {
+  needAuthorization: boolean;
+  privacyContractName?: string;
+}
+
+/** 查询用户是否需要授权隐私协议（weapp） */
+export function checkNeedPrivacyAuthorization(): Promise<PrivacySettingResult> {
   if (process.env.TARO_ENV !== "weapp") {
-    return Promise.resolve();
+    return Promise.resolve({ needAuthorization: false });
   }
 
   const wxApi = getWx();
-  if (!wxApi?.requirePrivacyAuthorize) {
-    return Promise.resolve();
+  if (!wxApi?.getPrivacySetting) {
+    return Promise.resolve({ needAuthorization: false });
   }
 
-  return new Promise((resolve, reject) => {
-    wxApi.requirePrivacyAuthorize({
-      success: () => resolve(),
-      fail: (err) => reject(err),
+  return new Promise((resolve) => {
+    wxApi.getPrivacySetting({
+      success: (res) => {
+        resolve({
+          needAuthorization: Boolean(res.needAuthorization),
+          privacyContractName: res.privacyContractName,
+        });
+      },
+      fail: () => resolve({ needAuthorization: false }),
     });
   });
 }
 
-/** App 级隐私授权回调，配合官方隐私弹窗 */
-export function initPrivacyAuthorization(): void {
-  if (process.env.TARO_ENV !== "weapp") return;
-
-  const wxApi = getWx();
-  if (!wxApi?.onNeedPrivacyAuthorization) return;
-
-  wxApi.onNeedPrivacyAuthorization((resolve) => {
-    if (wxApi.openPrivacyContract) {
-      wxApi.openPrivacyContract({
-        success: () => {
-          resolve({ event: "agree", buttonId: "privacy-agree-btn" });
-        },
-        fail: () => {
-          resolve({ event: "disagree", buttonId: "privacy-disagree-btn" });
-        },
-      });
-      return;
-    }
-
-    wxApi.showModal({
-      title: "用户隐私保护提示",
-      content: "使用相册或拍照功能需阅读并同意《用户隐私保护指引》",
-      confirmText: "同意",
-      cancelText: "拒绝",
-      success: (res) => {
-        if (res.confirm) {
-          resolve({ event: "agree", buttonId: "privacy-agree-btn" });
-        } else {
-          resolve({ event: "disagree", buttonId: "privacy-disagree-btn" });
-        }
-      },
-      fail: () => {
-        resolve({ event: "disagree", buttonId: "privacy-disagree-btn" });
-      },
-    });
-  });
+/** 打开微信用户隐私保护指引 */
+export function openPrivacyContract(): void {
+  getWx()?.openPrivacyContract?.({});
 }

@@ -11,6 +11,7 @@ import { useWardrobeUpload } from "@/hooks/useWardrobeUpload";
 import { getCardLayout } from "@/utils/wardrobeLayout";
 import { useMainTabNavigation } from "@/hooks/useMainTabNavigation";
 import AiStatusBanner from "./components/AiStatusBanner";
+import PrivacyAuthorizeDialog from "./components/PrivacyAuthorizeDialog";
 import WardrobeItemCard from "./components/WardrobeItemCard";
 import WardrobeStylingCta from "./components/WardrobeStylingCta";
 import "./index.scss";
@@ -40,7 +41,15 @@ function WardrobePage() {
     handleActionSelect,
   } = useWardrobeList({ uploadFlowRef, setAiStatus });
 
-  const { adding, handleAddItem, handleAIStyling } = useWardrobeUpload({
+  const {
+    adding,
+    privacyVisible,
+    privacyContractName,
+    handleAddItem,
+    handlePrivacyAgreed,
+    closePrivacyDialog,
+    handleAIStyling,
+  } = useWardrobeUpload({
     setAiStatus,
     uploadFlowRef,
   });
@@ -128,6 +137,13 @@ function WardrobePage() {
         onSelect={handleActionSelect}
         onCancel={closeActionSheet}
         onClose={closeActionSheet}
+      />
+
+      <PrivacyAuthorizeDialog
+        visible={privacyVisible}
+        contractName={privacyContractName}
+        onClose={closePrivacyDialog}
+        onAgreed={handlePrivacyAgreed}
       />
     </Main>
   );

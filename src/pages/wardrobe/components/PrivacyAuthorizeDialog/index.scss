@@ -1,0 +1,105 @@
+.privacy-dialog {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--nutui-spacing-8);
+  box-sizing: border-box;
+
+  &__mask {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+  }
+
+  &__panel {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 320px;
+    padding: var(--nutui-spacing-8);
+    border-radius: var(--nutui-radius-xl, 16px);
+    background: var(--nutui-gray-1);
+    box-sizing: border-box;
+  }
+
+  &__title {
+    display: block;
+    margin-bottom: var(--nutui-spacing-5);
+    font-family: var(--sw-font-heading);
+    font-size: var(--nutui-font-size-5);
+    font-weight: var(--nutui-font-weight-bold);
+    color: var(--nutui-gray-7);
+    text-align: center;
+    line-height: 1.4;
+  }
+
+  &__desc {
+    display: block;
+    margin-bottom: var(--nutui-spacing-4);
+    font-family: var(--sw-font-body);
+    font-size: var(--nutui-font-size-3);
+    color: var(--nutui-gray-6);
+    line-height: 1.6;
+  }
+
+  &__link {
+    display: inline-flex;
+    margin-bottom: var(--nutui-spacing-7);
+  }
+
+  &__link-text {
+    font-size: var(--nutui-font-size-3);
+    color: var(--nutui-brand-6);
+    line-height: 1.4;
+  }
+
+  &__footer {
+    display: flex;
+    gap: var(--nutui-spacing-3);
+  }
+
+  &__btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    height: 40px;
+    margin: 0;
+    padding: 0;
+    border-radius: var(--nutui-button-border-radius, 24px);
+    box-sizing: border-box;
+
+    &--cancel {
+      border: 1px solid var(--nutui-gray-4);
+      background: var(--nutui-gray-1);
+    }
+
+    &--agree {
+      border: none;
+      background: var(--nutui-brand-6);
+      color: var(--sw-color-on-primary);
+      font-size: var(--nutui-font-size-3);
+      font-weight: var(--nutui-font-weight-bold);
+      line-height: 40px;
+
+      &::after {
+        border: none;
+      }
+    }
+
+    &:active {
+      opacity: 0.88;
+    }
+  }
+
+  &__btn-text {
+    font-size: var(--nutui-font-size-3);
+    font-weight: var(--nutui-font-weight-bold);
+    color: var(--nutui-gray-7);
+    line-height: 1.2;
+  }
+}

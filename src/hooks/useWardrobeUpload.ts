@@ -5,7 +5,7 @@ import { WARDROBE_BATCH_UPLOAD_MAX, type AiStatus } from "@/data/wardrobe";
 import { setRecognitionDraft } from "@/services/recognitionDraft";
 import { uploadAndRecognizeBatch } from "@/services/wardrobe";
 import {
-  ensurePrivacyAuthorize,
+  checkNeedPrivacyAuthorization,
   getMediaPickerErrorToast,
 } from "@/utils/mediaPickerError";
 
@@ -19,6 +19,8 @@ export function useWardrobeUpload({
   uploadFlowRef,
 }: UseWardrobeUploadOptions) {
   const [adding, setAdding] = useState(false);
+  const [privacyVisible, setPrivacyVisible] = useState(false);
+  const [privacyContractName, setPrivacyContractName] = useState("");
   const aiResetTimerRef = useRef<ReturnType<typeof setTimeout>>();
 
   const scrollToTop = useCallback(() => {
@@ -29,18 +31,9 @@ export function useWardrobeUpload({
     });
   }, []);
 
-  const handleAddItem = useCallback(async () => {
-    if (process.env.TARO_ENV !== "weapp") {
-      Taro.showToast({ title: "请在微信小程序中使用", icon: "none" });
-      return;
-    }
-
-    if (adding) return;
-
+  const runPickAndUpload = useCallback(async () => {
     try {
       uploadFlowRef.current = true;
-
-      await ensurePrivacyAuthorize();
 
       const chooseRes = await Taro.chooseMedia({
         count: WARDROBE_BATCH_UPLOAD_MAX,
@@ -87,7 +80,7 @@ export function useWardrobeUpload({
             batchCurrent: current,
             batchTotal: total,
           }));
-        }
+        },
       );
 
       const successCount = succeeded.length;
@@ -155,7 +148,34 @@ export function useWardrobeUpload({
       uploadFlowRef.current = false;
       setAdding(false);
     }
-  }, [adding, scrollToTop, setAiStatus, uploadFlowRef]);
+  }, [scrollToTop, setAiStatus, uploadFlowRef]);
+
+  const handleAddItem = useCallback(async () => {
+    if (process.env.TARO_ENV !== "weapp") {
+      Taro.showToast({ title: "请在微信小程序中使用", icon: "none" });
+      return;
+    }
+
+    if (adding) return;
+
+    const privacy = await checkNeedPrivacyAuthorization();
+    if (privacy.needAuthorization) {
+      setPrivacyContractName(privacy.privacyContractName ?? "");
+      setPrivacyVisible(true);
+      return;
+    }
+
+    await runPickAndUpload();
+  }, [adding, runPickAndUpload]);
+
+  const closePrivacyDialog = useCallback(() => {
+    setPrivacyVisible(false);
+  }, []);
+
+  const handlePrivacyAgreed = useCallback(() => {
+    setPrivacyVisible(false);
+    void runPickAndUpload();
+  }, [runPickAndUpload]);
 
   const handleAIStyling = useCallback(() => {
     setTryOnDraft({ mode: "wardrobe-cta" });
@@ -164,7 +184,11 @@ export function useWardrobeUpload({
 
   return {
     adding,
+    privacyVisible,
+    privacyContractName,
     handleAddItem,
+    handlePrivacyAgreed,
+    closePrivacyDialog,
     handleAIStyling,
   };
 }
