@@ -1,8 +1,8 @@
-import { View, Text, ScrollView, Button, Image, Input } from "@tarojs/components";
+import { View, Text, ScrollView, Button, Input } from "@tarojs/components";
 import Taro from "@tarojs/taro";
 import { ArrowRight } from "@nutui/icons-react-taro";
 import { Cell, Loading, NavBar } from "@nutui/nutui-react-taro";
-import totoroSrc from "@/assets/images/totoro.png";
+import DefaultAvatar from "@/components/DefaultAvatar";
 import { getGenderLabel, maskPhoneNumber } from "@/data/profile";
 import { useMineProfileEdit } from "@/hooks/useMineProfileEdit";
 import "./index.scss";
@@ -69,11 +69,7 @@ function MineProfilePage() {
                 title="头像"
                 extra={
                   <View className="mine-profile-cell__extra">
-                    <Image
-                      className="mine-profile-cell__avatar-preview"
-                      src={avatarUrl || totoroSrc}
-                      mode="aspectFill"
-                    />
+                    <DefaultAvatar size="sm" src={avatarUrl} />
                     {cellArrow}
                   </View>
                 }

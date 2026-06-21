@@ -1,5 +1,5 @@
 import { View, Image } from "@tarojs/components";
-import totoroSrc from "@/assets/images/totoro.png";
+import baicaiSrc from "@/assets/images/baicai.png";
 
 import "./index.scss";
 
@@ -16,7 +16,7 @@ function DefaultAvatar({ size = "sm", className, src }: DefaultAvatarProps) {
     >
       <Image
         className="default-avatar__image"
-        src={src || totoroSrc}
+        src={src || baicaiSrc}
         mode="aspectFill"
       />
     </View>
