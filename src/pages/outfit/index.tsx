@@ -1,4 +1,5 @@
 import { View, Text } from "@tarojs/components";
+import { Close } from "@nutui/icons-react-taro";
 // import { Add } from "@nutui/icons-react-taro"; // 添加单品入口暂隐藏
 import { Image, Loading, Tabs } from "@nutui/nutui-react-taro";
 import AppNavbar from "@/components/AppNavbar";
@@ -123,7 +124,7 @@ function OutfitPage() {
                           handleRemovePiece(piece);
                         }}
                       >
-                        <Text className="outfit-thumb__remove-icon">×</Text>
+                        <Close size={12} color="var(--sw-color-on-primary)" />
                       </View>
                     </View>
                   </View>

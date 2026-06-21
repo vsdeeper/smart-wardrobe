@@ -233,14 +233,6 @@
     transform: translate(25%, -25%);
   }
 
-  &__remove-icon {
-    font-size: 16px;
-    line-height: 1;
-    color: var(--sw-color-on-primary);
-    font-weight: 600;
-    margin-top: -4px;
-  }
-
   &--add {
     display: flex;
     flex-direction: column;
