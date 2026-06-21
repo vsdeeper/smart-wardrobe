@@ -1,69 +1,67 @@
 import { useCallback, useRef, useState } from "react";
 import Taro, { useDidShow } from "@tarojs/taro";
 import { DEFAULT_USER_PROFILE, type UserProfile } from "@/data/profile";
-import { fetchUserProfile, saveUserProfile } from "@/services/profile";
+import { saveUserProfile } from "@/services/profile";
 import { resolveAvatarUrl } from "@/services/profileAvatar";
 import {
-  clearAvatarCache,
-  isAvatarCacheValid,
-  readAvatarCache,
-  writeAvatarCache,
-} from "@/services/profileAvatarCache";
-import { fetchWardrobeItemCount } from "@/services/wardrobe";
-
-async function resolveAndCacheAvatar(fileId: string): Promise<string | undefined> {
-  const cached = readAvatarCache();
-  if (cached && isAvatarCacheValid(cached, fileId)) {
-    return cached.url;
-  }
-
-  const url = await resolveAvatarUrl(fileId);
-  if (url) {
-    writeAvatarCache(fileId, url);
-    return url;
-  }
-  return undefined;
-}
+  clearProfileCache,
+  getInitialProfileState,
+  prefetchUserProfile,
+  readProfileCache,
+  writeProfileCache,
+} from "@/services/profileCache";
 
 export function useUserProfile() {
-  const [profile, setProfile] = useState<UserProfile>(DEFAULT_USER_PROFILE);
+  const initial = getInitialProfileState();
+  const [profile, setProfile] = useState<UserProfile>(initial.profile);
   const [avatarUrl, setAvatarUrl] = useState<string | undefined>(
-    () => readAvatarCache()?.url,
+    initial.avatarUrl,
   );
-  const [itemCount, setItemCount] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const [itemCount, setItemCount] = useState(initial.itemCount);
+  const [loading, setLoading] = useState(!initial.hasCache);
   const [updating, setUpdating] = useState(false);
   const profileRef = useRef(profile);
+  const itemCountRef = useRef(itemCount);
+  const avatarUrlRef = useRef(avatarUrl);
 
   profileRef.current = profile;
+  itemCountRef.current = itemCount;
+  avatarUrlRef.current = avatarUrl;
+
+  const applyCacheEntry = useCallback(
+    (entry: NonNullable<Awaited<ReturnType<typeof prefetchUserProfile>>>) => {
+      setProfile(entry.profile);
+      setItemCount(entry.itemCount);
+      setAvatarUrl(entry.avatarUrl);
+    },
+    [],
+  );
 
   const refresh = useCallback(async () => {
-    setLoading(true);
-    try {
-      const [userProfile, count] = await Promise.all([
-        fetchUserProfile(),
-        fetchWardrobeItemCount(),
-      ]);
-      setProfile(userProfile);
-      setItemCount(count);
+    if (!readProfileCache()) {
+      setLoading(true);
+    }
 
-      if (userProfile.avatarFileId) {
-        const url = await resolveAndCacheAvatar(userProfile.avatarFileId);
-        setAvatarUrl(url);
+    try {
+      const entry = await prefetchUserProfile();
+      if (entry) {
+        applyCacheEntry(entry);
       } else {
-        clearAvatarCache();
+        clearProfileCache();
+        setProfile(DEFAULT_USER_PROFILE);
+        setItemCount(0);
         setAvatarUrl(undefined);
       }
     } catch {
-      setProfile(DEFAULT_USER_PROFILE);
-      const cached = readAvatarCache();
-      if (!cached) {
+      if (!readProfileCache()) {
+        setProfile(DEFAULT_USER_PROFILE);
         setAvatarUrl(undefined);
+        setItemCount(0);
       }
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [applyCacheEntry]);
 
   const updateProfile = useCallback(async (patch: Partial<UserProfile>) => {
     setUpdating(true);
@@ -72,13 +70,25 @@ export function useUserProfile() {
       const saved = await saveUserProfile(next);
       setProfile(saved);
 
+      let nextAvatarUrl: string | undefined;
       if (saved.avatarFileId) {
-        const url = await resolveAndCacheAvatar(saved.avatarFileId);
-        setAvatarUrl(url);
+        if (patch.avatarFileId !== undefined) {
+          nextAvatarUrl = (await resolveAvatarUrl(saved.avatarFileId)) ?? undefined;
+        } else {
+          nextAvatarUrl = avatarUrlRef.current;
+        }
+        setAvatarUrl(nextAvatarUrl);
       } else {
-        clearAvatarCache();
+        nextAvatarUrl = undefined;
         setAvatarUrl(undefined);
       }
+
+      writeProfileCache({
+        profile: saved,
+        avatarUrl: nextAvatarUrl,
+        itemCount: itemCountRef.current,
+        cachedAt: Date.now(),
+      });
 
       return true;
     } catch {

@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useDidShow, useDidHide } from '@tarojs/taro'
 import { initCloud } from '@/services/cloud'
+import { prefetchUserProfile } from '@/services/profileCache'
 // 全局样式
 import './app.scss'
 
@@ -10,7 +11,9 @@ function App(props) {
   }, [])
 
   // 对应 onShow
-  useDidShow(() => {})
+  useDidShow(() => {
+    prefetchUserProfile()
+  })
 
   // 对应 onHide
   useDidHide(() => {})
