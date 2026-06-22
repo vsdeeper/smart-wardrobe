@@ -187,6 +187,26 @@
   color: var(--nutui-gray-7);
 }
 
+.try-on-empty__cta {
+  margin-top: var(--nutui-spacing-3);
+  padding: 12px 28px;
+  border-radius: var(--sw-radius-pill);
+  background: var(--nutui-brand-6);
+  box-shadow: var(--sw-shadow-fab);
+
+  &:active {
+    opacity: 0.92;
+    transform: scale(0.98);
+  }
+}
+
+.try-on-empty__cta-text {
+  font-family: var(--sw-font-heading);
+  font-size: var(--nutui-font-size-4);
+  font-weight: 500;
+  color: var(--sw-color-on-primary);
+}
+
 // ========== 主推荐卡片 ==========
 .outfit-hero {
   position: relative;
@@ -238,6 +258,26 @@
     font-size: var(--nutui-font-size-3);
     color: var(--nutui-gray-6);
     line-height: 1.5;
+  }
+
+  &__error-retry {
+    margin-top: var(--nutui-spacing-2);
+    padding: 10px 24px;
+    border-radius: var(--sw-radius-pill);
+    background: var(--nutui-brand-6);
+    box-shadow: var(--sw-shadow-fab);
+
+    &:active {
+      opacity: 0.92;
+      transform: scale(0.98);
+    }
+  }
+
+  &__error-retry-text {
+    font-family: var(--sw-font-heading);
+    font-size: var(--nutui-font-size-3);
+    font-weight: 500;
+    color: var(--sw-color-on-primary);
   }
 
   &__gradient {
@@ -464,6 +504,18 @@
 }
 
 // ========== 主操作按钮容器（外观见 app.scss .sw-btn） ==========
+.try-on-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--nutui-spacing-4);
+  padding: 0 20px 30px;
+  box-sizing: border-box;
+
+  .wear-btn-wrap {
+    padding: 0;
+  }
+}
+
 .wear-btn-wrap {
   padding: 0 20px 30px;
   box-sizing: border-box;

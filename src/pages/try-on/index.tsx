@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { View, Text } from "@tarojs/components";
 import Taro from "@tarojs/taro";
 import { Loading } from "@nutui/nutui-react-taro";
@@ -28,6 +29,8 @@ function TryOnPage() {
     selectedPieces,
     fromCache,
     savedReturn,
+    isManualOutfit,
+    refreshRecommend,
     weatherSnapshot,
   } = useTryOnRecommend();
 
@@ -38,14 +41,15 @@ function TryOnPage() {
     heroImageUrl,
     heroCoverFileId,
     previewErrorMessage,
+    generatePreview,
   } = useTryOnPreview({
-      selectedPieces,
-      outfitName: recommendation?.outfitName ?? "今日推荐",
-      description: recommendation?.description ?? "",
-      fromCache,
-      savedReturn,
-      recommendReady,
-    });
+    selectedPieces,
+    outfitName: recommendation?.outfitName ?? "今日推荐",
+    description: recommendation?.description ?? "",
+    fromCache,
+    savedReturn,
+    recommendReady,
+  });
 
   const { saving, handleWearOutfit } = useTryOnWear({
     recommendation,
@@ -54,6 +58,10 @@ function TryOnPage() {
     heroCoverFileId,
     weatherSnapshot,
   });
+
+  const handleGoWardrobe = useCallback(() => {
+    Taro.redirectTo({ url: "/pages/wardrobe/index" });
+  }, []);
 
   const handleEditOutfit = () => {
     if (selectedPieces.length === 0) {
@@ -89,6 +97,9 @@ function TryOnPage() {
           <Text className="try-on-empty__desc">
             上传衣物后，AI 将根据天气与场景为您推荐穿搭
           </Text>
+          <View className="try-on-empty__cta" onClick={handleGoWardrobe}>
+            <Text className="try-on-empty__cta-text">去上传衣物</Text>
+          </View>
         </View>
       );
     }
@@ -98,6 +109,9 @@ function TryOnPage() {
         <View className="try-on-empty">
           <Text className="try-on-empty__title">推荐失败</Text>
           <Text className="try-on-empty__desc">{errorMessage}</Text>
+          <View className="try-on-empty__cta" onClick={refreshRecommend}>
+            <Text className="try-on-empty__cta-text">重试</Text>
+          </View>
         </View>
       );
     }
@@ -112,17 +126,37 @@ function TryOnPage() {
           heroCoverFileId={heroCoverFileId}
           previewStatus={previewStatus}
           previewErrorMessage={previewErrorMessage}
+          onRetryPreview={generatePreview}
         />
         <OutfitPieceList pieces={selectedPieces} onEditOutfit={handleEditOutfit} />
         <OutfitTips tips={recommendation?.tips ?? []} />
-        <WearCta
-          disabled={
-            saving ||
-            previewStatus === "loading" ||
-            previewStatus === "error"
-          }
-          onWear={handleWearOutfit}
-        />
+        <View className="try-on-actions">
+          {!isManualOutfit ? (
+            <View
+              className={[
+                "sw-btn sw-btn--block sw-btn--secondary",
+                (saving || previewStatus === "loading") && "sw-btn--disabled",
+              ]
+                .filter(Boolean)
+                .join(" ")}
+              onClick={
+                saving || previewStatus === "loading"
+                  ? undefined
+                  : refreshRecommend
+              }
+            >
+              <Text className="sw-btn__text">换一套</Text>
+            </View>
+          ) : null}
+          <WearCta
+            disabled={
+              saving ||
+              previewStatus === "loading" ||
+              previewStatus === "error"
+            }
+            onWear={handleWearOutfit}
+          />
+        </View>
       </>
     );
   };

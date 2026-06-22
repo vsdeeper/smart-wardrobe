@@ -1,26 +1,26 @@
 export default defineAppConfig({
   pages: [
-    'pages/wardrobe/index',
-    'pages/wardrobe-detail/index',
-    'pages/wardrobe-edit/index',
-    'pages/ai-recognition/index',
-    'pages/try-on/index',
-    'pages/outfit/index',
-    'pages/mine/index',
-    'pages/mine-profile/index',
-    'pages/mine-profile-field/index',
+    "pages/wardrobe/index",
+    "pages/wardrobe-detail/index",
+    "pages/wardrobe-edit/index",
+    "pages/ai-recognition/index",
+    "pages/try-on/index",
+    "pages/outfit/index",
+    "pages/mine/index",
+    "pages/mine-profile/index",
+    "pages/mine-profile-field/index",
   ],
   permission: {
-    'scope.userLocation': {
-      desc: '用于获取您所在位置的天气，推荐更合适的穿搭',
+    "scope.userLocation": {
+      desc: "用于获取您所在位置的天气，推荐更合适的穿搭",
     },
   },
-  requiredPrivateInfos: ['getLocation'],
+  requiredPrivateInfos: ["getLocation"],
   __usePrivacyCheck__: true,
   window: {
-    backgroundTextStyle: 'light',
-    navigationBarBackgroundColor: '#fff',
-    navigationBarTitleText: 'WeChat',
-    navigationBarTextStyle: 'black'
-  }
-})
+    backgroundTextStyle: "light",
+    navigationBarBackgroundColor: "#fff",
+    navigationBarTitleText: "凡衣橱",
+    navigationBarTextStyle: "black",
+  },
+});

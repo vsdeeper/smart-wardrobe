@@ -185,6 +185,7 @@ export function useTryOnRecommend() {
     selectedPieces,
     fromCache,
     savedReturn,
+    isManualOutfit: savedReturn !== null,
     weatherSnapshot,
     refreshRecommend,
     allItems: allItemsRef.current,

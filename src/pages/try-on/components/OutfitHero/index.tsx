@@ -10,6 +10,7 @@ export interface OutfitHeroProps {
   heroCoverFileId: string | null;
   previewStatus: TryOnPreviewStatus;
   previewErrorMessage?: string | null;
+  onRetryPreview?: () => void;
 }
 
 export default function OutfitHero({
@@ -20,6 +21,7 @@ export default function OutfitHero({
   heroCoverFileId,
   previewStatus,
   previewErrorMessage,
+  onRetryPreview,
 }: OutfitHeroProps) {
   const isLoading = previewStatus === "loading";
   const isError = previewStatus === "error";
@@ -41,6 +43,14 @@ export default function OutfitHero({
           <Text className="outfit-hero__error-desc">
             {previewErrorMessage || "请稍后重试"}
           </Text>
+          {onRetryPreview ? (
+            <View
+              className="outfit-hero__error-retry"
+              onClick={onRetryPreview}
+            >
+              <Text className="outfit-hero__error-retry-text">重试</Text>
+            </View>
+          ) : null}
         </View>
       )}
       <View className="outfit-hero__gradient" aria-hidden />
