@@ -205,9 +205,10 @@
 
   &__media {
     width: 88px;
-    height: 128px;
+    height: 88px;
     border-radius: var(--nutui-radius-6);
     overflow: hidden;
+    background: var(--sw-color-image-bg);
     box-shadow: var(--sw-shadow-card);
   }
 
