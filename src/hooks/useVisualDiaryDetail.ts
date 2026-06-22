@@ -1,0 +1,63 @@
+import { useCallback, useState } from "react";
+import Taro, { useDidShow, useRouter } from "@tarojs/taro";
+import type { VisualDiaryEntry } from "@/data/tryOn";
+import type { WardrobeItem } from "@/data/wardrobe";
+import { fetchWardrobeItemsByIds } from "@/services/wardrobe";
+import { fetchVisualDiaryEntryById } from "@/services/visualDiary";
+
+export function useVisualDiaryDetail() {
+  const router = useRouter();
+  const entryId = router.params.id ?? "";
+
+  const [entry, setEntry] = useState<VisualDiaryEntry | null>(null);
+  const [pieces, setPieces] = useState<WardrobeItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadDetail = useCallback(async () => {
+    if (!entryId) {
+      setError("缺少记录 ID");
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const diaryEntry = await fetchVisualDiaryEntryById(entryId);
+      const wardrobePieces = await fetchWardrobeItemsByIds(diaryEntry.pieceIds);
+      setEntry(diaryEntry);
+      setPieces(wardrobePieces);
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "加载失败，请稍后重试";
+      setError(message);
+      setEntry(null);
+      setPieces([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [entryId]);
+
+  useDidShow(() => {
+    void loadDetail();
+  });
+
+  const handleBack = useCallback(() => {
+    Taro.navigateBack();
+  }, []);
+
+  const handlePieceClick = useCallback((pieceId: string) => {
+    Taro.navigateTo({ url: `/pages/wardrobe-detail/index?id=${pieceId}` });
+  }, []);
+
+  return {
+    entry,
+    pieces,
+    loading,
+    error,
+    handleBack,
+    handlePieceClick,
+  };
+}

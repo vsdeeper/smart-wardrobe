@@ -1,4 +1,5 @@
 import Taro from "@tarojs/taro";
+import { VISUAL_DIARY_PAGE_SIZE } from "@/data/tryOn";
 import type { WeatherSnapshot } from "@/data/weather";
 import type { VisualDiaryEntry } from "@/data/tryOn";
 
@@ -10,6 +11,11 @@ export interface SaveVisualDiaryInput {
   pieceIds: string[];
   matchScore?: number;
   weatherSnapshot?: WeatherSnapshot;
+}
+
+export interface FetchVisualDiaryEntriesOptions {
+  skip?: number;
+  limit?: number;
 }
 
 function normalizeEntry(raw: Record<string, unknown>): VisualDiaryEntry {
@@ -53,6 +59,12 @@ async function resolveCoverUrl(
   return entry;
 }
 
+async function resolveCoverUrls(
+  entries: VisualDiaryEntry[],
+): Promise<VisualDiaryEntry[]> {
+  return Promise.all(entries.map(resolveCoverUrl));
+}
+
 export async function saveVisualDiaryEntry(
   input: SaveVisualDiaryInput,
 ): Promise<VisualDiaryEntry> {
@@ -84,15 +96,44 @@ export async function saveVisualDiaryEntry(
 }
 
 export async function fetchVisualDiaryEntries(
-  limit = 20,
+  options: FetchVisualDiaryEntriesOptions = {},
 ): Promise<VisualDiaryEntry[]> {
   const db = Taro.cloud.database();
+  const skip = options.skip ?? 0;
+  const limit = options.limit ?? VISUAL_DIARY_PAGE_SIZE;
+
   const res = await db
     .collection("visual_diary")
     .orderBy("createdAt", "desc")
+    .skip(skip)
     .limit(limit)
     .get();
 
   const entries = (res.data as Record<string, unknown>[]).map(normalizeEntry);
-  return Promise.all(entries.map(resolveCoverUrl));
+  return resolveCoverUrls(entries);
+}
+
+export async function fetchVisualDiaryEntryById(
+  id: string,
+): Promise<VisualDiaryEntry> {
+  const db = Taro.cloud.database();
+  const res = await db.collection("visual_diary").doc(id).get({});
+  const raw = res.data as Record<string, unknown> | undefined;
+
+  if (!raw || !raw._id) {
+    throw new Error("穿搭记录不存在或已被删除");
+  }
+
+  return resolveCoverUrl(normalizeEntry(raw));
+}
+
+export async function deleteVisualDiaryEntry(id: string): Promise<void> {
+  const db = Taro.cloud.database();
+  await db.collection("visual_diary").doc(id).remove({});
+}
+
+export async function fetchVisualDiaryCount(): Promise<number> {
+  const db = Taro.cloud.database();
+  const res = await db.collection("visual_diary").count();
+  return res.total;
 }

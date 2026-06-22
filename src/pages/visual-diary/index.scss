@@ -1,0 +1,124 @@
+.visual-diary-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--nutui-gray-3);
+  box-sizing: border-box;
+
+  &__navbar {
+    flex-shrink: 0;
+  }
+
+  &__back {
+    font-size: var(--nutui-font-size-3);
+    color: var(--nutui-gray-7);
+  }
+
+  &__title {
+    font-family: var(--sw-font-heading);
+    font-size: var(--nutui-font-size-4);
+    font-weight: var(--nutui-font-weight-bold);
+    color: var(--nutui-gray-7);
+  }
+
+  &__scroll {
+    flex: 1;
+    height: 0;
+    padding: var(--nutui-spacing-5) var(--nutui-spacing-5)
+      calc(var(--nutui-spacing-10) + var(--sw-safe-area-bottom, 0px));
+    box-sizing: border-box;
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--nutui-spacing-5);
+  }
+
+  &__swipe-actions {
+    display: flex;
+    height: 100%;
+  }
+
+  &__view {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 72px;
+    height: 100%;
+    background: var(--nutui-gray-6);
+  }
+
+  &__view-text {
+    font-family: var(--sw-font-body);
+    font-size: var(--nutui-font-size-3);
+    font-weight: 500;
+    color: var(--sw-color-on-primary);
+  }
+
+  &__delete {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 72px;
+    height: 100%;
+    background: var(--nutui-color-danger);
+  }
+
+  &__delete-text {
+    font-family: var(--sw-font-body);
+    font-size: var(--nutui-font-size-3);
+    font-weight: 500;
+    color: var(--sw-color-on-primary);
+  }
+
+  &__state {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+  }
+
+  &__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--nutui-spacing-3);
+    padding: 48px 24px;
+    text-align: center;
+  }
+
+  &__empty-title {
+    font-family: var(--sw-font-heading);
+    font-size: var(--nutui-font-size-5);
+    font-weight: var(--nutui-font-weight-bold);
+    color: var(--nutui-gray-7);
+  }
+
+  &__empty-desc {
+    font-family: var(--sw-font-body);
+    font-size: var(--nutui-font-size-3);
+    color: var(--nutui-gray-5);
+    line-height: var(--nutui-line-height-base);
+  }
+
+  &__footer-loading {
+    display: flex;
+    justify-content: center;
+    padding: var(--nutui-spacing-5) 0;
+  }
+}
+
+.visual-diary-page__list .nut-swipe-right {
+  height: 100%;
+
+  .visual-diary-page__swipe-actions {
+    height: 100%;
+  }
+
+  .visual-diary-page__view,
+  .visual-diary-page__delete {
+    height: 100%;
+  }
+}

@@ -9,6 +9,8 @@ export default defineAppConfig({
     "pages/mine/index",
     "pages/mine-profile/index",
     "pages/mine-profile-field/index",
+    "pages/visual-diary/index",
+    "pages/visual-diary-detail/index",
   ],
   permission: {
     "scope.userLocation": {

@@ -402,6 +402,35 @@ export async function fetchWardrobeItemCount(): Promise<number> {
   return res.total;
 }
 
+/** 按 id 批量查询衣橱单品，返回顺序与 ids 一致（跳过未找到的 id） */
+export async function fetchWardrobeItemsByIds(
+  ids: string[],
+): Promise<WardrobeItem[]> {
+  const uniqueIds = [...new Set(ids.filter(Boolean))];
+  if (uniqueIds.length === 0) return [];
+
+  const db = Taro.cloud.database();
+  const _ = db.command;
+  const res = await db
+    .collection("wardrobe_items")
+    .where({ _id: _.in(uniqueIds) })
+    .get();
+
+  const itemMap = new Map<string, WardrobeItem>();
+  for (const raw of res.data as Record<string, unknown>[]) {
+    const item = normalizeWardrobeItem(raw);
+    if (item._id) {
+      itemMap.set(item._id, item);
+    }
+  }
+
+  const ordered = ids
+    .map((id) => itemMap.get(id))
+    .filter((item): item is WardrobeItem => item != null);
+
+  return resolveImageUrls(ordered);
+}
+
 /** 按 id 查询单件衣橱单品 */
 export async function fetchWardrobeItemById(id: string): Promise<WardrobeItem> {
   const db = Taro.cloud.database();

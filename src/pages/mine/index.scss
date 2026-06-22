@@ -187,6 +187,12 @@
     font-weight: 500;
     color: var(--nutui-brand-6);
   }
+
+  &__head-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--nutui-spacing-3);
+  }
 }
 
 // ========== 风格标签 ==========

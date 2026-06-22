@@ -1,0 +1,79 @@
+.diary-detail-pieces {
+  margin-bottom: var(--nutui-spacing-8);
+
+  &__title {
+    display: block;
+    margin-bottom: var(--nutui-spacing-5);
+    font-family: var(--sw-font-heading);
+    font-size: var(--nutui-font-size-5);
+    font-weight: var(--nutui-font-weight-bold);
+    color: var(--nutui-gray-7);
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--nutui-spacing-5);
+  }
+
+  &__item {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: var(--nutui-spacing-5);
+    border-radius: var(--nutui-radius-6);
+    background: var(--nutui-gray-1);
+    border: 1px solid var(--sw-color-progress-track);
+    box-shadow: var(--sw-shadow-card);
+    transition: transform 0.2s ease;
+
+    &--pressed {
+      transform: scale(0.98);
+    }
+  }
+
+  &__image-wrap {
+    position: relative;
+    width: 100%;
+    flex-shrink: 0;
+    height: 0;
+    padding-bottom: 100%;
+    border-radius: var(--nutui-radius-4);
+    overflow: hidden;
+  }
+
+  &__image {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  &__body {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+  }
+
+  &__category {
+    font-family: var(--sw-font-body);
+    font-size: var(--nutui-font-size-2);
+    font-weight: 500;
+    color: var(--nutui-gray-5);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__name {
+    font-family: var(--sw-font-heading);
+    font-size: var(--nutui-font-size-4);
+    font-weight: var(--nutui-font-weight-bold);
+    color: var(--nutui-gray-7);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}

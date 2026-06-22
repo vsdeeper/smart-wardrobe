@@ -1,27 +1,42 @@
 import { useCallback, useState } from "react";
 import { useDidShow } from "@tarojs/taro";
+import { MINE_DIARY_PREVIEW_LIMIT } from "@/data/tryOn";
 import type { VisualDiaryEntry } from "@/data/tryOn";
-import { fetchVisualDiaryEntries } from "@/services/visualDiary";
+import {
+  fetchVisualDiaryCount,
+  fetchVisualDiaryEntries,
+} from "@/services/visualDiary";
 
-export function useVisualDiary() {
+interface UseVisualDiaryOptions {
+  previewLimit?: number;
+}
+
+export function useVisualDiary(options: UseVisualDiaryOptions = {}) {
+  const previewLimit = options.previewLimit ?? MINE_DIARY_PREVIEW_LIMIT;
   const [entries, setEntries] = useState<VisualDiaryEntry[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
   const refresh = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await fetchVisualDiaryEntries();
+      const [data, count] = await Promise.all([
+        fetchVisualDiaryEntries({ limit: previewLimit }),
+        fetchVisualDiaryCount(),
+      ]);
       setEntries(data);
+      setTotalCount(count);
     } catch {
       setEntries([]);
+      setTotalCount(0);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [previewLimit]);
 
   useDidShow(() => {
     refresh();
   });
 
-  return { entries, loading, refresh };
+  return { entries, totalCount, loading, refresh };
 }

@@ -1,0 +1,63 @@
+.diary-item-card {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 12px;
+  min-height: 96px;
+  padding: var(--nutui-spacing-5);
+  background: var(--nutui-gray-1);
+  box-shadow: var(--sw-shadow-card);
+  box-sizing: border-box;
+
+  &__media {
+    width: 80px;
+    flex-shrink: 0;
+    aspect-ratio: 4 / 5;
+    border-radius: var(--nutui-radius-6);
+    overflow: hidden;
+  }
+
+  &__image {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  &__body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: var(--nutui-spacing-2);
+  }
+
+  &__date {
+    font-family: var(--sw-font-body);
+    font-size: var(--nutui-font-size-2);
+    color: var(--nutui-gray-5);
+    line-height: 1.2;
+  }
+
+  &__title {
+    font-family: var(--sw-font-heading);
+    font-size: var(--nutui-font-size-5);
+    font-weight: var(--nutui-font-weight-bold);
+    color: var(--nutui-gray-7);
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__desc {
+    font-family: var(--sw-font-body);
+    font-size: var(--nutui-font-size-3);
+    color: var(--nutui-gray-5);
+    line-height: var(--nutui-line-height-base);
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+  }
+}

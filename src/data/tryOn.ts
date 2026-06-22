@@ -30,6 +30,9 @@ export interface TryOnDailyCache {
   cachedAt: number;
 }
 
+export const MINE_DIARY_PREVIEW_LIMIT = 6;
+export const VISUAL_DIARY_PAGE_SIZE = 20;
+
 export interface VisualDiaryEntry {
   _id?: string;
   title: string;

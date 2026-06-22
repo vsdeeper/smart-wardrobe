@@ -1,0 +1,81 @@
+.diary-detail-hero {
+  position: relative;
+  height: 480px;
+  margin-bottom: var(--nutui-spacing-8);
+  border-radius: 32px;
+  overflow: hidden;
+  box-shadow: 0 25px 50px -12px rgba(176, 196, 222, 0.25);
+
+  &__image {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  &__gradient {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0) 0%,
+      rgba(0, 0, 0, 0) 45%,
+      rgba(0, 0, 0, 0.6) 100%
+    );
+    pointer-events: none;
+  }
+
+  &__badge {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border-radius: var(--sw-radius-pill);
+    background: rgba(255, 255, 255, 0.5);
+  }
+
+  &__badge-icon {
+    font-size: 16px;
+    color: var(--nutui-brand-6);
+    line-height: 1;
+  }
+
+  &__badge-text {
+    font-family: var(--sw-font-heading);
+    font-size: var(--nutui-font-size-3);
+    font-weight: 500;
+    color: var(--nutui-brand-6);
+  }
+
+  &__content {
+    position: absolute;
+    left: 20px;
+    right: 20px;
+    bottom: 30px;
+    z-index: 2;
+  }
+
+  &__title {
+    display: block;
+    margin-bottom: 4px;
+    font-family: var(--sw-font-heading);
+    font-size: var(--nutui-font-size-6);
+    font-weight: var(--nutui-font-weight-bold);
+    color: var(--sw-color-on-primary);
+    letter-spacing: -0.02em;
+    line-height: 1.3;
+  }
+
+  &__desc {
+    display: block;
+    font-family: var(--sw-font-body);
+    font-size: var(--nutui-font-size-3);
+    line-height: 1.6;
+    color: var(--sw-color-on-primary);
+    opacity: 0.9;
+  }
+}
