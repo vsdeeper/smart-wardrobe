@@ -15,6 +15,7 @@ function MineProfileFieldPage() {
     setTextDraft,
     genderDraft,
     setGenderDraft,
+    canSaveGender,
     handleBack,
     handleSave,
   } = useMineProfileFieldEdit();
@@ -144,10 +145,11 @@ function MineProfileFieldPage() {
             className={[
               "sw-btn sw-btn--block sw-btn--primary",
               updating && "sw-btn--loading",
+              !canSaveGender && !updating && "sw-btn--disabled",
             ]
               .filter(Boolean)
               .join(" ")}
-            onClick={handleSave}
+            onClick={updating || !canSaveGender ? undefined : handleSave}
           >
             {updating ? (
               <Loading

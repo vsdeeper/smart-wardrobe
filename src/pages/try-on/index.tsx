@@ -1,13 +1,16 @@
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { View, Text } from "@tarojs/components";
 import Taro from "@tarojs/taro";
 import { Loading } from "@nutui/nutui-react-taro";
 import AppNavbar from "@/components/AppNavbar";
+import GenderSetupChoices from "@/components/GenderSetupChoices";
 import { useMainTabNavigation } from "@/hooks/useMainTabNavigation";
 import { useTryOnPreview } from "@/hooks/useTryOnPreview";
 import { useTryOnRecommend } from "@/hooks/useTryOnRecommend";
 import { useTryOnWear } from "@/hooks/useTryOnWear";
 import { useWeather } from "@/hooks/useWeather";
+import type { Gender } from "@/data/profile";
+import { applyGenderSetupWithToast } from "@/services/applyGenderSetup";
 import Main from "@/layouts/Main";
 import { setTryOnDraft } from "@/services/tryOnDraft";
 import { getPieceIds } from "@/utils/outfitSelection";
@@ -21,6 +24,7 @@ import "./index.scss";
 function TryOnPage() {
   const { activeTab, onTabChange } = useMainTabNavigation(1);
   const { viewModel, status, isStale, handleCardClick } = useWeather();
+  const [genderSaving, setGenderSaving] = useState(false);
 
   const {
     status: recommendStatus,
@@ -59,6 +63,19 @@ function TryOnPage() {
     weatherSnapshot,
   });
 
+  const handleGenderSelect = useCallback(
+    async (gender: Gender) => {
+      if (genderSaving) return;
+      setGenderSaving(true);
+      const saved = await applyGenderSetupWithToast(gender);
+      setGenderSaving(false);
+      if (saved) {
+        refreshRecommend();
+      }
+    },
+    [genderSaving, refreshRecommend],
+  );
+
   const handleGoWardrobe = useCallback(() => {
     Taro.redirectTo({ url: "/pages/wardrobe/index" });
   }, []);
@@ -86,6 +103,22 @@ function TryOnPage() {
         <View className="try-on-loading">
           <Loading type="circular" />
           <Text className="try-on-loading__text">AI 正在推荐穿搭…</Text>
+        </View>
+      );
+    }
+
+    if (recommendStatus === "needsGender") {
+      return (
+        <View className="try-on-empty try-on-empty--gender">
+          <Text className="try-on-empty__title">请先选择性别</Text>
+          <Text className="try-on-empty__desc">
+            选择后将用于 AI 穿搭推荐与虚拟试穿，您可在个人资料中修改身高体重。
+          </Text>
+          <GenderSetupChoices
+            layout="inline"
+            loading={genderSaving}
+            onSelect={handleGenderSelect}
+          />
         </View>
       );
     }

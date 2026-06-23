@@ -24,9 +24,9 @@ async function uploadBase64ToCloud(base64Data, openid) {
 exports.main = async (event) => {
   const {
     imageFileIds = [],
-    heightCm = 170,
-    weightKg = 60,
-    gender = 'unknown',
+    heightCm,
+    weightKg,
+    gender,
     pieceLabels = [],
     pieceTypeNames = [],
   } = event || {}
@@ -36,6 +36,13 @@ exports.main = async (event) => {
     const openid = wxContext.OPENID
     if (!openid) {
       return { error: 'NO_OPENID', message: '无法获取用户身份' }
+    }
+
+    if (gender !== 'male' && gender !== 'female') {
+      return { error: 'INVALID_PROFILE', message: '缺少有效性别信息' }
+    }
+    if (typeof heightCm !== 'number' || typeof weightKg !== 'number') {
+      return { error: 'INVALID_PROFILE', message: '缺少有效身高体重信息' }
     }
 
     const fileIds = imageFileIds.filter(Boolean)

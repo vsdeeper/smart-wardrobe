@@ -1,8 +1,10 @@
 import { useCallback, useRef, useState } from "react";
 import Taro, { useDidShow } from "@tarojs/taro";
 import { DEFAULT_USER_PROFILE, type UserProfile } from "@/data/profile";
+import { isGenderSet } from "@/data/profile";
 import { saveUserProfile } from "@/services/profile";
 import { resolveAvatarUrl } from "@/services/profileAvatar";
+import { clearTryOnCache } from "@/services/tryOnCache";
 import {
   clearProfileCache,
   getInitialProfileState,
@@ -99,6 +101,10 @@ export function useUserProfile() {
         itemCount: itemCountRef.current,
         cachedAt: Date.now(),
       });
+
+      if (patch.gender !== undefined && isGenderSet(patch.gender)) {
+        clearTryOnCache();
+      }
 
       return true;
     } catch {

@@ -3,9 +3,11 @@ import { View, Text } from "@tarojs/components";
 import { Add } from "@nutui/icons-react-taro";
 import { ActionSheet, Loading, Tabs } from "@nutui/nutui-react-taro";
 import AppNavbar from "@/components/AppNavbar";
+import GenderSetupDialog from "@/components/GenderSetupDialog";
 import Main from "@/layouts/Main";
 import type { AiStatus } from "@/data/wardrobe";
 import { WARDROBE_ITEM_ACTION_OPTIONS } from "@/data/wardrobe";
+import { useGenderSetup } from "@/hooks/useGenderSetup";
 import { useWardrobeList } from "@/hooks/useWardrobeList";
 import { useWardrobeUpload } from "@/hooks/useWardrobeUpload";
 import { getCardLayout } from "@/utils/wardrobeLayout";
@@ -25,6 +27,14 @@ function WardrobePage() {
   });
 
   const { activeTab: mainTab, onTabChange } = useMainTabNavigation(0);
+
+  const {
+    dialogVisible,
+    saving: genderSaving,
+    ensureGenderSet,
+    handleSelect: handleGenderSelect,
+    handleCancel: handleGenderCancel,
+  } = useGenderSetup();
 
   const {
     items,
@@ -52,6 +62,7 @@ function WardrobePage() {
   } = useWardrobeUpload({
     setAiStatus,
     uploadFlowRef,
+    ensureGenderSet,
   });
 
   return (
@@ -144,6 +155,13 @@ function WardrobePage() {
         contractName={privacyContractName}
         onClose={closePrivacyDialog}
         onAgreed={handlePrivacyAgreed}
+      />
+
+      <GenderSetupDialog
+        visible={dialogVisible}
+        loading={genderSaving}
+        onSelect={handleGenderSelect}
+        onCancel={handleGenderCancel}
       />
     </Main>
   );

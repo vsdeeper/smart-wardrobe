@@ -5,7 +5,12 @@ import { ArrowRight, Edit } from "@nutui/icons-react-taro";
 import { Image, Loading } from "@nutui/nutui-react-taro";
 import DefaultAvatar from "@/components/DefaultAvatar";
 import { MINE_DIARY_PREVIEW_LIMIT } from "@/data/tryOn";
-import { getUserDisplayName } from "@/data/profile";
+import {
+  formatHeightLabel,
+  formatWeightLabel,
+  getUserDisplayName,
+  isMetricsSet,
+} from "@/data/profile";
 import { useMainTabNavigation } from "@/hooks/useMainTabNavigation";
 import { useMineStatsActions } from "@/hooks/useMineStatsActions";
 import { useUserProfile } from "@/hooks/useUserProfile";
@@ -52,8 +57,8 @@ function MinePage() {
     diaryLayout === "grid" ? "icon-list" : "icon-category";
 
   const stats = [
-    { key: "height", label: "身高", value: `${profile.heightCm} cm`, iconClass: "icon-height" },
-    { key: "weight", label: "体重", value: `${profile.weightKg} kg`, iconClass: "icon-weight" },
+    { key: "height", label: "身高", value: formatHeightLabel(profile.heightCm), iconClass: "icon-height" },
+    { key: "weight", label: "体重", value: formatWeightLabel(profile.weightKg), iconClass: "icon-weight" },
     { key: "items", label: "单品", value: String(itemCount), iconClass: "icon-wardrobe" },
     { key: "outfits", label: "搭配", value: String(totalCount), iconClass: "icon-like" },
   ];
@@ -88,7 +93,7 @@ function MinePage() {
               {getUserDisplayName(profile)}
             </Text>
             <Text className="mine-header__bio">
-              {profile.occupation
+              {profile.occupation && isMetricsSet(profile)
                 ? `${profile.occupation} · ${profile.heightCm}cm / ${profile.weightKg}kg`
                 : "完善个人画像，获得更精准的 AI 穿搭推荐。"}
             </Text>

@@ -1,30 +1,25 @@
 import Taro from "@tarojs/taro";
 import {
   DEFAULT_USER_PROFILE,
+  isGenderSet,
   type Gender,
   type UserProfile,
 } from "@/data/profile";
 
-const ALLOWED_GENDERS = new Set<Gender>(["male", "female", "unknown"]);
-
-function normalizeGender(raw: unknown): Gender {
-  if (typeof raw === "string" && ALLOWED_GENDERS.has(raw as Gender)) {
-    return raw as Gender;
+function normalizeGender(raw: unknown): Gender | undefined {
+  if (raw === "male" || raw === "female") {
+    return raw;
   }
-  return DEFAULT_USER_PROFILE.gender ?? "unknown";
+  return undefined;
 }
 
 function normalizeProfile(raw: Record<string, unknown>): UserProfile {
   return {
     _id: raw._id ? String(raw._id) : undefined,
     heightCm:
-      typeof raw.heightCm === "number"
-        ? raw.heightCm
-        : DEFAULT_USER_PROFILE.heightCm,
+      typeof raw.heightCm === "number" ? raw.heightCm : undefined,
     weightKg:
-      typeof raw.weightKg === "number"
-        ? raw.weightKg
-        : DEFAULT_USER_PROFILE.weightKg,
+      typeof raw.weightKg === "number" ? raw.weightKg : undefined,
     occupation:
       typeof raw.occupation === "string"
         ? raw.occupation
@@ -60,23 +55,35 @@ export async function saveUserProfile(
 ): Promise<UserProfile> {
   const db = Taro.cloud.database();
   const now = Date.now();
-  const data = {
-    heightCm: profile.heightCm,
-    weightKg: profile.weightKg,
+  const data: Record<string, unknown> = {
     occupation: profile.occupation.trim(),
     styleTags: profile.styleTags,
     avatarFileId: profile.avatarFileId ?? "",
     nickname: profile.nickname?.trim() ?? "",
-    gender: profile.gender ?? DEFAULT_USER_PROFILE.gender,
     phoneNumber: profile.phoneNumber ?? "",
     updatedAt: now,
   };
 
+  if (isGenderSet(profile.gender)) {
+    data.gender = profile.gender;
+  }
+  if (typeof profile.heightCm === "number") {
+    data.heightCm = profile.heightCm;
+  }
+  if (typeof profile.weightKg === "number") {
+    data.weightKg = profile.weightKg;
+  }
+
   if (profile._id) {
     await db.collection("user_profiles").doc(profile._id).update({ data });
-    return { ...profile, ...data, updatedAt: now };
+    return { ...profile, ...data, updatedAt: now } as UserProfile;
   }
 
   const addRes = await db.collection("user_profiles").add({ data });
-  return { ...profile, ...data, _id: addRes._id as string, updatedAt: now };
+  return {
+    ...profile,
+    ...data,
+    _id: addRes._id as string,
+    updatedAt: now,
+  } as UserProfile;
 }

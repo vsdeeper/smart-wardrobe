@@ -3,6 +3,7 @@ import Taro, { useLoad } from "@tarojs/taro";
 import {
   type Gender,
   type ProfileEditableField,
+  isGenderSet,
   isProfileEditableField,
   PROFILE_EDITABLE_FIELDS,
 } from "@/data/profile";
@@ -17,7 +18,7 @@ export function useMineProfileFieldEdit() {
   const { profile, loading, updating, updateProfile } = useUserProfile();
   const [field, setField] = useState<ProfileEditableField | null>(null);
   const [textDraft, setTextDraft] = useState("");
-  const [genderDraft, setGenderDraft] = useState<Gender>("unknown");
+  const [genderDraft, setGenderDraft] = useState<Gender | null>(null);
 
   useLoad((options) => {
     const rawField = options.field;
@@ -35,11 +36,15 @@ export function useMineProfileFieldEdit() {
     if (field === "occupation") {
       setTextDraft(profile.occupation ?? "");
     } else if (field === "height") {
-      setTextDraft(String(profile.heightCm));
+      setTextDraft(
+        typeof profile.heightCm === "number" ? String(profile.heightCm) : "",
+      );
     } else if (field === "weight") {
-      setTextDraft(String(profile.weightKg));
+      setTextDraft(
+        typeof profile.weightKg === "number" ? String(profile.weightKg) : "",
+      );
     } else if (field === "gender") {
-      setGenderDraft(profile.gender ?? "unknown");
+      setGenderDraft(isGenderSet(profile.gender) ? profile.gender : null);
     }
   }, [field, loading, profile]);
 
@@ -65,7 +70,11 @@ export function useMineProfileFieldEdit() {
     }
 
     if (field === "gender") {
-      if (genderDraft === (profile.gender ?? "unknown")) {
+      if (!isGenderSet(genderDraft)) {
+        Taro.showToast({ title: "请选择性别", icon: "none" });
+        return;
+      }
+      if (genderDraft === profile.gender) {
         Taro.navigateBack();
         return;
       }
@@ -111,6 +120,7 @@ export function useMineProfileFieldEdit() {
   ]);
 
   const fieldMeta = field ? PROFILE_EDITABLE_FIELDS[field] : null;
+  const canSaveGender = field !== "gender" || isGenderSet(genderDraft);
 
   return {
     field,
@@ -122,6 +132,7 @@ export function useMineProfileFieldEdit() {
     setTextDraft,
     genderDraft,
     setGenderDraft,
+    canSaveGender,
     handleBack,
     handleSave,
   };

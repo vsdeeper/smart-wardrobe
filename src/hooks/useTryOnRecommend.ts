@@ -3,6 +3,7 @@ import { useDidShow } from "@tarojs/taro";
 import type { TryOnRecommendation, TryOnRecommendStatus } from "@/data/tryOn";
 import type { WeatherSnapshot } from "@/data/weather";
 import type { WardrobeItem } from "@/data/wardrobe";
+import { isGenderSet, isMetricsSet } from "@/data/profile";
 import {
   recommendOutfit,
   resolveSelectedPieces,
@@ -62,6 +63,21 @@ export function useTryOnRecommend() {
           fetchUserProfile(),
         ]);
 
+        if (!isGenderSet(profile.gender)) {
+          setStatus("needsGender");
+          setRecommendation(null);
+          setSelectedPieces([]);
+          return;
+        }
+
+        if (!isMetricsSet(profile)) {
+          setStatus("error");
+          setErrorMessage("请先在个人资料中设置身高体重");
+          setRecommendation(null);
+          setSelectedPieces([]);
+          return;
+        }
+
         allItemsRef.current = items;
 
         if (items.length === 0) {
@@ -113,6 +129,11 @@ export function useTryOnRecommend() {
   );
 
   const loadFromCache = useCallback(async () => {
+    const profile = await fetchUserProfile();
+    if (!isGenderSet(profile.gender) || !isMetricsSet(profile)) {
+      return false;
+    }
+
     const cache = readTryOnCache();
     if (!cache) {
       return false;
@@ -130,6 +151,27 @@ export function useTryOnRecommend() {
 
   const handleShow = useCallback(async () => {
     const draft = consumeTryOnDraft();
+    const profile = await fetchUserProfile();
+
+    if (!isGenderSet(profile.gender)) {
+      setStatus("needsGender");
+      setRecommendation(null);
+      setSelectedPieces([]);
+      setFromCache(false);
+      setSavedReturn(null);
+      setErrorMessage(null);
+      return;
+    }
+
+    if (!isMetricsSet(profile)) {
+      setStatus("error");
+      setErrorMessage("请先在个人资料中设置身高体重");
+      setRecommendation(null);
+      setSelectedPieces([]);
+      setFromCache(false);
+      setSavedReturn(null);
+      return;
+    }
 
     if (draft?.mode === "saved" && draft.selectedPieces) {
       const pieces = await resolveImageUrls(draft.selectedPieces);

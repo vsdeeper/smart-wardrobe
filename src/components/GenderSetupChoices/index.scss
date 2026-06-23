@@ -1,0 +1,50 @@
+.gender-setup-choices {
+  display: flex;
+  flex-direction: column;
+  gap: var(--nutui-spacing-3);
+
+  &--inline {
+    width: 100%;
+    max-width: 280px;
+    margin: 0 auto;
+  }
+
+  &__btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: var(--nutui-spacing-3) var(--nutui-spacing-6);
+    border-radius: var(--nutui-button-border-radius, 24px);
+    box-sizing: border-box;
+
+    &--primary {
+      background: var(--nutui-brand-6);
+    }
+
+    &--secondary {
+      border: 1px solid var(--nutui-gray-4);
+      background: var(--nutui-gray-1);
+    }
+
+    &--disabled {
+      opacity: 0.7;
+      pointer-events: none;
+    }
+
+    &:active:not(&--disabled) {
+      opacity: 0.88;
+    }
+  }
+
+  &__btn-text {
+    font-size: var(--nutui-font-size-4);
+    font-weight: var(--nutui-font-weight-bold);
+    color: var(--nutui-gray-7);
+    line-height: 1.2;
+
+    &--primary {
+      color: var(--sw-color-on-primary);
+    }
+  }
+}

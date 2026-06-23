@@ -23,17 +23,21 @@ const RECOGNITION_LIMITS = {
   maxItems: 5,
 }
 
+const AUDIENCE_GENDERS = new Set(['male', 'female', 'unisex'])
+
 const PROMPT_EXAMPLES = {
   positive: [
     {
       typeName: '上装',
       name: '圆领短袖T恤',
       tags: ['白色', '夏季', '休闲'],
+      audienceGender: 'unisex',
     },
     {
       typeName: '连衣裙',
       name: '改良立领旗袍',
       tags: ['红色', '四季', '新中式'],
+      audienceGender: 'female',
     },
   ],
   negative: {
@@ -50,7 +54,7 @@ function formatMergeExamples() {
 }
 
 function formatPromptExample(item) {
-  return `typeName ${item.typeName}，name ${item.name}，tags ${JSON.stringify(item.tags)}`
+  return `typeName ${item.typeName}，name ${item.name}，tags ${JSON.stringify(item.tags)}，audienceGender ${item.audienceGender}`
 }
 
 function buildSystemPrompt() {
@@ -88,6 +92,12 @@ function buildSystemPrompt() {
 - 颜色、季节必须放在 tags，不得放进 name
 - 禁止 tags 中出现 name 里已有的词或同义表达
 
+【适用人群 audienceGender】
+- 每件须返回 audienceGender，取值仅 "male" | "female" | "unisex"
+- 男女通用、无明显性别特征的基础款 → unisex
+- 仅当款式有明显性别特征时标 male 或 female（如文胸、吊带裙、男士西裤、领带等）
+- 不确定时标 unisex，勿过度标注
+
 【name 与 tags 互斥】
 - 正例：${formatPromptExample(positiveA)}
 - 正例：${formatPromptExample(positiveB)}
@@ -104,14 +114,23 @@ function buildSystemPrompt() {
       "typeName": "从上述列表选择一项",
       "name": "款式结构描述，不含颜色季节风格",
       "tags": ["颜色", "季节", "风格或材质"],
-      "warmthLevel": 3
+      "warmthLevel": 3,
+      "audienceGender": "unisex"
     }
   ]
 }`
 }
 
 const USER_PROMPT =
-  `请识别照片中所有可见衣物单品，严格按 system 规则返回 JSON 的 items 数组。typeName 不得超出给定列表；每件 name 只描述款式结构，颜色/季节/风格/材质只写在 tags，且 tags 不得与 name 重复；每个 tag 不超过${RECOGNITION_LIMITS.maxTagLength}个字。每件同时返回 warmthLevel（1–5 保暖等级）。`
+  `请识别照片中所有可见衣物单品，严格按 system 规则返回 JSON 的 items 数组。typeName 不得超出给定列表；每件 name 只描述款式结构，颜色/季节/风格/材质只写在 tags，且 tags 不得与 name 重复；每个 tag 不超过${RECOGNITION_LIMITS.maxTagLength}个字。每件同时返回 warmthLevel（1–5 保暖等级）与 audienceGender。`
+
+function normalizeAudienceGender(raw) {
+  const value = String(raw ?? '').trim()
+  if (AUDIENCE_GENDERS.has(value)) {
+    return value
+  }
+  return 'unisex'
+}
 
 function parseRecognitionResult(parsed) {
   const typeName = String(parsed.typeName ?? '').trim()
@@ -132,7 +151,12 @@ function parseRecognitionResult(parsed) {
     }
   }
 
-  const result = { typeName, name, tags }
+  const result = {
+    typeName,
+    name,
+    tags,
+    audienceGender: normalizeAudienceGender(parsed.audienceGender),
+  }
   if (warmthLevel !== undefined) {
     result.warmthLevel = warmthLevel
   }
@@ -142,7 +166,6 @@ function parseRecognitionResult(parsed) {
 function parseRecognitionItems(parsed) {
   let rawItems = parsed?.items
 
-  // 兼容模型误返回单件对象
   if (!Array.isArray(rawItems) && (parsed?.typeName || parsed?.name)) {
     rawItems = [parsed]
   }
@@ -164,6 +187,20 @@ function parseRecognitionItems(parsed) {
   return slice.map((item) => parseRecognitionResult(item))
 }
 
+function filterItemsByUserGender(items, userGender) {
+  if (userGender !== 'male' && userGender !== 'female') {
+    return { items, filteredCount: 0 }
+  }
+
+  const opposite = userGender === 'male' ? 'female' : 'male'
+  const filtered = items.filter((item) => item.audienceGender !== opposite)
+  const filteredCount = items.length - filtered.length
+
+  const publicItems = filtered.map(({ audienceGender, ...rest }) => rest)
+
+  return { items: publicItems, filteredCount }
+}
+
 module.exports = {
   CLOTHING_TYPE_NAMES,
   TYPE_MERGE_GROUPS,
@@ -172,4 +209,5 @@ module.exports = {
   USER_PROMPT,
   parseRecognitionResult,
   parseRecognitionItems,
+  filterItemsByUserGender,
 }

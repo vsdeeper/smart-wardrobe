@@ -80,7 +80,7 @@ exports.main = async (event) => {
     const payload = {
       weather: weather || { temperature: 20, humidity: 50, conditionCode: 'sunny', city: '当前位置' },
       season: season || '春',
-      profile: profile || { heightCm: 170, weightKg: 60, occupation: '', styleTags: [] },
+      profile: profile || { occupation: '', styleTags: [] },
       wardrobeByType: summarized,
     }
 

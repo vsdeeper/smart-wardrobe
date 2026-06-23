@@ -3,6 +3,7 @@ const {
   buildSystemPrompt,
   USER_PROMPT,
   parseRecognitionItems,
+  filterItemsByUserGender,
 } = require('./common/recognitionRules')
 
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
@@ -73,7 +74,7 @@ async function recognizeItemsFromImage(imageUrl, apiKey, baseUrl, model) {
 }
 
 exports.main = async (event) => {
-  const { fileID } = event || {}
+  const { fileID, userGender } = event || {}
 
   if (!fileID || typeof fileID !== 'string') {
     return { error: 'INVALID_FILE_ID', message: '缺少 fileID' }
@@ -98,11 +99,23 @@ exports.main = async (event) => {
     }
 
     const imageUrl = await resolveImageUrl(fileID)
-    const items = await recognizeItemsFromImage(imageUrl, apiKey, baseUrl, seedModel)
+    const rawItems = await recognizeItemsFromImage(imageUrl, apiKey, baseUrl, seedModel)
+
+    const { items, filteredCount } = filterItemsByUserGender(rawItems, userGender)
+
+    if (items.length === 0) {
+      return {
+        error: 'RECOGNIZE_FAILED',
+        message: filteredCount > 0
+          ? '未识别到符合您性别的衣物'
+          : '未识别到衣物单品',
+      }
+    }
 
     return {
       items,
       sourceFileId: fileID,
+      filteredCount,
     }
   } catch (err) {
     if (err && err.code === 'LLM_API_ERROR') {

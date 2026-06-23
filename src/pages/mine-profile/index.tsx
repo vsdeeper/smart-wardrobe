@@ -3,7 +3,12 @@ import Taro from "@tarojs/taro";
 import { ArrowRight } from "@nutui/icons-react-taro";
 import { Cell, Loading, NavBar } from "@nutui/nutui-react-taro";
 import DefaultAvatar from "@/components/DefaultAvatar";
-import { getGenderLabel, maskPhoneNumber } from "@/data/profile";
+import {
+  formatHeightLabel,
+  formatWeightLabel,
+  getGenderLabel,
+  maskPhoneNumber,
+} from "@/data/profile";
 import { useMineProfileEdit } from "@/hooks/useMineProfileEdit";
 import "./index.scss";
 
@@ -125,7 +130,7 @@ function MineProfilePage() {
               extra={
                 <View className="mine-profile-cell__extra">
                   <Text className="mine-profile-cell__value">
-                    {`${profile.heightCm} cm`}
+                    {formatHeightLabel(profile.heightCm)}
                   </Text>
                   {cellArrow}
                 </View>
@@ -139,7 +144,7 @@ function MineProfilePage() {
               extra={
                 <View className="mine-profile-cell__extra">
                   <Text className="mine-profile-cell__value">
-                    {`${profile.weightKg} kg`}
+                    {formatWeightLabel(profile.weightKg)}
                   </Text>
                   {cellArrow}
                 </View>

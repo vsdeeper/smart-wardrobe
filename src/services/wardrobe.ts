@@ -1,10 +1,13 @@
 import Taro from "@tarojs/taro";
+import { isGenderSet } from "@/data/profile";
 import type {
   ClothingType,
   RecognizedPreviewItem,
   WardrobeItem,
 } from "@/data/wardrobe";
 import { WARDROBE_PAGE_SIZE } from "@/data/wardrobe";
+import { fetchUserProfile } from "@/services/profile";
+import { readProfileCache } from "@/services/profileCache";
 import { createTempId } from "@/utils/recognition";
 
 export interface FetchWardrobeItemsOptions {
@@ -46,6 +49,15 @@ interface GenerateDisplayCloudResult {
 
 type RecognizeCloudResult = RecognizeItemsCloudResult | RecognizeClothingError;
 type GenerateCloudResult = GenerateDisplayCloudResult | RecognizeClothingError;
+
+async function resolveUserGenderForRecognition(): Promise<string | undefined> {
+  const cached = readProfileCache()?.profile.gender;
+  if (isGenderSet(cached)) {
+    return cached;
+  }
+  const profile = await fetchUserProfile();
+  return isGenderSet(profile.gender) ? profile.gender : undefined;
+}
 
 function isCloudFunctionError(
   result: RecognizeCloudResult | GenerateCloudResult,
@@ -247,9 +259,10 @@ export async function uploadAndRecognize(
   const sourceFileId = uploadRes.fileID;
 
   onPhase?.("recognizing");
+  const userGender = await resolveUserGenderForRecognition();
   const { result: recognizeResult } = await Taro.cloud.callFunction({
     name: "recognize-clothing",
-    data: { fileID: sourceFileId },
+    data: { fileID: sourceFileId, userGender },
   });
 
   const recognizeData = recognizeResult as RecognizeCloudResult;

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { isGenderSet, isMetricsSet } from "@/data/profile";
 import type { TryOnPreviewStatus } from "@/data/tryOn";
 import type { WardrobeItem } from "@/data/wardrobe";
 import { fetchUserProfile } from "@/services/profile";
@@ -82,15 +83,21 @@ export function useTryOnPreview({
 
     try {
       const profile = await fetchUserProfile();
+      if (!isGenderSet(profile.gender) || !isMetricsSet(profile)) {
+        setPreviewErrorMessage("请先设置性别与身高体重");
+        applyHero(null, null, false);
+        return;
+      }
+
       const fileIds = selectedPieces
         .map((p) => p.imageFileId)
         .filter(Boolean);
 
       const result = await generateTryonImage({
         imageFileIds: fileIds,
-        heightCm: profile.heightCm,
-        weightKg: profile.weightKg,
-        gender: profile.gender,
+        heightCm: profile.heightCm!,
+        weightKg: profile.weightKg!,
+        gender: profile.gender!,
         pieceLabels: selectedPieces
           .map((p) => p.name || p.typeName)
           .filter(Boolean),

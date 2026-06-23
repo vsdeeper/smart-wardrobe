@@ -27,12 +27,22 @@ let inflightPromise: Promise<ProfileCacheEntry | null> | null = null;
 function isValidProfile(raw: unknown): raw is UserProfile {
   if (!raw || typeof raw !== "object") return false;
   const profile = raw as UserProfile;
-  return (
-    typeof profile.heightCm === "number" &&
-    typeof profile.weightKg === "number" &&
-    typeof profile.occupation === "string" &&
-    Array.isArray(profile.styleTags)
-  );
+  if (typeof profile.occupation !== "string" || !Array.isArray(profile.styleTags)) {
+    return false;
+  }
+  if (
+    profile.heightCm !== undefined &&
+    typeof profile.heightCm !== "number"
+  ) {
+    return false;
+  }
+  if (
+    profile.weightKg !== undefined &&
+    typeof profile.weightKg !== "number"
+  ) {
+    return false;
+  }
+  return true;
 }
 
 function isValidEntry(raw: unknown): raw is ProfileCacheEntry {

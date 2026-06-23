@@ -5,7 +5,7 @@ export interface GenerateTryonInput {
   imageFileIds: string[];
   heightCm: number;
   weightKg: number;
-  gender?: Gender;
+  gender: Gender;
   pieceLabels?: string[];
   pieceTypeNames?: string[];
 }

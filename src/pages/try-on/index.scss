@@ -171,6 +171,10 @@
   min-height: 200px;
   padding: var(--nutui-spacing-10) var(--nutui-spacing-5);
   text-align: center;
+
+  &--gender {
+    gap: var(--nutui-spacing-7);
+  }
 }
 
 .try-on-loading__text,

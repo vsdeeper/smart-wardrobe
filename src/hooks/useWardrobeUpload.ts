@@ -12,16 +12,19 @@ import {
 interface UseWardrobeUploadOptions {
   setAiStatus: React.Dispatch<React.SetStateAction<AiStatus>>;
   uploadFlowRef: React.MutableRefObject<boolean>;
+  ensureGenderSet: () => Promise<boolean>;
 }
 
 export function useWardrobeUpload({
   setAiStatus,
   uploadFlowRef,
+  ensureGenderSet,
 }: UseWardrobeUploadOptions) {
   const [adding, setAdding] = useState(false);
   const [privacyVisible, setPrivacyVisible] = useState(false);
   const [privacyContractName, setPrivacyContractName] = useState("");
   const aiResetTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const pendingUploadAfterPrivacyRef = useRef(false);
 
   const scrollToTop = useCallback(() => {
     Taro.pageScrollTo({
@@ -154,6 +157,12 @@ export function useWardrobeUpload({
     }
   }, [scrollToTop, setAiStatus, uploadFlowRef]);
 
+  const startUploadFlow = useCallback(async () => {
+    const genderReady = await ensureGenderSet();
+    if (!genderReady) return;
+    await runPickAndUpload();
+  }, [ensureGenderSet, runPickAndUpload]);
+
   const handleAddItem = useCallback(async () => {
     if (process.env.TARO_ENV !== "weapp") {
       Taro.showToast({ title: "请在微信小程序中使用", icon: "none" });
@@ -164,27 +173,34 @@ export function useWardrobeUpload({
 
     const privacy = await checkNeedPrivacyAuthorization();
     if (privacy.needAuthorization) {
+      pendingUploadAfterPrivacyRef.current = true;
       setPrivacyContractName(privacy.privacyContractName ?? "");
       setPrivacyVisible(true);
       return;
     }
 
-    await runPickAndUpload();
-  }, [adding, runPickAndUpload]);
+    await startUploadFlow();
+  }, [adding, startUploadFlow]);
 
   const closePrivacyDialog = useCallback(() => {
+    pendingUploadAfterPrivacyRef.current = false;
     setPrivacyVisible(false);
   }, []);
 
   const handlePrivacyAgreed = useCallback(() => {
     setPrivacyVisible(false);
-    void runPickAndUpload();
-  }, [runPickAndUpload]);
+    if (pendingUploadAfterPrivacyRef.current) {
+      pendingUploadAfterPrivacyRef.current = false;
+      void startUploadFlow();
+    }
+  }, [startUploadFlow]);
 
-  const handleAIStyling = useCallback(() => {
+  const handleAIStyling = useCallback(async () => {
+    const genderReady = await ensureGenderSet();
+    if (!genderReady) return;
     setTryOnDraft({ mode: "wardrobe-cta" });
     Taro.redirectTo({ url: "/pages/try-on/index" });
-  }, []);
+  }, [ensureGenderSet]);
 
   return {
     adding,

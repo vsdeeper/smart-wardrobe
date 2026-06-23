@@ -58,6 +58,12 @@ export interface TryOnDraft {
   piecesChanged?: boolean;
 }
 
-export type TryOnRecommendStatus = "idle" | "loading" | "success" | "error" | "empty";
+export type TryOnRecommendStatus =
+  | "idle"
+  | "loading"
+  | "success"
+  | "error"
+  | "empty"
+  | "needsGender";
 
 export type TryOnPreviewStatus = "idle" | "loading" | "success" | "error";
