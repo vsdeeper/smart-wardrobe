@@ -29,6 +29,7 @@
     "dev:jd": "npm run build:jd -- --watch",
     "dev:quickapp": "npm run build:quickapp -- --watch",
     "cf:sync-common": "node scripts/sync-cloud-common.js",
+    "generate:model-templates": "node scripts/generate-model-templates.js",
     "format": "prettier --write \"src/**/*.{ts,tsx,scss}\" \"config/**/*.{ts,js}\""
   },
   "browserslist": [

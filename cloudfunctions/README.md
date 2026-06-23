@@ -415,6 +415,22 @@ LLM 失败时回退规则推荐 `buildFallbackRecommendation`。
 | `未配置 DOUBAO_SEEDREAM_MODEL` | 未在 `generate-tryon-image` 云函数配置 Hero 专用模型 ID |
 | `Seedream 未返回图片` | 模型 ID 无图像生成权限，或 prompt/参考图不符合要求 |
 
+**离线生成模特模板候选图**（试穿人物参考，非云函数部署）：
+
+1. 在项目根目录 `.env.local` 配置与 `generate-tryon-image` 相同的 `DOUBAO_API_KEY`、`DOUBAO_SEEDREAM_MODEL`（脚本固定竖版 `1600x2304`）。
+2. 执行 `pnpm generate:model-templates`，默认生成 `female-standard` 的 3 张变体，输出至 `output/model-templates/`（如 `female-standard-01.jpg`）。
+3. 可选 CLI 参数（经 `pnpm generate:model-templates --` 传递）：
+
+| 参数 | 默认 | 说明 |
+| ---- | ---- | ---- |
+| `--preset <id>` | `female-standard` | preset ID 或 `all`（全部 19 张） |
+| `--variant <n>` | 无 | 仅生成该 preset 第 n 个变体（1-based，不可与 `all` 同用） |
+| `--help` | - | 列出 preset 与示例 |
+
+可用 preset：`female-slim`、`female-standard`、`female-curvy`、`male-slim`、`male-standard`、`male-curvy`、`neutral`（1 变体）。Prompt 定义见 [`common/modelTemplatePrompts.js`](common/modelTemplatePrompts.js)。
+
+4. 本地预览选定 1 张后，可删除其余候选；该目录可提交 git，便于留存对比。
+
 ### get-phone-number
 
 右键 `cloudfunctions/get-phone-number` → **上传并部署：云端安装依赖**。

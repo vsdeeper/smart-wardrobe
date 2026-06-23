@@ -127,12 +127,12 @@ async function generateSeedreamImages({
   return parseSeedreamImagesResponse(data)
 }
 
-async function generateSeedreamImage({ prompt, imageUrls = [] }) {
+async function generateSeedreamImage({ prompt, imageUrls = [], size }) {
   const { images } = await generateSeedreamImages({
     prompt,
     imageUrls,
     maxImages: 1,
-    size: getSeedreamConfig().size,
+    size: size || getSeedreamConfig().size,
   })
   return images[0]
 }
