@@ -98,25 +98,25 @@ types/
 - `pages/<page>/index.tsx` 为**编排层**：组合 `Main` / `AppNavbar`、连接 Tab/路由、挂载 hooks、渲染区块；避免堆叠大段 JSX 与复杂业务实现。
 - 单文件**建议 ≤ 250 行**；超过或出现下列信号时应拆分（供自检，非 CI 硬性规则）。
 
-| 信号 | 建议落点 |
-|------|----------|
-| 独立 UI 区块（卡片、Banner、表单段）且 JSX > ~40 行 | `pages/<page>/components/<Name>/index.tsx` + `index.scss` |
-| 同一 UI 被 ≥2 个页面使用 | `src/components/<Name>/`（大驼峰，如 [`AppNavbar`](src/components/AppNavbar/index.tsx)） |
-| 可复用状态/副作用（分页、轮询、表单） | `src/hooks/useXxx.ts`（如 [`useWeather`](src/hooks/useWeather.ts)） |
-| 云函数 / HTTP / 数据库访问 | `src/services/`（如 [`wardrobe.ts`](src/services/wardrobe.ts)） |
-| 无 UI 的纯计算/格式化 | `src/utils/`（如 [`wardrobeLayout.ts`](src/utils/wardrobeLayout.ts)） |
-| 类型、枚举、分页常量 | `src/data/`（如 [`wardrobe.ts`](src/data/wardrobe.ts)） |
+| 信号                                                | 建议落点                                                                                 |
+| --------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| 独立 UI 区块（卡片、Banner、表单段）且 JSX > ~40 行 | `pages/<page>/components/<Name>/index.tsx` + `index.scss`                                |
+| 同一 UI 被 ≥2 个页面使用                            | `src/components/<Name>/`（大驼峰，如 [`AppNavbar`](src/components/AppNavbar/index.tsx)） |
+| 可复用状态/副作用（分页、轮询、表单）               | `src/hooks/useXxx.ts`（如 [`useWeather`](src/hooks/useWeather.ts)）                      |
+| 云函数 / HTTP / 数据库访问                          | `src/services/`（如 [`wardrobe.ts`](src/services/wardrobe.ts)）                          |
+| 无 UI 的纯计算/格式化                               | `src/utils/`（如 [`wardrobeLayout.ts`](src/utils/wardrobeLayout.ts)）                    |
+| 类型、枚举、分页常量                                | `src/data/`（如 [`wardrobe.ts`](src/data/wardrobe.ts)）                                  |
 
 - **页面私有组件**：仅单页使用时放 `src/pages/<page>/components/<ComponentName>/`（大驼峰 + `index.tsx` / `index.scss`）；页面内 `import X from "./components/X"`。组件样式与组件同目录；页面级布局/网格仍留 `index.scss`。
 - **平衡**：为可读性与职责分离而拆；一次任务若新增 >1 个独立 UI 块，优先抽组件。不要为 5–10 行 JSX 单独建目录；不要为「可能复用」提前抽到 `components/`（YAGNI）；不要在小修复中顺带大规模重构无关页面。
 
 ### 样式分层（必须遵守）
 
-| 文件 | 职责 |
-|------|------|
-| `src/styles/theme.scss` | **仅**定义 CSS 变量（`--nutui-*` 覆盖 NutUI 主题、`--sw-*` 应用语义令牌）。不写选择器、不覆写组件类名。 |
-| `src/app.scss` | 全局样式：在 `@use "./styles/theme.scss"` 之后引入；`page` 基础排版、`.card` / `.chip` 等工具类、NutUI 组件**全局**覆写（如 `.nut-tabs-titles-button`）。 |
-| `src/pages/<page>/index.scss` | 页面局部布局与结构，优先使用 `var(--nutui-*)` / `var(--sw-*)`；避免重复已在 `app.scss` 的全局覆写。 |
+| 文件                          | 职责                                                                                                                                                      |
+| ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/styles/theme.scss`       | **仅**定义 CSS 变量（`--nutui-*` 覆盖 NutUI 主题、`--sw-*` 应用语义令牌）。不写选择器、不覆写组件类名。                                                   |
+| `src/app.scss`                | 全局样式：在 `@use "./styles/theme.scss"` 之后引入；`page` 基础排版、`.card` / `.chip` 等工具类、NutUI 组件**全局**覆写（如 `.nut-tabs-titles-button`）。 |
+| `src/pages/<page>/index.scss` | 页面局部布局与结构，优先使用 `var(--nutui-*)` / `var(--sw-*)`；避免重复已在 `app.scss` 的全局覆写。                                                       |
 
 - `app.scss` 必须在任何 NutUI 样式之前 `@use` `theme.scss`，保证变量先生效。
 - 新增 NutUI 主题项：变量加在 `theme.scss`；若组件无对应 CSS 变量、需改类名样式，覆写写在 `app.scss`。
@@ -193,3 +193,13 @@ types/
 
 - 人类可读的项目说明见 `CLAUDE.md`（与本文件同源约定）；勿在本文件重复长篇营销文案。
 - 架构或命令变更时，同步更新 `AGENTS.md` 与 `CLAUDE.md`，避免代理读到过期结构（例如页面路径以 `app.config.ts` 为准）。
+
+## Design Context
+
+设计与产品战略文档（Impeccable 维护，做 UI/UX 任务前先读）：
+
+- **[PRODUCT.md](./PRODUCT.md)** — 注册表 `product`；用户（穿搭爱好者）、产品目的、品牌气质（有机温暖）、反参考、设计原则、无障碍
+- **[DESIGN.md](./DESIGN.md)** — 视觉体系「Botanica & Steel」：叶绿/钢蓝色板、Plus Jakarta Sans + Be Vietnam Pro、圆角与阴影令牌
+- **代码令牌** — `src/styles/theme.scss`（`--nutui-*` / `--sw-*` CSS 变量，与 DESIGN.md 对齐）
+
+H5 视觉迭代可用 `/impeccable live`（需先 `pnpm dev:h5`）；Live 配置见 `.impeccable/live/config.json`。
