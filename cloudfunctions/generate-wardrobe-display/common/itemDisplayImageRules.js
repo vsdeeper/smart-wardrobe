@@ -1,4 +1,12 @@
-const ITEM_DISPLAY_BG = '#FAFAF9' // 与 src/styles/theme.scss --sw-color-image-bg 一致
+const ITEM_DISPLAY_BG = '#FFFFFF' // 与 src/styles/theme.scss --sw-color-image-bg 一致
+
+const BACKGROUND_RULES = `【背景硬性要求 — 最高优先级】
+- 背景必须是均匀纯色 RGB(255,255,255) / ${ITEM_DISPLAY_BG}，全图可见区域均为纯白，不得有任何灰度
+- high-key 电商产品图布光：背景过曝至纯白，禁止浅灰底（如 #F5F5F5、#EEEEEE）、米白、暖白、冷白或任何色调偏移
+- 禁止：阴影、接触阴影、投影、渐变、晕影、纹理、噪点、环境光染色、摄影棚灰底
+- 衣物边缘直接落在纯白背景上，不得出现衣物下方的灰色晕圈或 soft shadow`
+
+/** 临时限制：Seedream 每次只生成 1 张展示图，避免云函数超时 */const DISPLAY_IMAGE_MAX_COUNT = 1
 
 const TYPE_CONSTRAINTS = {
   上装: {
@@ -47,33 +55,38 @@ function formatItemLine(index, item) {
   return `- 展示图${index + 1}：从原图提取 → ${item.typeName} · ${item.name}${tags ? ` · tags: ${tags}` : ''}（${constraints}）`
 }
 
-function buildItemsDisplayPrompt(items) {
+function selectItemsForDisplayGeneration(items) {
   const list = Array.isArray(items) ? items : []
   if (list.length === 0) {
     throw new Error('缺少待生成展示图的单品列表')
   }
+  return list.slice(0, DISPLAY_IMAGE_MAX_COUNT)
+}
 
+function buildItemsDisplayPrompt(items) {
+  const list = selectItemsForDisplayGeneration(items)
   const itemLines = list.map((item, index) => formatItemLine(index, item)).join('\n')
   const count = list.length
 
-  return `参考附带原图（图1），请从原图中按下列清单逐件提取衣物单品，共生成 ${count} 张 ${ITEM_DISPLAY_BG} 暖米白底电商产品展示图。
+  return `参考附带原图（图1），请从原图中提取下列衣物单品，生成 ${count} 张 RGB(255,255,255) 纯白底电商产品展示图（background color exactly ${ITEM_DISPLAY_BG}）。
 不得自行识别、增删或调换顺序；不得脱离原图凭空生成。
 
 <items>
 ${itemLines}
 </items>
 
+${BACKGROUND_RULES}
+
 提取要求：
-- 每件从原图中对应位置/区域提取，保留原图该件的款式、颜色、材质、图案，以及衣物上的品牌 logo、标贴、印花文字等细节（须与原图一致，不得抹除或篡改）
-- 背景为均匀纯色 ${ITEM_DISPLAY_BG}（暖米白，与 App 图片占位底色一致），无渐变、无阴影、无纹理
-- 单品居中，约占画面 70–75%；四边各留约 12–15% 空白，不得贴边或裁切至边缘
+- 从原图中对应位置/区域提取，保留原图该件的款式、颜色、材质、图案，以及衣物上的品牌 logo、标贴、印花文字等细节（须与原图一致，不得抹除或篡改）
+- 单品居中，约占画面 70–75%；四边各留约 12–15% 纯白空白，不得贴边或裁切至边缘
 - 平铺或挂拍，无模特
-- 第 i 张展示图只含清单第 i 件，不含原图中其他衣物
 - 画面中不得出现原图以外的叠加文字、照片水印、边框或 UI 元素；衣物本体上的 logo/印花除外
-- 共恰好 ${count} 张，展示图1 对应清单第 1 件，以此类推`
-}
+- 只含清单中的那件单品，不含原图中其他衣物`}
 
 module.exports = {
+  DISPLAY_IMAGE_MAX_COUNT,
   buildItemTypeConstraints,
+  selectItemsForDisplayGeneration,
   buildItemsDisplayPrompt,
 }

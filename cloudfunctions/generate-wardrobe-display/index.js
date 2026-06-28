@@ -1,5 +1,9 @@
 const cloud = require('wx-server-sdk')
-const { buildItemsDisplayPrompt } = require('./common/itemDisplayImageRules')
+const {
+  buildItemsDisplayPrompt,
+  DISPLAY_IMAGE_MAX_COUNT,
+  selectItemsForDisplayGeneration,
+} = require('./common/itemDisplayImageRules')
 const {
   generateSeedreamImages,
   getItemDisplaySize,
@@ -107,9 +111,10 @@ function buildPreviewFromItem(item, imageFileId) {
 }
 
 async function generateDisplayImages(items, sourceUrl, openid) {
-  const M = items.length
+  const displayItems = selectItemsForDisplayGeneration(items)
+  const M = displayItems.length
   const { images } = await generateSeedreamImages({
-    prompt: buildItemsDisplayPrompt(items),
+    prompt: buildItemsDisplayPrompt(displayItems),
     imageUrls: [sourceUrl],
     maxImages: M,
     size: getItemDisplaySize(),
@@ -192,7 +197,14 @@ exports.main = async (event) => {
     }
 
     const items = normalizeItemsInput(rawItems)
+    const displayItems = selectItemsForDisplayGeneration(items)
     const sourceUrl = await resolveImageUrl(fileID)
+
+    if (items.length > DISPLAY_IMAGE_MAX_COUNT) {
+      console.warn(
+        `[generate-wardrobe-display] 临时仅生成前 ${DISPLAY_IMAGE_MAX_COUNT} 件展示图，已跳过 ${items.length - DISPLAY_IMAGE_MAX_COUNT} 件`,
+      )
+    }
 
     let imageFileIds
     let uploadFailed
@@ -205,7 +217,7 @@ exports.main = async (event) => {
       return { error: 'SEEDREAM_FAILED', message }
     }
 
-    const { previews, failed } = mergePreviews(items, imageFileIds, uploadFailed)
+    const { previews, failed } = mergePreviews(displayItems, imageFileIds, uploadFailed)
 
     if (previews.length === 0) {
       return { error: 'GENERATE_FAILED', message: '未能生成任何单品展示图', failed }
