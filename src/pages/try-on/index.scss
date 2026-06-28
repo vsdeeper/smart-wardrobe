@@ -394,7 +394,7 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: var(--nutui-spacing-5);
+  padding: var(--nutui-spacing-4);
   border-radius: var(--nutui-radius-6);
   background: var(--nutui-gray-1);
   border: 1px solid var(--sw-color-progress-track);
@@ -449,7 +449,7 @@
   &__name {
     display: block;
     font-family: var(--sw-font-heading);
-    font-size: var(--nutui-font-size-4);
+    font-size: var(--nutui-font-size-3);
     font-weight: 500;
     color: var(--nutui-gray-7);
     line-height: 1.4;
@@ -510,14 +510,39 @@
 
 // ========== 主操作按钮容器（外观见 app.scss .sw-btn） ==========
 .try-on-actions {
+  --try-on-btn-primary-height: 48px;
+
   display: flex;
   flex-direction: column;
-  gap: var(--nutui-spacing-4);
+  gap: var(--nutui-spacing-5);
   padding: 0 20px 30px;
   box-sizing: border-box;
 
   .wear-btn-wrap {
     padding: 0;
+
+    .sw-btn--block {
+      flex: none;
+      height: var(--try-on-btn-primary-height);
+    }
+  }
+
+  // 「换一套」：品牌色轻底 + 叶绿字，区别于表单取消类 secondary
+  &__refresh {
+    flex: none;
+    height: var(--sw-btn-height-sm);
+    background: var(--nutui-brand-1);
+    border: 1px solid var(--nutui-brand-3);
+    box-shadow: none;
+
+    .sw-btn__text {
+      color: var(--nutui-brand-6);
+    }
+
+    &:active:not(.sw-btn--disabled) {
+      opacity: 1;
+      background: var(--nutui-brand-2);
+    }
   }
 }
 

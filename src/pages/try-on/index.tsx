@@ -167,7 +167,7 @@ function TryOnPage() {
           {!isManualOutfit ? (
             <View
               className={[
-                "sw-btn sw-btn--block sw-btn--secondary",
+                "sw-btn sw-btn--block try-on-actions__refresh",
                 (saving || previewStatus === "loading") && "sw-btn--disabled",
               ]
                 .filter(Boolean)
