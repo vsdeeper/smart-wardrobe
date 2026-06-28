@@ -14,16 +14,18 @@ export default function DiaryItemCard({ entry }: DiaryItemCardProps) {
       <View className="diary-item-card__media">
         <Image
           className="diary-item-card__image"
-          src={entry.coverUrl ?? ""}
-          mode="aspectFill"
+          src={entry.coverUrl || entry.coverFileId || ""}
+          mode="aspectFit"
           radius="0"
         />
       </View>
       <View className="diary-item-card__body">
-        <Text className="diary-item-card__date">
-          {formatDateTime(entry.createdAt)}
-        </Text>
-        <Text className="diary-item-card__title">{entry.title}</Text>
+        <View className="diary-item-card__head">
+          <Text className="diary-item-card__title">{entry.title}</Text>
+          <Text className="diary-item-card__time">
+            {formatDateTime(entry.createdAt)}
+          </Text>
+        </View>
         <Text className="diary-item-card__desc">{entry.description}</Text>
       </View>
     </View>

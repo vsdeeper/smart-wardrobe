@@ -16,6 +16,7 @@ import { useMineStatsActions } from "@/hooks/useMineStatsActions";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { useVisualDiary } from "@/hooks/useVisualDiary";
 import Main from "@/layouts/Main";
+import { formatDateTime } from "@/utils/formatDateTime";
 import "./index.scss";
 
 const ICON_PRIMARY = "var(--nutui-brand-6)";
@@ -182,8 +183,8 @@ function MinePage() {
                   >
                     <Image
                       className="mine-diary__image"
-                      src={entry.coverUrl ?? ""}
-                      mode="aspectFill"
+                      src={entry.coverUrl || entry.coverFileId || ""}
+                      mode="aspectFit"
                       radius="0"
                     />
                   </View>
@@ -200,15 +201,20 @@ function MinePage() {
                     <View className="mine-diary-row__media">
                       <Image
                         className="mine-diary-row__image"
-                        src={entry.coverUrl ?? ""}
-                        mode="aspectFill"
+                        src={entry.coverUrl || entry.coverFileId || ""}
+                        mode="aspectFit"
                         radius="0"
                       />
                     </View>
                     <View className="mine-diary-row__body">
-                      <Text className="mine-diary-row__title">
-                        {entry.title}
-                      </Text>
+                      <View className="mine-diary-row__head">
+                        <Text className="mine-diary-row__title">
+                          {entry.title}
+                        </Text>
+                        <Text className="mine-diary-row__time">
+                          {formatDateTime(entry.createdAt)}
+                        </Text>
+                      </View>
                       <Text className="mine-diary-row__desc">
                         {entry.description}
                       </Text>

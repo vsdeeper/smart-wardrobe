@@ -243,9 +243,12 @@
   }
 
   &__item {
-    aspect-ratio: 4 / 5;
+    position: relative;
+    // 与试穿 Hero / Seedream 输出比例一致，避免裁切头部
+    aspect-ratio: 335 / 480;
     border-radius: var(--sw-radius-card);
     overflow: hidden;
+    background: var(--sw-color-image-bg);
     box-shadow: var(--nutui-shadow-light);
   }
 
@@ -253,6 +256,17 @@
     width: 100%;
     height: 100%;
     display: block;
+  }
+
+  &__item .nut-image,
+  &__image.nut-image {
+    width: 100%;
+    height: 100%;
+  }
+
+  &__item .nut-img {
+    width: 100%;
+    height: 100%;
   }
 }
 
@@ -265,17 +279,30 @@
   box-sizing: border-box;
 
   &__media {
+    position: relative;
     width: 80px;
     flex-shrink: 0;
-    aspect-ratio: 4 / 5;
+    aspect-ratio: 335 / 480;
     border-radius: var(--nutui-radius-6);
     overflow: hidden;
+    background: var(--sw-color-image-bg);
   }
 
   &__image {
     width: 100%;
     height: 100%;
     display: block;
+  }
+
+  &__media .nut-image,
+  &__image.nut-image {
+    width: 100%;
+    height: 100%;
+  }
+
+  &__media .nut-img {
+    width: 100%;
+    height: 100%;
   }
 
   &__body {
@@ -287,12 +314,33 @@
     gap: var(--nutui-spacing-3);
   }
 
+  &__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--nutui-spacing-3);
+    min-width: 0;
+  }
+
   &__title {
+    flex: 1;
+    min-width: 0;
     font-family: var(--sw-font-heading);
     font-size: var(--nutui-font-size-5);
     font-weight: var(--nutui-font-weight-bold);
     color: var(--nutui-gray-7);
     line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__time {
+    flex-shrink: 0;
+    font-family: var(--sw-font-body);
+    font-size: var(--nutui-font-size-2);
+    color: var(--nutui-gray-5);
+    line-height: var(--nutui-line-height-base);
   }
 
   &__desc {
@@ -303,6 +351,7 @@
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     overflow: hidden;
   }
 }
