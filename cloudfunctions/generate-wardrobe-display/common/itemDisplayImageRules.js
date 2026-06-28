@@ -1,4 +1,6 @@
 const ITEM_DISPLAY_BG = '#FAFAF9' // 与 src/styles/theme.scss --sw-color-image-bg 一致
+
+const TYPE_CONSTRAINTS = {
   上装: {
     include: '仅上装（T恤/衬衫/卫衣等），平铺或挂拍',
     exclude: '下装、鞋靴、外套叠穿、模特',
