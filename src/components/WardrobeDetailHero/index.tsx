@@ -8,14 +8,20 @@ export interface WardrobeDetailHeroProps {
 }
 
 export default function WardrobeDetailHero({ item }: WardrobeDetailHeroProps) {
+  const src = item.imageUrl || item.imageFileId;
+
   return (
     <View className="wardrobe-detail-hero">
-      <Image
-        className="wardrobe-detail-hero__image"
-        src={item.imageUrl || item.imageFileId}
-        mode="aspectFill"
-        radius="0"
-      />
+      {src ? (
+        <View className="wardrobe-detail-hero__image-wrap">
+          <Image
+            className="wardrobe-detail-hero__image"
+            src={src}
+            mode="aspectFill"
+            radius="0"
+          />
+        </View>
+      ) : null}
     </View>
   );
 }
