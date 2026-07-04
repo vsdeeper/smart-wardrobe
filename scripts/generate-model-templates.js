@@ -3,15 +3,15 @@
  *
  * 用法：
  *   1. 在项目根目录 .env.local 配置 DOUBAO_API_KEY、DOUBAO_VISION_MODEL
- *   2. pnpm generate:model-templates [-- --preset <id>] [--variant <n>]
+ *   2. pnpm generate:model-templates [--preset <id>] [--variant <n>]
  *
  * 示例：
  *   pnpm generate:model-templates                              # female-standard × 3
- *   pnpm generate:model-templates -- --preset male-standard    # 男性标准 × 3
- *   pnpm generate:model-templates -- --preset neutral          # 中性 × 1
- *   pnpm generate:model-templates -- --preset all              # 全部 19 张
- *   pnpm generate:model-templates -- --preset female-slim --variant 1
- *   pnpm generate:model-templates -- --help
+ *   pnpm generate:model-templates --preset male-standard         # 男性标准 × 3
+ *   pnpm generate:model-templates --preset neutral               # 中性 × 1
+ *   pnpm generate:model-templates --preset all                   # 全部 19 张
+ *   pnpm generate:model-templates --preset female-slim --variant 1
+ *   pnpm generate:model-templates --help
  */
 const fs = require('fs')
 const path = require('path')
@@ -97,7 +97,7 @@ function parseCliArgs(argv) {
 }
 
 function printHelp() {
-  console.log(`用法: pnpm generate:model-templates [-- --preset <id>] [--variant <n>]
+  console.log(`用法: pnpm generate:model-templates [--preset <id>] [--variant <n>]
 
 参数:
   --preset <id>   preset ID 或 all（默认 female-standard）
@@ -112,9 +112,9 @@ function printHelp() {
 
 示例:
   pnpm generate:model-templates
-  pnpm generate:model-templates -- --preset male-standard
-  pnpm generate:model-templates -- --preset female-standard --variant 2
-  pnpm generate:model-templates -- --preset all`)
+  pnpm generate:model-templates --preset male-standard
+  pnpm generate:model-templates --preset female-standard --variant 2
+  pnpm generate:model-templates --preset all`)
 }
 
 function assertPortraitSize(size) {

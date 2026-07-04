@@ -419,7 +419,7 @@ LLM 失败时回退规则推荐 `buildFallbackRecommendation`。
 
 1. 在项目根目录 `.env.local` 配置与 `generate-tryon-image` 相同的 `DOUBAO_API_KEY`、`DOUBAO_VISION_MODEL`（脚本固定竖版 `1600x2304`）。
 2. 执行 `pnpm generate:model-templates`，默认生成 `female-standard` 的 3 张变体，输出至 `output/model-templates/`（如 `female-standard-01.jpg`）。
-3. 可选 CLI 参数（经 `pnpm generate:model-templates --` 传递）：
+3. 可选 CLI 参数（直接追加在 `pnpm generate:model-templates` 后）：
 
 | 参数 | 默认 | 说明 |
 | ---- | ---- | ---- |
