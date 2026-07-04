@@ -30,8 +30,8 @@ async function resolveImageUrls(cloud, fileIDs) {
 function getSeedreamConfig() {
   const apiKey = process.env.DOUBAO_API_KEY
   const baseUrl = process.env.DOUBAO_API_BASE_URL || DEFAULT_BASE_URL
-  const model = process.env.DOUBAO_SEEDREAM_MODEL
-  const size = process.env.DOUBAO_SEEDREAM_SIZE || DEFAULT_HERO_SIZE
+  const model = process.env.DOUBAO_VISION_MODEL
+  const size = process.env.DOUBAO_VISION_SIZE || DEFAULT_HERO_SIZE
   return { apiKey, baseUrl, model, size }
 }
 
@@ -78,7 +78,7 @@ async function generateSeedreamImages({
 }) {
   const { apiKey, baseUrl, model } = getSeedreamConfig()
   if (!apiKey) throw new Error('未配置 DOUBAO_API_KEY')
-  if (!model) throw new Error('未配置 DOUBAO_SEEDREAM_MODEL')
+  if (!model) throw new Error('未配置 DOUBAO_VISION_MODEL')
 
   const count = Math.max(1, Math.min(15, parseInt(String(maxImages), 10) || 1))
   const outputSize = size || getSeedreamConfig().size

@@ -286,7 +286,7 @@ tcb fn deploy generate-wardrobe-display -e cloudbase-d6gkz1xlx9adbfe51
 | --------------------- | -------------------------------------------------- |
 | `DOUBAO_API_KEY`      | 火山方舟 API Key（可与其它云函数共用）             |
 | `DOUBAO_API_BASE_URL` | 可选，默认 `https://ark.cn-beijing.volces.com/api/v3` |
-| `DOUBAO_SEEDREAM_MODEL` | Seedream 模型 ID，示例 `doubao-seedream-5-0-260128`（按 items 从原图生成展示图） |
+| `DOUBAO_VISION_MODEL` | Seedream 模型 ID，示例 `doubao-seedream-5-0-260128`（按 items 从原图生成展示图） |
 | `DOUBAO_ITEM_DISPLAY_SIZE` | 可选，单品展示图尺寸，默认 `1920x1920`（1:1，像素数 ≥3686400） |
 
 **超时**：`config.json` 为 `timeout: 120`（Seedream 组图常需 40–90s）。客户端 `callFunction` 须设 `config.timeout: 120000` 与之对齐。
@@ -315,7 +315,7 @@ wx.cloud
 
 | 返回 message | 常见原因 |
 | ------------ | -------- |
-| `未配置 DOUBAO_SEEDREAM_MODEL` | 未在 `generate-wardrobe-display` 配置 Seedream 模型 ID |
+| `未配置 DOUBAO_VISION_MODEL` | 未在 `generate-wardrobe-display` 配置 Seedream 模型 ID |
 | `SEEDREAM_FAILED` | Seedream 组图失败，检查模型 ID 与 prompt/参考图 |
 | `Seedream 未返回图片` | 模型无图像生成权限或组图参数不符合要求 |
 | `image size must be at least 3686400 pixels` | 展示图 `size` 过小；使用默认 `1920x1920` 或更大 |
@@ -403,8 +403,8 @@ LLM 失败时回退规则推荐 `buildFallbackRecommendation`。
 | ------ | ---- |
 | `DOUBAO_API_KEY` | 火山方舟 API Key（可与其它云函数共用） |
 | `DOUBAO_API_BASE_URL` | 可选，默认 `https://ark.cn-beijing.volces.com/api/v3` |
-| `DOUBAO_SEEDREAM_MODEL` | Hero 试穿图专用 Seedream 模型 ID，示例 `doubao-seedream-5-0-260128` |
-| `DOUBAO_SEEDREAM_SIZE` | 可选，输出尺寸，默认 `1600x2304`（Hero 335×480，Seedream 5.0 最小合规尺寸；若控制台仍配 `2K` 或 `1920x2752` 会覆盖代码默认值） |
+| `DOUBAO_VISION_MODEL` | Hero 试穿图专用 Seedream 模型 ID，示例 `doubao-seedream-5-0-260128` |
+| `DOUBAO_VISION_SIZE` | 可选，输出尺寸，默认 `1600x2304`（Hero 335×480，Seedream 5.0 最小合规尺寸；若控制台仍配 `2K` 或 `1920x2752` 会覆盖代码默认值） |
 
 入参：`imageFileIds[]`、`heightCm`、`weightKg`、`outfitName`、`description`。
 
@@ -412,12 +412,12 @@ LLM 失败时回退规则推荐 `buildFallbackRecommendation`。
 
 | 返回 message | 常见原因 |
 | ------------ | -------- |
-| `未配置 DOUBAO_SEEDREAM_MODEL` | 未在 `generate-tryon-image` 云函数配置 Hero 专用模型 ID |
+| `未配置 DOUBAO_VISION_MODEL` | 未在 `generate-tryon-image` 云函数配置 Hero 专用模型 ID |
 | `Seedream 未返回图片` | 模型 ID 无图像生成权限，或 prompt/参考图不符合要求 |
 
 **离线生成模特模板候选图**（试穿人物参考，非云函数部署）：
 
-1. 在项目根目录 `.env.local` 配置与 `generate-tryon-image` 相同的 `DOUBAO_API_KEY`、`DOUBAO_SEEDREAM_MODEL`（脚本固定竖版 `1600x2304`）。
+1. 在项目根目录 `.env.local` 配置与 `generate-tryon-image` 相同的 `DOUBAO_API_KEY`、`DOUBAO_VISION_MODEL`（脚本固定竖版 `1600x2304`）。
 2. 执行 `pnpm generate:model-templates`，默认生成 `female-standard` 的 3 张变体，输出至 `output/model-templates/`（如 `female-standard-01.jpg`）。
 3. 可选 CLI 参数（经 `pnpm generate:model-templates --` 传递）：
 

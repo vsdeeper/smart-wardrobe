@@ -2,7 +2,7 @@
  * 离线生成模特模板候选图（调用 Seedream，与 generate-tryon-image 共用配置）
  *
  * 用法：
- *   1. 在项目根目录 .env.local 配置 DOUBAO_API_KEY、DOUBAO_SEEDREAM_MODEL
+ *   1. 在项目根目录 .env.local 配置 DOUBAO_API_KEY、DOUBAO_VISION_MODEL
  *   2. pnpm generate:model-templates [-- --preset <id>] [--variant <n>]
  *
  * 示例：
@@ -185,9 +185,9 @@ async function main() {
     )
     process.exit(1)
   }
-  if (!process.env.DOUBAO_SEEDREAM_MODEL) {
+  if (!process.env.DOUBAO_VISION_MODEL) {
     console.error(
-      '缺少 DOUBAO_SEEDREAM_MODEL。请复制 .env.local.example 为 .env.local，填入云函数 generate-tryon-image 的环境变量后重试。',
+      '缺少 DOUBAO_VISION_MODEL。请复制 .env.local.example 为 .env.local，填入云函数 generate-tryon-image 的环境变量后重试。',
     )
     process.exit(1)
   }

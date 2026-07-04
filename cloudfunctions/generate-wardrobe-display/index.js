@@ -192,8 +192,8 @@ exports.main = async (event) => {
     if (!process.env.DOUBAO_API_KEY) {
       return { error: 'PROVIDER_CONFIG', message: '未配置 DOUBAO_API_KEY 环境变量' }
     }
-    if (!process.env.DOUBAO_SEEDREAM_MODEL) {
-      return { error: 'PROVIDER_CONFIG', message: '未配置 DOUBAO_SEEDREAM_MODEL 环境变量' }
+    if (!process.env.DOUBAO_VISION_MODEL) {
+      return { error: 'PROVIDER_CONFIG', message: '未配置 DOUBAO_VISION_MODEL 环境变量' }
     }
 
     const items = normalizeItemsInput(rawItems)
