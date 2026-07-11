@@ -37,10 +37,6 @@ function MinePage() {
     Taro.navigateTo({ url: "/pages/mine-profile/index" });
   };
 
-  const handleRetest = () => {
-    Taro.showToast({ title: "风格测试即将上线", icon: "none" });
-  };
-
   const handleOpenDiaryList = useCallback(() => {
     Taro.navigateTo({ url: "/pages/visual-diary/index" });
   }, []);
@@ -63,9 +59,6 @@ function MinePage() {
     { key: "items", label: "单品", value: String(itemCount), iconClass: "icon-wardrobe" },
     { key: "outfits", label: "搭配", value: String(totalCount), iconClass: "icon-like" },
   ];
-
-  const styleTags =
-    profile.styleTags.length > 0 ? profile.styleTags : ["极简主义", "天然材质"];
 
   const showViewAll = totalCount > MINE_DIARY_PREVIEW_LIMIT;
 
@@ -120,23 +113,6 @@ function MinePage() {
                 </Text>
               </View>
             ))}
-          </View>
-
-          <View className="mine-section">
-            <View className="mine-section__head">
-              <Text className="mine-section__title">风格标签</Text>
-              <View className="mine-section__action" onClick={handleRetest}>
-                <Text className="mine-section__action-text">重新测试</Text>
-                <ArrowRight color={ICON_PRIMARY} size={14} />
-              </View>
-            </View>
-            <View className="mine-tags">
-              {styleTags.map((tag) => (
-                <View key={tag} className="mine-tag">
-                  <Text className="mine-tag__text">{tag}</Text>
-                </View>
-              ))}
-            </View>
           </View>
 
           <View className="mine-section mine-section--diary">

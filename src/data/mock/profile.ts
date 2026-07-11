@@ -1,12 +1,3 @@
-export const PROFILE_STYLE_TAGS = [
-  "极简主义",
-  "大地色系",
-  "天然材质",
-  "可持续时尚",
-  "精致剪裁",
-  "亚麻爱好者",
-];
-
 export interface ProfileDiaryEntry {
   id: number;
   image: string;

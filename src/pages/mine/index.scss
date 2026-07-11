@@ -195,28 +195,6 @@
   }
 }
 
-// ========== 风格标签 ==========
-.mine-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--nutui-spacing-3);
-}
-
-.mine-tag {
-  padding: var(--nutui-spacing-4) var(--nutui-spacing-5);
-  border-radius: var(--sw-radius-pill);
-  background: rgba(123, 192, 67, 0.1);
-  border: 1px solid rgba(54, 107, 0, 0.2);
-
-  &__text {
-    font-family: var(--sw-font-body);
-    font-size: var(--nutui-font-size-2);
-    font-weight: 500;
-    color: var(--nutui-brand-6);
-    line-height: 1.2;
-  }
-}
-
 // ========== 视觉日记 ==========
 .mine-diary-toggle {
   display: flex;
