@@ -175,9 +175,30 @@ wx.cloud
 
 建议索引：`_openid` + `createdAt`（降序）、`_openid` + `typeId` + `createdAt`（降序，供类型筛选分页）
 
+### 集合 `recognition_batches` — 衣物识别批次
+
+| 字段            | 类型     | 说明                                                                 |
+| --------------- | -------- | -------------------------------------------------------------------- |
+| `_openid`       | string   | 用户隔离                                                             |
+| `status`        | string   | `processing` \| `succeeded` \| `failed`                              |
+| `confirmStatus` | string   | `pending` \| `confirmed` \| `discarded`（创建时 `pending`）          |
+| `sourceFileIds` | array    | 原图云存储 fileID 列表                                               |
+| `coverFileId`   | string   | 列表封面（首张原图，成功后可为首件展示图）                           |
+| `progress`      | object   | `{ current, total, phase? }` 识别中进度                              |
+| `items`         | array    | 成功后的预览单品（含 `tempId` / `name` / `typeName` / `imageFileId` 等） |
+| `itemCount`     | number   | 成功件数                                                             |
+| `errorMessage`  | string   | 失败原因                                                             |
+| `createdAt`     | number   | 创建时间戳                                                            |
+| `updatedAt`     | number   | 最近更新                                                             |
+| `confirmedAt`   | number   | 确认入库时间（可选）                                                 |
+
+建议索引：`_openid` + `createdAt`（降序）
+
+由小程序端建单（`status=processing`），云函数 `process-recognition-batch` 异步写回结果；确认/放弃由小程序端更新 `confirmStatus`。
+
 ### 安全规则示例
 
-两个集合均使用：
+`clothing_types`、`wardrobe_items`、`recognition_batches` 均使用：
 
 ```json
 {
@@ -186,17 +207,17 @@ wx.cloud
 }
 ```
 
-云函数 `save-wardrobe-items` 写入时会显式设置 `_openid`；小程序端查询时规则自动过滤当前用户数据。
+云函数 `save-wardrobe-items` / `process-recognition-batch` 写入时会显式设置或校验 `_openid`；小程序端查询时规则自动过滤当前用户数据。
 
 ## 6. 共享代码同步（部署衣橱相关云函数前必读）
 
-`recognize-clothing` 使用 [`cloudfunctions/common/recognitionRules.js`](common/recognitionRules.js)（Seed 多件 JSON）；`generate-wardrobe-display` 使用 [`itemDisplayImageRules.js`](common/itemDisplayImageRules.js)（Seedream 展示图 Prompt）、[`doubaoVision.js`](common/doubaoVision.js)（Seedream 组图）；`save-wardrobe-items` 共用 [`wardrobeSave.js`](common/wardrobeSave.js)。微信云函数**按单目录独立打包上传**，同级 `common/` 不会随函数部署，须在本地同步进各函数目录：
+`recognize-clothing` 使用 [`cloudfunctions/common/recognitionRules.js`](common/recognitionRules.js)（Seed 多件 JSON）；`generate-wardrobe-display` 使用 [`itemDisplayImageRules.js`](common/itemDisplayImageRules.js)（Seedream 展示图 Prompt）、[`doubaoVision.js`](common/doubaoVision.js)（Seedream 组图）；`process-recognition-batch` 同时需要识别与出图 common；`save-wardrobe-items` 共用 [`wardrobeSave.js`](common/wardrobeSave.js)。微信云函数**按单目录独立打包上传**，同级 `common/` 不会随函数部署，须在本地同步进各函数目录：
 
 ```bash
 pnpm cf:sync-common
 ```
 
-同步后：`recognize-clothing/common/` 含 `recognitionRules.js`、`wardrobeSave.js`；`generate-wardrobe-display/common/` 含 `doubaoVision.js`、`itemDisplayImageRules.js`；`save-wardrobe-items/common/` 仅含 `wardrobeSave.js`。**修改 `cloudfunctions/common/` 下源码后，须重新执行上述命令再上传部署。**
+同步后：`recognize-clothing/common/` 含 `recognitionRules.js`、`wardrobeSave.js`；`generate-wardrobe-display/common/` 含 `doubaoVision.js`、`itemDisplayImageRules.js`；`process-recognition-batch/common/` 含 `recognitionRules.js`、`doubaoVision.js`、`itemDisplayImageRules.js`；`save-wardrobe-items/common/` 仅含 `wardrobeSave.js`。**修改 `cloudfunctions/common/` 下源码后，须重新执行上述命令再上传部署。**
 
 业务约束（typeName 白名单、name 长度、tags 规则、name/tags 互斥）由 **Prompt** 负责；云函数侧仅做 JSON 解析与非空 trim，不再做白名单归并或截断兜底。
 
@@ -262,7 +283,7 @@ wx.cloud
 | `AI 返回格式无效` | Vision 模型未按 JSON 格式返回，检查 prompt 或换模型 |
 | `LLM_API_ERROR` | API Key 无效、模型 ID 错误或 API 与模型不匹配、或配额用尽 |
 
-页面内通过衣橱页 FAB 上传触发：`chooseMedia` → `uploadFile` → `callFunction('recognize-clothing')`（Seed 提取 items）→ `callFunction('generate-wardrobe-display')`（Seedream 展示图 → 预览不入库，确认后由 `save-wardrobe-items` 批量入库）。
+页面内通过衣橱页 FAB 上传触发：`chooseMedia` → `uploadFile` → 创建 `recognition_batches` → `callFunction('process-recognition-batch')`（云端异步识别 + 出图）；结果在「我的」识别记录中确认后由 `save-wardrobe-items` 入库。
 
 ## 8. 部署 generate-wardrobe-display 云函数
 
@@ -320,6 +341,34 @@ wx.cloud
 | `Seedream 未返回图片` | 模型无图像生成权限或组图参数不符合要求 |
 | `image size must be at least 3686400 pixels` | 展示图 `size` 过小；使用默认 `1920x1920` 或更大 |
 | `-504003` / 云函数超时 | 确认 `config.json` 为 `timeout: 120` 且客户端 `callFunction` timeout 为 120000 |
+
+## 8.1 部署 process-recognition-batch 云函数
+
+异步处理 `recognition_batches`：串行对批次内原图执行识别 + 展示图生成，写回 `status` / `items`。
+
+1. 执行 `pnpm cf:sync-common`
+2. 微信开发者工具展开 `cloudfunctions/process-recognition-batch`
+3. 右键 → **上传并部署：云端安装依赖**
+
+环境变量与 `recognize-clothing` + `generate-wardrobe-display` 相同：`DOUBAO_API_KEY`、`DOUBAO_SEED_MODEL`、`DOUBAO_VISION_MODEL`（及可选 Base URL / Temperature）。
+
+**超时**：`config.json` 为 `timeout: 300`（批次最多 3 张图）。
+
+### Console 验证
+
+先由小程序建单取得 `batchId`，再调用：
+
+```javascript
+wx.cloud
+  .callFunction({
+    name: "process-recognition-batch",
+    data: { batchId: "xxx", userGender: "female" },
+  })
+  .then(console.log)
+  .catch(console.error);
+```
+
+预期返回 `{ batchId, itemCount, failed }`；失败时 batch 文档 `status` 为 `failed`。
 
 ## 9. 部署 save-wardrobe-items 云函数
 

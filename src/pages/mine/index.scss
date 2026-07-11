@@ -195,6 +195,12 @@
   }
 }
 
+.mine-recognition-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--nutui-spacing-5);
+}
+
 // ========== 视觉日记 ==========
 .mine-diary-toggle {
   display: flex;

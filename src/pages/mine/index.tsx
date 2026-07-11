@@ -4,6 +4,12 @@ import Taro from "@tarojs/taro";
 import { ArrowRight, Edit } from "@nutui/icons-react-taro";
 import { Image, Loading } from "@nutui/nutui-react-taro";
 import DefaultAvatar from "@/components/DefaultAvatar";
+import RecognitionBatchCard from "@/components/RecognitionBatchCard";
+import {
+  canOpenRecognitionBatch,
+  MINE_RECOGNITION_PREVIEW_LIMIT,
+  type RecognitionBatch,
+} from "@/data/recognition";
 import { MINE_DIARY_PREVIEW_LIMIT } from "@/data/tryOn";
 import {
   formatHeightLabel,
@@ -13,6 +19,7 @@ import {
 } from "@/data/profile";
 import { useMainTabNavigation } from "@/hooks/useMainTabNavigation";
 import { useMineStatsActions } from "@/hooks/useMineStatsActions";
+import { useRecognitionBatches } from "@/hooks/useRecognitionBatches";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { useVisualDiary } from "@/hooks/useVisualDiary";
 import Main from "@/layouts/Main";
@@ -31,6 +38,13 @@ function MinePage() {
   const { entries, totalCount, loading: diaryLoading } = useVisualDiary({
     previewLimit: MINE_DIARY_PREVIEW_LIMIT,
   });
+  const {
+    batches,
+    totalCount: recognitionTotal,
+    loading: recognitionLoading,
+  } = useRecognitionBatches({
+    previewLimit: MINE_RECOGNITION_PREVIEW_LIMIT,
+  });
   const { handleStatClick } = useMineStatsActions();
 
   const handleOpenProfile = () => {
@@ -44,6 +58,28 @@ function MinePage() {
   const handleOpenDiaryDetail = useCallback((entryId?: string) => {
     if (!entryId) return;
     Taro.navigateTo({ url: `/pages/visual-diary-detail/index?id=${entryId}` });
+  }, []);
+
+  const handleOpenRecognitionHistory = useCallback(() => {
+    Taro.navigateTo({ url: "/pages/recognition-history/index" });
+  }, []);
+
+  const handleOpenRecognitionBatch = useCallback((batch: RecognitionBatch) => {
+    if (batch.status === "processing") {
+      Taro.showToast({ title: "识别中，请稍候", icon: "none" });
+      return;
+    }
+    if (batch.status === "failed") {
+      Taro.showToast({
+        title: batch.errorMessage || "识别失败",
+        icon: "none",
+      });
+      return;
+    }
+    if (!canOpenRecognitionBatch(batch)) return;
+    Taro.navigateTo({
+      url: `/pages/ai-recognition/index?batchId=${batch._id}`,
+    });
   }, []);
 
   const handleToggleDiaryLayout = () => {
@@ -60,7 +96,9 @@ function MinePage() {
     { key: "outfits", label: "搭配", value: String(totalCount), iconClass: "icon-like" },
   ];
 
-  const showViewAll = totalCount > MINE_DIARY_PREVIEW_LIMIT;
+  const showDiaryViewAll = totalCount > MINE_DIARY_PREVIEW_LIMIT;
+  const showRecognitionViewAll =
+    recognitionTotal > MINE_RECOGNITION_PREVIEW_LIMIT;
 
   return (
     <Main
@@ -115,11 +153,50 @@ function MinePage() {
             ))}
           </View>
 
+          <View className="mine-section mine-section--recognition">
+            <View className="mine-section__head">
+              <Text className="mine-section__title">衣物识别</Text>
+              <View className="mine-section__head-actions">
+                {showRecognitionViewAll ? (
+                  <View
+                    className="mine-section__action"
+                    onClick={handleOpenRecognitionHistory}
+                  >
+                    <Text className="mine-section__action-text">查看全部</Text>
+                    <ArrowRight color={ICON_PRIMARY} size={14} />
+                  </View>
+                ) : null}
+              </View>
+            </View>
+            {recognitionLoading ? (
+              <View className="mine-diary-loading">
+                <Loading type="circular" />
+              </View>
+            ) : batches.length === 0 ? (
+              <View className="mine-diary-empty">
+                <Text className="mine-diary-empty__title">还没有识别记录</Text>
+                <Text className="mine-diary-empty__desc">
+                  在衣橱上传衣物照片后，识别进度与历史会出现在这里
+                </Text>
+              </View>
+            ) : (
+              <View className="mine-recognition-list">
+                {batches.map((batch) => (
+                  <RecognitionBatchCard
+                    key={batch._id}
+                    batch={batch}
+                    onClick={handleOpenRecognitionBatch}
+                  />
+                ))}
+              </View>
+            )}
+          </View>
+
           <View className="mine-section mine-section--diary">
             <View className="mine-section__head">
               <Text className="mine-section__title">视觉日记</Text>
               <View className="mine-section__head-actions">
-                {showViewAll ? (
+                {showDiaryViewAll ? (
                   <View
                     className="mine-section__action"
                     onClick={handleOpenDiaryList}

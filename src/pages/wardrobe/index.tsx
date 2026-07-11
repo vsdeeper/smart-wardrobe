@@ -1,18 +1,16 @@
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { View, Text } from "@tarojs/components";
 import { Add } from "@nutui/icons-react-taro";
 import { ActionSheet, Loading, Tabs } from "@nutui/nutui-react-taro";
 import AppNavbar from "@/components/AppNavbar";
 import GenderSetupDialog from "@/components/GenderSetupDialog";
 import Main from "@/layouts/Main";
-import type { AiStatus } from "@/data/wardrobe";
 import { WARDROBE_ITEM_ACTION_OPTIONS } from "@/data/wardrobe";
 import { useGenderSetup } from "@/hooks/useGenderSetup";
 import { useWardrobeList } from "@/hooks/useWardrobeList";
 import { useWardrobeUpload } from "@/hooks/useWardrobeUpload";
 import { getCardLayout } from "@/utils/wardrobeLayout";
 import { useMainTabNavigation } from "@/hooks/useMainTabNavigation";
-import AiStatusBanner from "./components/AiStatusBanner";
 import PrivacyAuthorizeDialog from "./components/PrivacyAuthorizeDialog";
 import WardrobeItemCard from "./components/WardrobeItemCard";
 import WardrobeStylingCta from "./components/WardrobeStylingCta";
@@ -20,11 +18,6 @@ import "./index.scss";
 
 function WardrobePage() {
   const uploadFlowRef = useRef(false);
-  const [aiStatus, setAiStatus] = useState<AiStatus>({
-    phase: "idle",
-    progress: 0,
-    totalCount: 0,
-  });
 
   const { activeTab: mainTab, onTabChange } = useMainTabNavigation(0);
 
@@ -49,7 +42,7 @@ function WardrobePage() {
     handleItemLongPress,
     handleItemClick,
     handleActionSelect,
-  } = useWardrobeList({ uploadFlowRef, setAiStatus });
+  } = useWardrobeList({ uploadFlowRef });
 
   const {
     adding,
@@ -60,7 +53,6 @@ function WardrobePage() {
     closePrivacyDialog,
     handleAIStyling,
   } = useWardrobeUpload({
-    setAiStatus,
     uploadFlowRef,
     ensureGenderSet,
   });
@@ -68,8 +60,6 @@ function WardrobePage() {
   return (
     <Main activeTab={mainTab} onTabChange={onTabChange} header={<AppNavbar />}>
       <Main.Scroll lowerThreshold={120} onScrollToLower={handleScrollToLower}>
-        <AiStatusBanner aiStatus={aiStatus} />
-
         <View className="page-header">
           <Text className="page-header__title">个人衣橱</Text>
           <Tabs

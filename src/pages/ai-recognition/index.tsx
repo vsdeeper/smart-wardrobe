@@ -11,8 +11,11 @@ function AiRecognitionPage() {
     items,
     submitting,
     initialized,
+    readonly,
+    confirmStatus,
     handleRemove,
     handleEdit,
+    handleBack,
     handleDiscard,
     handleConfirm,
   } = useAiRecognitionList();
@@ -64,12 +67,36 @@ function AiRecognitionPage() {
     : 0;
 
   if (!initialized) {
-    return null;
+    return (
+      <View
+        className="ai-recognition-page"
+        style={{
+          ["--sw-status-bar-height" as string]: `${statusBarHeight ?? 0}px`,
+          ["--sw-safe-area-bottom" as string]: `${safeAreaBottom}px`,
+        }}
+      >
+        <View className="ai-recognition-page__loading">
+          <Loading type="circular" />
+        </View>
+      </View>
+    );
   }
+
+  const statusHint =
+    confirmStatus === "confirmed"
+      ? "已入库"
+      : confirmStatus === "discarded"
+        ? "已放弃"
+        : null;
 
   return (
     <View
-      className="ai-recognition-page"
+      className={[
+        "ai-recognition-page",
+        readonly && "ai-recognition-page--readonly",
+      ]
+        .filter(Boolean)
+        .join(" ")}
       style={{
         ["--sw-status-bar-height" as string]: `${statusBarHeight ?? 0}px`,
         ["--sw-safe-area-bottom" as string]: `${safeAreaBottom}px`,
@@ -79,10 +106,16 @@ function AiRecognitionPage() {
         safeAreaInsetTop
         className="ai-recognition-page__navbar"
         back={<Text className="ai-recognition-page__back">返回</Text>}
-        onBackClick={handleDiscard}
+        onBackClick={handleBack}
       >
         <Text className="ai-recognition-page__title">AI 识别结果</Text>
       </NavBar>
+
+      {statusHint ? (
+        <View className="ai-recognition-page__status">
+          <Text className="ai-recognition-page__status-text">{statusHint}</Text>
+        </View>
+      ) : null}
 
       <ScrollView
         className="ai-recognition-page__scroll"
@@ -91,77 +124,89 @@ function AiRecognitionPage() {
         showScrollbar={false}
       >
         <View className="ai-recognition-page__list">
-          {items.map((item) => (
-            <Swipe
-              key={item.tempId}
-              name={item.tempId}
-              ref={(el) => setSwipeRef(item.tempId, el)}
-              onOpen={() => handleSwipeOpen(item.tempId)}
-              onClose={handleSwipeClose}
-              rightAction={
-                <View className="ai-recognition-page__swipe-actions">
-                  <View
-                    className="ai-recognition-page__edit"
-                    onClick={() => handleEditItem(item.tempId)}
-                  >
-                    <Text className="ai-recognition-page__edit-text">编辑</Text>
+          {items.map((item) =>
+            readonly ? (
+              <RecognitionItemCard key={item.tempId} item={item} />
+            ) : (
+              <Swipe
+                key={item.tempId}
+                name={item.tempId}
+                ref={(el) => setSwipeRef(item.tempId, el)}
+                onOpen={() => handleSwipeOpen(item.tempId)}
+                onClose={handleSwipeClose}
+                rightAction={
+                  <View className="ai-recognition-page__swipe-actions">
+                    <View
+                      className="ai-recognition-page__edit"
+                      onClick={() => handleEditItem(item.tempId)}
+                    >
+                      <Text className="ai-recognition-page__edit-text">
+                        编辑
+                      </Text>
+                    </View>
+                    <View
+                      className="ai-recognition-page__delete"
+                      onClick={() => handleDelete(item.tempId)}
+                    >
+                      <Text className="ai-recognition-page__delete-text">
+                        删除
+                      </Text>
+                    </View>
                   </View>
-                  <View
-                    className="ai-recognition-page__delete"
-                    onClick={() => handleDelete(item.tempId)}
-                  >
-                    <Text className="ai-recognition-page__delete-text">删除</Text>
-                  </View>
-                </View>
-              }
-            >
-              <RecognitionItemCard item={item} />
-            </Swipe>
-          ))}
+                }
+              >
+                <RecognitionItemCard item={item} />
+              </Swipe>
+            ),
+          )}
 
           {items.length === 0 && (
             <View className="ai-recognition-page__empty">
               <Text className="ai-recognition-page__empty-text">
-                已全部删除，请返回或确认放弃
+                {readonly
+                  ? "暂无识别单品"
+                  : "已全部删除，请返回或确认放弃"}
               </Text>
             </View>
           )}
         </View>
       </ScrollView>
 
-      <View className="sw-action-bar">
-        <View
-          className={[
-            "sw-btn sw-btn--block sw-btn--secondary",
-            submitting && "sw-btn--disabled",
-          ]
-            .filter(Boolean)
-            .join(" ")}
-          onClick={handleDiscard}
-        >
-          <Text className="sw-btn__text">放弃</Text>
+      {!readonly ? (
+        <View className="sw-action-bar">
+          <View
+            className={[
+              "sw-btn sw-btn--block sw-btn--secondary",
+              submitting && "sw-btn--disabled",
+            ]
+              .filter(Boolean)
+              .join(" ")}
+            onClick={handleDiscard}
+          >
+            <Text className="sw-btn__text">放弃</Text>
+          </View>
+          <View
+            className={[
+              "sw-btn sw-btn--block sw-btn--primary",
+              items.length === 0 && "sw-btn--disabled",
+              submitting && "sw-btn--loading",
+            ]
+              .filter(Boolean)
+              .join(" ")}
+            onClick={handleConfirm}
+          >
+            {submitting ? (
+              <Loading
+                type="circular"
+                color="var(--sw-color-on-primary)"
+                className="sw-btn-loading"
+              />
+            ) : (
+              <Text className="sw-btn__text sw-btn__text--primary">确认</Text>
+            )}
+          </View>
         </View>
-        <View
-          className={[
-            "sw-btn sw-btn--block sw-btn--primary",
-            items.length === 0 && "sw-btn--disabled",
-            submitting && "sw-btn--loading",
-          ]
-            .filter(Boolean)
-            .join(" ")}
-          onClick={handleConfirm}
-        >
-          {submitting ? (
-            <Loading
-              type="circular"
-              color="var(--sw-color-on-primary)"
-              className="sw-btn-loading"
-            />
-          ) : (
-            <Text className="sw-btn__text sw-btn__text--primary">确认</Text>
-          )}
-        </View>
-      </View>
+      ) : null}
     </View>
   );
 }

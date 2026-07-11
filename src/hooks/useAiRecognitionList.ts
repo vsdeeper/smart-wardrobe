@@ -1,83 +1,139 @@
 import { useCallback, useRef, useState } from "react";
 import Taro, { useDidShow, useLoad, useUnload } from "@tarojs/taro";
 import type { RecognizedPreviewItem } from "@/data/wardrobe";
-import {
-  clearRecognitionDraft,
-  consumeRecognitionDraft,
-} from "@/services/recognitionDraft";
+import type { RecognitionConfirmStatus } from "@/data/recognition";
 import {
   clearRecognitionSession,
   getRecognitionSession,
   initRecognitionSession,
 } from "@/services/recognitionSession";
-import { deleteCloudFiles, saveWardrobeItems } from "@/services/wardrobe";
+import {
+  confirmRecognitionBatch,
+  discardRecognitionBatch,
+  fetchRecognitionBatchById,
+  updateRecognitionBatchItems,
+} from "@/services/recognitionBatch";
+import {
+  resolvePreviewImageUrls,
+  saveWardrobeItems,
+} from "@/services/wardrobe";
 
 export function useAiRecognitionList() {
   const [items, setItems] = useState<RecognizedPreviewItem[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [initialized, setInitialized] = useState(false);
+  const [readonly, setReadonly] = useState(false);
+  const [confirmStatus, setConfirmStatus] =
+    useState<RecognitionConfirmStatus>("pending");
 
+  const batchIdRef = useRef<string | null>(null);
   const allFileIdsRef = useRef<string[]>([]);
-  const removedFileIdsRef = useRef<string[]>([]);
   const handledRef = useRef(false);
+  const initializedRef = useRef(false);
+  const readonlyRef = useRef(false);
 
-  useLoad(() => {
-    const draft = consumeRecognitionDraft();
-    if (!draft?.length) {
-      Taro.navigateBack();
+  const persistItems = useCallback(
+    async (next: RecognizedPreviewItem[]) => {
+      const batchId = batchIdRef.current;
+      if (!batchId) return;
+      try {
+        await updateRecognitionBatchItems(batchId, next);
+      } catch (err) {
+        console.warn("[ai-recognition] persist items failed", err);
+      }
+    },
+    [],
+  );
+
+  useLoad(async (options) => {
+    const batchId =
+      typeof options?.batchId === "string" ? options.batchId.trim() : "";
+
+    if (!batchId) {
+      Taro.showToast({ title: "缺少识别记录", icon: "none" });
+      setTimeout(() => Taro.navigateBack(), 500);
       return;
     }
 
-    allFileIdsRef.current = draft.map((item) => item.imageFileId);
-    initRecognitionSession(draft);
-    setItems(draft);
-    setInitialized(true);
+    try {
+      const batch = await fetchRecognitionBatchById(batchId);
+
+      if (batch.status !== "succeeded") {
+        const title =
+          batch.status === "processing"
+            ? "识别中，请稍候"
+            : batch.errorMessage || "识别失败";
+        Taro.showToast({ title, icon: "none" });
+        setTimeout(() => Taro.navigateBack(), 800);
+        return;
+      }
+
+      const rawItems = batch.items ?? [];
+      const withUrls = await resolvePreviewImageUrls(rawItems);
+
+      batchIdRef.current = batchId;
+      allFileIdsRef.current = withUrls.map((item) => item.imageFileId);
+      const isReadonly = batch.confirmStatus !== "pending";
+      readonlyRef.current = isReadonly;
+      initializedRef.current = true;
+      setReadonly(isReadonly);
+      setConfirmStatus(batch.confirmStatus);
+      initRecognitionSession(withUrls);
+      setItems(withUrls);
+      setInitialized(true);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "加载失败";
+      Taro.showToast({ title: message, icon: "none" });
+      setTimeout(() => Taro.navigateBack(), 800);
+    }
   });
 
   useDidShow(() => {
-    if (!initialized) return;
-    setItems(getRecognitionSession());
+    if (!initializedRef.current || readonlyRef.current) return;
+    const session = getRecognitionSession();
+    if (session.length === 0 && allFileIdsRef.current.length === 0) return;
+    setItems(session);
+    allFileIdsRef.current = session.map((item) => item.imageFileId);
+    void persistItems(session);
   });
 
   useUnload(() => {
-    if (handledRef.current) return;
-
-    void deleteCloudFiles(allFileIdsRef.current);
-    clearRecognitionDraft();
     clearRecognitionSession();
   });
 
-  const handleRemove = useCallback((tempId: string) => {
-    setItems((prev) => {
-      const target = prev.find((item) => item.tempId === tempId);
-      if (target) {
-        removedFileIdsRef.current = [
-          ...removedFileIdsRef.current,
-          target.imageFileId,
-        ];
-      }
-      const next = prev.filter((item) => item.tempId !== tempId);
-      initRecognitionSession(next);
-      return next;
-    });
-  }, []);
+  const handleRemove = useCallback(
+    (tempId: string) => {
+      if (readonly) return;
+      setItems((prev) => {
+        const next = prev.filter((item) => item.tempId !== tempId);
+        initRecognitionSession(next);
+        allFileIdsRef.current = next.map((item) => item.imageFileId);
+        void persistItems(next);
+        return next;
+      });
+    },
+    [persistItems, readonly],
+  );
 
-  const handleEdit = useCallback((tempId: string) => {
-    Taro.navigateTo({
-      url: `/pages/wardrobe-edit/index?source=recognition&tempId=${tempId}`,
-    });
-  }, []);
+  const handleEdit = useCallback(
+    (tempId: string) => {
+      if (readonly) return;
+      Taro.navigateTo({
+        url: `/pages/wardrobe-edit/index?source=recognition&tempId=${tempId}`,
+      });
+    },
+    [readonly],
+  );
 
-  const cleanupAndBack = useCallback(async () => {
-    handledRef.current = true;
-    await deleteCloudFiles(allFileIdsRef.current);
-    clearRecognitionDraft();
-    clearRecognitionSession();
+  const handleBack = useCallback(() => {
     Taro.navigateBack();
   }, []);
 
   const handleDiscard = useCallback(() => {
-    if (submitting) return;
+    if (submitting || readonly) return;
+
+    const batchId = batchIdRef.current;
+    if (!batchId) return;
 
     Taro.showModal({
       title: "确认放弃",
@@ -85,25 +141,38 @@ export function useAiRecognitionList() {
       confirmText: "放弃",
       confirmColor: "#fa2c19",
       success: (res) => {
-        if (res.confirm) {
-          void cleanupAndBack();
-        }
+        if (!res.confirm) return;
+        void (async () => {
+          setSubmitting(true);
+          try {
+            handledRef.current = true;
+            await discardRecognitionBatch(batchId);
+            clearRecognitionSession();
+            Taro.navigateBack();
+          } catch (err) {
+            const message = err instanceof Error ? err.message : "操作失败";
+            Taro.showToast({ title: message, icon: "none" });
+          } finally {
+            setSubmitting(false);
+          }
+        })();
       },
     });
-  }, [cleanupAndBack, submitting]);
+  }, [readonly, submitting]);
 
   const handleConfirm = useCallback(async () => {
-    if (submitting || items.length === 0) return;
+    if (submitting || readonly || items.length === 0) return;
+
+    const batchId = batchIdRef.current;
+    if (!batchId) return;
 
     setSubmitting(true);
     try {
       const { saved, failed } = await saveWardrobeItems(items);
       handledRef.current = true;
 
-      if (removedFileIdsRef.current.length > 0) {
-        await deleteCloudFiles(removedFileIdsRef.current);
-      }
-      clearRecognitionDraft();
+      await updateRecognitionBatchItems(batchId, items);
+      await confirmRecognitionBatch(batchId);
       clearRecognitionSession();
 
       if (failed.length > 0) {
@@ -125,14 +194,17 @@ export function useAiRecognitionList() {
     } finally {
       setSubmitting(false);
     }
-  }, [items, submitting]);
+  }, [items, readonly, submitting]);
 
   return {
     items,
     submitting,
     initialized,
+    readonly,
+    confirmStatus,
     handleRemove,
     handleEdit,
+    handleBack,
     handleDiscard,
     handleConfirm,
   };

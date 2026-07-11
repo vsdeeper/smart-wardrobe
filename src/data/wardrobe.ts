@@ -38,51 +38,6 @@ export const WARDROBE_PAGE_SIZE = 20
 /** FAB 批量上传时一次最多可选图片数 */
 export const WARDROBE_BATCH_UPLOAD_MAX = 3
 
-export type AiPhase = "idle" | "uploading" | "recognizing" | "generating" | "done"
-
-export interface AiStatus {
-  phase: AiPhase
-  progress: number
-  totalCount: number
-  batchCurrent?: number
-  batchTotal?: number
-}
-
-export function isAiBusy(phase: AiPhase): boolean {
-  return (
-    phase === "uploading" ||
-    phase === "recognizing" ||
-    phase === "generating" ||
-    phase === "done"
-  )
-}
-
-export function getAiStatusDesc(status: AiStatus): string {
-  const batchLabel =
-    status.batchTotal && status.batchTotal > 1 && status.batchCurrent
-      ? `${status.batchCurrent}/${status.batchTotal}`
-      : null
-
-  switch (status.phase) {
-    case "uploading":
-      return batchLabel ? `正在上传 ${batchLabel}...` : "正在上传图片..."
-    case "recognizing":
-      return batchLabel
-        ? `正在识别 ${batchLabel}...`
-        : "AI 正在提取单品..."
-    case "generating":
-      return batchLabel
-        ? `正在生成展示图 ${batchLabel}...`
-        : "正在生成展示图..."
-    case "done":
-      return "分类完成"
-    default:
-      return status.totalCount > 0
-        ? `已分类 ${status.totalCount} 件单品`
-        : "上传衣物照片，AI 将自动识别分类"
-  }
-}
-
 export const WARDROBE_ITEM_ACTION_OPTIONS = [
   { name: "查看", danger: false },
   { name: "编辑", danger: false },

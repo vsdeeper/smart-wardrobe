@@ -1,23 +1,18 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 import Taro, { useDidShow } from "@tarojs/taro";
-import type { AiStatus, ClothingType, WardrobeItem } from "@/data/wardrobe";
-import { WARDROBE_PAGE_SIZE, isAiBusy } from "@/data/wardrobe";
+import type { ClothingType, WardrobeItem } from "@/data/wardrobe";
+import { WARDROBE_PAGE_SIZE } from "@/data/wardrobe";
 import {
   deleteWardrobeItem,
   fetchClothingTypes,
-  fetchWardrobeItemCount,
   fetchWardrobeItems,
 } from "@/services/wardrobe";
 
 interface UseWardrobeListOptions {
   uploadFlowRef: React.MutableRefObject<boolean>;
-  setAiStatus: React.Dispatch<React.SetStateAction<AiStatus>>;
 }
 
-export function useWardrobeList({
-  uploadFlowRef,
-  setAiStatus,
-}: UseWardrobeListOptions) {
+export function useWardrobeList({ uploadFlowRef }: UseWardrobeListOptions) {
   const [clothingTypes, setClothingTypes] = useState<ClothingType[]>([]);
   const [items, setItems] = useState<WardrobeItem[]>([]);
   const [activeTab, setActiveTab] = useState(0);
@@ -90,20 +85,14 @@ export function useWardrobeList({
 
   const refreshWardrobe = useCallback(async () => {
     try {
-      const [totalCount] = await Promise.all([
-        fetchWardrobeItemCount(),
-        loadTypes(),
-      ]);
-      setAiStatus((prev) =>
-        isAiBusy(prev.phase) ? prev : { ...prev, totalCount, phase: "idle" },
-      );
+      await loadTypes();
       await loadItems({ reset: true });
     } catch (err) {
       const message = err instanceof Error ? err.message : "加载失败";
       Taro.showToast({ title: message, icon: "none" });
       setInitialLoading(false);
     }
-  }, [loadItems, loadTypes, setAiStatus]);
+  }, [loadItems, loadTypes]);
 
   useDidShow(() => {
     if (process.env.TARO_ENV !== "weapp") {
@@ -179,11 +168,6 @@ export function useWardrobeList({
               : type,
           ),
         );
-        setAiStatus((prev) =>
-          isAiBusy(prev.phase)
-            ? prev
-            : { ...prev, totalCount: Math.max(0, prev.totalCount - 1) },
-        );
         Taro.showToast({ title: "已删除", icon: "success" });
       } catch (err) {
         const message = err instanceof Error ? err.message : "删除失败";
@@ -192,7 +176,7 @@ export function useWardrobeList({
         setDeleting(false);
       }
     },
-    [deleting, setAiStatus],
+    [deleting],
   );
 
   const handleActionSelect = useCallback(

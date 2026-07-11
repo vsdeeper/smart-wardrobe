@@ -1,0 +1,66 @@
+.recognition-batch-card {
+  display: flex;
+  align-items: stretch;
+  gap: var(--nutui-spacing-4);
+  padding: var(--nutui-spacing-4);
+  overflow: hidden;
+
+  &__media {
+    flex-shrink: 0;
+    width: 72px;
+    height: 72px;
+    border-radius: var(--sw-radius-card);
+    overflow: hidden;
+    background: var(--sw-color-image-bg);
+  }
+
+  &__image {
+    width: 100%;
+    height: 100%;
+  }
+
+  &__placeholder {
+    width: 100%;
+    height: 100%;
+    background: var(--nutui-gray-4);
+  }
+
+  &__body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: var(--nutui-spacing-2);
+  }
+
+  &__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--nutui-spacing-3);
+  }
+
+  &__status {
+    font-family: var(--sw-font-heading);
+    font-size: var(--nutui-font-size-3);
+    font-weight: var(--nutui-font-weight-bold);
+    color: var(--nutui-gray-7);
+  }
+
+  &__time {
+    flex-shrink: 0;
+    font-family: var(--sw-font-body);
+    font-size: var(--nutui-font-size-1);
+    color: var(--nutui-gray-5);
+  }
+
+  &__desc {
+    font-family: var(--sw-font-body);
+    font-size: var(--nutui-font-size-2);
+    color: var(--nutui-gray-5);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}

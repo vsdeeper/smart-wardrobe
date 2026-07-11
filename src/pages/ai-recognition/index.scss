@@ -21,12 +21,35 @@
     color: var(--nutui-gray-7);
   }
 
+  &__loading {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+  }
+
+  &__status {
+    flex-shrink: 0;
+    padding: var(--nutui-spacing-3) var(--nutui-spacing-5);
+  }
+
+  &__status-text {
+    font-family: var(--sw-font-body);
+    font-size: var(--nutui-font-size-2);
+    color: var(--nutui-gray-5);
+  }
+
   &__scroll {
     flex: 1;
     height: 0;
     padding: var(--nutui-spacing-5) var(--nutui-spacing-5)
       calc(88px + var(--sw-safe-area-bottom, 0px));
     box-sizing: border-box;
+  }
+
+  &--readonly &__scroll {
+    padding-bottom: calc(var(--nutui-spacing-8) + var(--sw-safe-area-bottom, 0px));
   }
 
   &__list {

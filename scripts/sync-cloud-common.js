@@ -12,6 +12,11 @@ const SOURCE_DIR = path.join(ROOT, 'cloudfunctions', 'common')
 const SYNC_MAP = {
   'recognize-clothing': ['recognitionRules.js', 'wardrobeSave.js'],
   'generate-wardrobe-display': ['doubaoVision.js', 'itemDisplayImageRules.js'],
+  'process-recognition-batch': [
+    'recognitionRules.js',
+    'doubaoVision.js',
+    'itemDisplayImageRules.js',
+  ],
   'save-wardrobe-items': ['wardrobeSave.js'],
   'recommend-outfit': ['recommendOutfitRules.js'],
   'generate-tryon-image': ['doubaoVision.js', 'tryonImageRules.js'],

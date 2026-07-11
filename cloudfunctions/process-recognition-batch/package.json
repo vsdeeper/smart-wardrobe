@@ -1,0 +1,9 @@
+{
+  "name": "process-recognition-batch",
+  "version": "1.0.0",
+  "description": "异步处理衣物识别批次（识别 + 展示图）",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}
