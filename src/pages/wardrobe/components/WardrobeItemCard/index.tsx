@@ -1,5 +1,5 @@
-import { View, Text, ScrollView } from "@tarojs/components";
-import { Tag, Image } from "@nutui/nutui-react-taro";
+import { View, Text } from "@tarojs/components";
+import { Image } from "@nutui/nutui-react-taro";
 import type { WardrobeItem } from "@/data/wardrobe";
 import "./index.scss";
 
@@ -30,30 +30,7 @@ export default function WardrobeItemCard({
           />
         </View>
         <View className="wardrobe-card__body">
-          <Text className="wardrobe-card__category">{item.typeName}</Text>
           <Text className="wardrobe-card__name">{item.name}</Text>
-          {item.tags && item.tags.length > 0 && (
-            <ScrollView
-              className="wardrobe-card__tags-scroll"
-              scrollX
-              showScrollbar={false}
-              enhanced
-            >
-              <View className="wardrobe-card__tags">
-                {item.tags.map((tag) => (
-                  <Tag
-                    key={tag}
-                    round
-                    className="sw-tag"
-                    background="var(--sw-color-tag-bg)"
-                    color="var(--sw-color-tag-text)"
-                  >
-                    {tag}
-                  </Tag>
-                ))}
-              </View>
-            </ScrollView>
-          )}
         </View>
       </View>
     </View>
