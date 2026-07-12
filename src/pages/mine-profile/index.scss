@@ -49,6 +49,11 @@
   gap: var(--nutui-spacing-3);
   max-width: 220px;
 
+  .default-avatar--sm {
+    padding: 0;
+    border: none;
+  }
+
   &--nickname {
     max-width: 260px;
     flex: 1;
