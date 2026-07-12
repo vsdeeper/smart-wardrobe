@@ -422,7 +422,7 @@ page .nut-avatar .avatar-img {
 }
 
 // ========== NutUI Tabs 全局覆写（变量见 theme.scss --nutui-tabs-*） ==========
-// button 类型季节筛选：未选中白底灰边胶囊（NutUI 无对应变量）
+// button 类型筛选：未选中白底无描边胶囊（NutUI 无对应变量）
 page {
   .nut-tabs-titles-button {
     height: auto;
@@ -465,7 +465,7 @@ page {
     .nut-tabs-titles-item:not(.nut-tabs-titles-item-active)
       .nut-tabs-titles-item-text {
       background: var(--sw-tabs-title-inactive-bg);
-      border: 1px solid var(--sw-tabs-title-inactive-border);
+      border: none;
       color: var(--sw-tabs-title-inactive-color);
       border-radius: var(--nutui-tabs-button-border-radius);
     }
@@ -473,7 +473,7 @@ page {
     .nut-tabs-titles-item-active .nut-tabs-titles-item-text {
       color: var(--sw-tabs-title-active-color);
       background: var(--sw-tabs-title-active-bg);
-      border: var(--nutui-tabs-button-active-border);
+      border: none;
       border-radius: var(--nutui-tabs-button-border-radius);
       box-shadow: var(--sw-shadow-tab-active);
       font-weight: var(--nutui-tabs-titles-item-active-font-weight);

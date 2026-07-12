@@ -12,7 +12,7 @@ colors:
   secondary-container: '#cde1fc'
   tertiary: '#ffb74d'
   tertiary-container: '#e5a139'
-  surface: '#f5f7f8'
+  surface: '#F7F7F7'
   surface-elevated: '#ffffff'
   surface-dim: '#ebeff2'
   surface-container: '#daeaf7'
@@ -154,7 +154,7 @@ components:
 
 ### Neutral
 
-- **雾面底 (Mist Surface)** (#F5F7F8)：页面背景，偏冷灰白，减少视觉疲劳。
+- **雾面底 (Mist Surface)** (#F7F7F7)：页面背景，中性浅灰，减少视觉疲劳。
 - **纯白卡片 (Elevated White)** (#FFFFFF)：卡片、输入框、对话框表面。
 - **浅雾层 (Dim Surface)** (#EBEFF2)：AI 状态条、浅底输入区。
 - **深炭灰 (Slate Charcoal)** (#36454F)：正文主色，**禁止纯黑** (#000)。
@@ -189,7 +189,7 @@ components:
 
 ## Elevation
 
-混合策略：**色调分层为主，环境光阴影为辅**。卡片从 `#F5F7F8` 底过渡到 `#FFFFFF` 面；交互元素在 active 时略缩放 (0.95–0.98)，不靠弹跳动画。
+混合策略：**色调分层为主，环境光阴影为辅**。卡片从 `#F7F7F7` 底过渡到 `#FFFFFF` 面；交互元素在 active 时略缩放 (0.95–0.98)，不靠弹跳动画。
 
 ### Shadow Vocabulary
 
@@ -248,7 +248,7 @@ components:
 ### Do:
 
 - **Do** 让衣物摄影成为每屏最大视觉元素；自然光、生活场景、散景背景。
-- **Do** 使用 `#36454F` 正文与 `#F5F7F8` 底，保持 ≥4.5:1 对比度。
+- **Do** 使用 `#36454F` 正文与 `#F7F7F7` 底，保持 ≥4.5:1 对比度。
 - **Do** 用 40px 区块间距与 20px 侧边距建立呼吸感；居中页面标题强化杂志感。
 - **Do** 主操作统一为 `.sw-btn--primary` / `.sw-fab` / 胶囊 Tab 筛选，全 App 一致。
 - **Do** 为空衣橱、加载中、错误态提供具体文案与下一步操作（见 onboard 原则）。

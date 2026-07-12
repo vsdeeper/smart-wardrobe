@@ -41,7 +41,7 @@ page {
   // ========== 表面与背景（以 gray-7 石板灰为基调的渐浅色阶） ==========
   --nutui-gray-1: #ffffff; // surface-container-lowest — 卡片
   --nutui-gray-2: #ebeff2; // surface-container-low — AI 状态条
-  --nutui-gray-3: #f5f7f8; // background / surface — 页面底色
+  --nutui-gray-3: #F7F7F7; // background / surface — 页面底色
 
   // ========== 文字色（DESIGN.md on-* / 设计稿层级） ==========
   --nutui-gray-4: #c4ccd2; // outline-variant — 边框/禁用
@@ -91,8 +91,8 @@ page {
   --nutui-radius-6: 12px; // md — AI 状态条
   --nutui-radius-7: 16px; // lg — 卡片（设计稿 ~16–20px）
 
-  // ========== 阴影（钢蓝环境光 #b0c4de，blur 30px / 8%） ==========
-  --nutui-shadow-light: 0 0 30px 0 rgba(176, 196, 222, 0.08);
+  // ========== 阴影（石板灰下沉，轻量 elevation） ==========
+  --nutui-shadow-light: 0 1px 3px rgba(54, 69, 79, 0.05);
   --nutui-shadow-raised: 0 0 30px 0 rgba(176, 196, 222, 0.12);
   --nutui-shadow-overlay: 0 0 30px 0 rgba(176, 196, 222, 0.2);
 
@@ -132,7 +132,7 @@ page {
   // button 类型：深橄榄绿实心胶囊 + 白字
   --nutui-tabs-button-border-radius: var(--nutui-button-border-radius);
   --nutui-tabs-button-active-background-color: var(--nutui-brand-6);
-  --nutui-tabs-button-active-border: 1px solid var(--nutui-brand-6);
+  --nutui-tabs-button-active-border: none;
 
   // 垂直布局（备用）
   --nutui-tabs-vertical-titles-width: 100px;
@@ -171,7 +171,7 @@ page {
 
   --sw-color-tag-bg: #e8f2ff;
   --sw-color-tag-text: #5b9bd5;
-  --sw-color-image-bg: #F7F7F7; // 图片加载前占位 / 透明区域填充（与展示图生成底色一致）
+  --sw-color-image-bg: #F0F0F0; // 图片加载前占位 / 透明区域填充（与展示图生成底色一致）
 
   --sw-color-ai-label: var(--nutui-brand-5); // AI 状态条标签 / 进度填充叶绿
   --sw-color-progress-track: #d5e5f1; // surface-container-highest — 进度轨道
@@ -236,7 +236,7 @@ page {
 
   // Tabs 语义别名（页面可引用）
   --sw-tabs-title-inactive-bg: var(--nutui-gray-1);
-  --sw-tabs-title-inactive-border: var(--nutui-gray-4);
+  --sw-tabs-title-inactive-border: transparent;
   --sw-tabs-title-inactive-color: var(--nutui-gray-5);
   --sw-tabs-title-active-bg: var(--nutui-brand-6);
   --sw-tabs-title-active-color: var(--sw-color-on-primary);
