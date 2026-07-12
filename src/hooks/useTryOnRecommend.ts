@@ -198,12 +198,6 @@ export function useTryOnRecommend() {
       return;
     }
 
-    if (draft?.mode === "wardrobe-cta") {
-      clearTryOnCache();
-      loadFresh(true);
-      return;
-    }
-
     if (isTryOnCacheValid() && (await loadFromCache())) {
       return;
     }

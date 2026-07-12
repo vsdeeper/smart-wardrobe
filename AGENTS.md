@@ -84,7 +84,7 @@ types/
 
 - **页面 CTA、卡片操作按钮等需自定义样式的可点击按钮**，优先使用 Taro `View` + `Text` + `onClick`，**不使用** NutUI `Button`。
 - 原因：NutUI `Button` 在小程序端编译为原生 `button`，在 `ScrollView` 内易出现布局异常；自定义样式需大量覆盖 NutUI 默认样式（渐变背景、圆角、尺寸变量等），维护成本高。
-- 参考实现：[`src/pages/wardrobe/index.tsx`](src/pages/wardrobe/index.tsx) 中 `wardrobe-cta__btn`（样式见同目录 `index.scss`）。
+- 参考实现：[`src/pages/try-on/components/WearCta/`](src/pages/try-on/components/WearCta/)（`View` + `Text` 页面 CTA）。
 - **例外**：标准 NutUI 风格的功能按钮（如表单「提交」、对话框确认）可使用 NutUI `Button`；若样式异常，检查 `vite-plugin-imp` 是否引入组件 CSS，并用 `.nut-button` 组合选择器覆盖，勿仅用页面级 class。
 
 #### 组件目录命名

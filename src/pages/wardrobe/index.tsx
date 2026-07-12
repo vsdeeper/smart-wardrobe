@@ -13,7 +13,6 @@ import { getCardLayout } from "@/utils/wardrobeLayout";
 import { useMainTabNavigation } from "@/hooks/useMainTabNavigation";
 import PrivacyAuthorizeDialog from "./components/PrivacyAuthorizeDialog";
 import WardrobeItemCard from "./components/WardrobeItemCard";
-import WardrobeStylingCta from "./components/WardrobeStylingCta";
 import "./index.scss";
 
 function WardrobePage() {
@@ -51,7 +50,6 @@ function WardrobePage() {
     handleAddItem,
     handlePrivacyAgreed,
     closePrivacyDialog,
-    handleAIStyling,
   } = useWardrobeUpload({
     uploadFlowRef,
     ensureGenderSet,
@@ -97,7 +95,6 @@ function WardrobePage() {
                 onLongPress={handleItemLongPress}
               />
             ))}
-            <WardrobeStylingCta onStartStyling={handleAIStyling} />
           </View>
         )}
 

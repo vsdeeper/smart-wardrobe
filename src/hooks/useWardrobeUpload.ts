@@ -1,6 +1,5 @@
 import { useCallback, useRef, useState } from "react";
 import Taro from "@tarojs/taro";
-import { setTryOnDraft } from "@/services/tryOnDraft";
 import { WARDROBE_BATCH_UPLOAD_MAX } from "@/data/wardrobe";
 import { createRecognitionBatchAndStart } from "@/services/recognitionBatch";
 import {
@@ -100,13 +99,6 @@ export function useWardrobeUpload({
     }
   }, [startUploadFlow]);
 
-  const handleAIStyling = useCallback(async () => {
-    const genderReady = await ensureGenderSet();
-    if (!genderReady) return;
-    setTryOnDraft({ mode: "wardrobe-cta" });
-    Taro.redirectTo({ url: "/pages/try-on/index" });
-  }, [ensureGenderSet]);
-
   return {
     adding,
     privacyVisible,
@@ -114,6 +106,5 @@ export function useWardrobeUpload({
     handleAddItem,
     handlePrivacyAgreed,
     closePrivacyDialog,
-    handleAIStyling,
   };
 }

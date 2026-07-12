@@ -45,7 +45,7 @@ export interface VisualDiaryEntry {
   createdAt: number;
 }
 
-export type TryOnDraftMode = "wardrobe-cta" | "edit" | "saved";
+export type TryOnDraftMode = "edit" | "saved";
 
 export interface TryOnDraft {
   mode: TryOnDraftMode;

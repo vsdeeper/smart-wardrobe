@@ -175,11 +175,10 @@ page {
 
   --sw-color-ai-label: var(--nutui-brand-5); // AI 状态条标签 / 进度填充叶绿
   --sw-color-progress-track: #d5e5f1; // surface-container-highest — 进度轨道
-  --sw-color-cta-border: var(--nutui-gray-1); // CTA 卡片白边
   --sw-color-on-primary: #ffffff; // FAB 图标、主色上的文字/图标
   --sw-color-tabs-inactive-bg: #daeaf7; // 搭配页分类 Tab 非激活底
 
-  --sw-radius-card: var(--nutui-radius-7); // rounded-xl — 衣橱卡片/CTA
+  --sw-radius-card: var(--nutui-radius-7); // rounded-xl — 衣橱卡片
   --sw-radius-banner: 16px;
   --sw-radius-pill: 9999px;
   --sw-radius-field: var(--nutui-radius-5); // Input / TextArea 及同类表单控件
