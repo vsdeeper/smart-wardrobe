@@ -9,6 +9,7 @@ import {
   type RecognitionBatch,
 } from "@/data/recognition";
 import { useRecognitionBatches } from "@/hooks/useRecognitionBatches";
+import { normalizeRecognitionErrorMessage } from "@/utils/recognition";
 import "./index.scss";
 
 function RecognitionHistoryPage() {
@@ -34,7 +35,7 @@ function RecognitionHistoryPage() {
     }
     if (batch.status === "failed") {
       Taro.showToast({
-        title: batch.errorMessage || "识别失败",
+        title: normalizeRecognitionErrorMessage(batch.errorMessage),
         icon: "none",
       });
       return;

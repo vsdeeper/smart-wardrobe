@@ -11,6 +11,7 @@ import { isGenderSet } from "@/data/profile";
 import { fetchUserProfile } from "@/services/profile";
 import { readProfileCache } from "@/services/profileCache";
 import { resolveCloudFileUrl } from "@/services/wardrobe";
+import { normalizeRecognitionErrorMessage } from "@/utils/recognition";
 
 const COLLECTION = "recognition_batches";
 
@@ -275,7 +276,9 @@ export async function createRecognitionBatchAndStart(
       if (result?.error) {
         void markRecognitionBatchFailed(
           batchId,
-          result.message || result.error || "识别失败",
+          normalizeRecognitionErrorMessage(
+            result.message || result.error || "识别失败",
+          ),
         );
       }
     })
@@ -283,7 +286,10 @@ export async function createRecognitionBatchAndStart(
       console.warn("[recognition-batch] process trigger failed", err);
       const message =
         err instanceof Error ? err.message : "识别服务调用失败";
-      void markRecognitionBatchFailed(batchId, message);
+      void markRecognitionBatchFailed(
+        batchId,
+        normalizeRecognitionErrorMessage(message),
+      );
     });
 
   return { batchId };

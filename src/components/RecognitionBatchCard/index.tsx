@@ -3,6 +3,7 @@ import { Image } from "@nutui/nutui-react-taro";
 import type { RecognitionBatch } from "@/data/recognition";
 import { getRecognitionBatchStatusLabel } from "@/data/recognition";
 import { formatDateTime } from "@/utils/formatDateTime";
+import { normalizeRecognitionErrorMessage } from "@/utils/recognition";
 import "./index.scss";
 
 export interface RecognitionBatchCardProps {
@@ -48,7 +49,7 @@ export default function RecognitionBatchCard({
         </View>
         <Text className="recognition-batch-card__desc">
           {batch.status === "failed"
-            ? batch.errorMessage || "识别失败"
+            ? normalizeRecognitionErrorMessage(batch.errorMessage)
             : countLabel
               ? `衣物识别 · ${countLabel}`
               : "衣物识别"}

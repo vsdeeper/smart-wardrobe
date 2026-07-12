@@ -24,6 +24,7 @@ import { useUserProfile } from "@/hooks/useUserProfile";
 import { useVisualDiary } from "@/hooks/useVisualDiary";
 import Main from "@/layouts/Main";
 import { formatDateTime } from "@/utils/formatDateTime";
+import { normalizeRecognitionErrorMessage } from "@/utils/recognition";
 import "./index.scss";
 
 const ICON_PRIMARY = "var(--nutui-brand-6)";
@@ -71,7 +72,7 @@ function MinePage() {
     }
     if (batch.status === "failed") {
       Taro.showToast({
-        title: batch.errorMessage || "识别失败",
+        title: normalizeRecognitionErrorMessage(batch.errorMessage),
         icon: "none",
       });
       return;
