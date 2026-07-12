@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useDidShow } from "@tarojs/taro";
+import Taro, { useDidShow } from "@tarojs/taro";
 import {
   MINE_RECOGNITION_PREVIEW_LIMIT,
   RECOGNITION_POLL_INTERVAL_MS,
@@ -72,11 +72,13 @@ export function useRecognitionBatches(
         } else {
           setHasMore(false);
         }
-      } catch {
+      } catch (err) {
+        console.error("[recognition-batches] refresh failed", err);
         if (!silent) {
           setBatches([]);
           setTotalCount(0);
           setHasMore(false);
+          Taro.showToast({ title: "识别记录加载失败", icon: "none" });
         }
       } finally {
         if (!silent) {
@@ -150,8 +152,8 @@ export function useRecognitionBatches(
       });
       setBatches((prev) => [...prev, ...next]);
       setHasMore(next.length >= pageSize);
-    } catch {
-      // keep existing list
+    } catch (err) {
+      console.error("[recognition-batches] loadMore failed", err);
     } finally {
       loadingRef.current = false;
       setListLoading(false);

@@ -2,6 +2,7 @@ import Taro from "@tarojs/taro";
 import { VISUAL_DIARY_PAGE_SIZE } from "@/data/tryOn";
 import type { WeatherSnapshot } from "@/data/weather";
 import type { VisualDiaryEntry } from "@/data/tryOn";
+import { isEphemeralExternalImageUrl } from "@/utils/imageUrl";
 
 export interface SaveVisualDiaryInput {
   title: string;
@@ -48,13 +49,18 @@ function normalizeEntry(raw: Record<string, unknown>): VisualDiaryEntry {
 async function resolveCoverUrl(
   entry: VisualDiaryEntry,
 ): Promise<VisualDiaryEntry> {
-  if (entry.coverUrl || !entry.coverFileId) return entry;
-  const res = await Taro.cloud.getTempFileURL({
-    fileList: [entry.coverFileId],
-  });
-  const file = res.fileList[0];
-  if (file?.status === 0 && file.tempFileURL) {
-    return { ...entry, coverUrl: file.tempFileURL };
+  if (entry.coverFileId) {
+    const res = await Taro.cloud.getTempFileURL({
+      fileList: [entry.coverFileId],
+    });
+    const file = res.fileList[0];
+    if (file?.status === 0 && file.tempFileURL) {
+      return { ...entry, coverUrl: file.tempFileURL };
+    }
+    return { ...entry, coverUrl: undefined };
+  }
+  if (entry.coverUrl && isEphemeralExternalImageUrl(entry.coverUrl)) {
+    return { ...entry, coverUrl: undefined };
   }
   return entry;
 }

@@ -8,7 +8,6 @@ import { saveVisualDiaryEntry } from "@/services/visualDiary";
 interface UseTryOnWearOptions {
   recommendation: TryOnRecommendation | null;
   selectedPieces: WardrobeItem[];
-  heroImageUrl: string | null;
   heroCoverFileId: string | null;
   weatherSnapshot: WeatherSnapshot | null;
 }
@@ -16,7 +15,6 @@ interface UseTryOnWearOptions {
 export function useTryOnWear({
   recommendation,
   selectedPieces,
-  heroImageUrl,
   heroCoverFileId,
   weatherSnapshot,
 }: UseTryOnWearOptions) {
@@ -31,7 +29,7 @@ export function useTryOnWear({
       return;
     }
 
-    if (!heroImageUrl && !heroCoverFileId) {
+    if (!heroCoverFileId) {
       Taro.showToast({ title: "效果图生成中，请稍候", icon: "none" });
       return;
     }
@@ -43,8 +41,7 @@ export function useTryOnWear({
       await saveVisualDiaryEntry({
         title: recommendation?.outfitName ?? "今日搭配",
         description: recommendation?.description ?? "",
-        coverFileId: heroCoverFileId ?? undefined,
-        coverUrl: heroImageUrl ?? undefined,
+        coverFileId: heroCoverFileId,
         pieceIds: selectedPieces.map((p) => p._id),
         matchScore: recommendation?.matchScore,
         weatherSnapshot: weatherSnapshot ?? undefined,
@@ -62,13 +59,7 @@ export function useTryOnWear({
       savingRef.current = false;
       setSaving(false);
     }
-  }, [
-    recommendation,
-    selectedPieces,
-    heroImageUrl,
-    heroCoverFileId,
-    weatherSnapshot,
-  ]);
+  }, [recommendation, selectedPieces, heroCoverFileId, weatherSnapshot]);
 
   return { saving, handleWearOutfit };
 }

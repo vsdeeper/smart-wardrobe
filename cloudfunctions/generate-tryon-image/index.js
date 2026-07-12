@@ -21,6 +21,36 @@ async function uploadBase64ToCloud(base64Data, openid) {
   return uploadRes.fileID
 }
 
+async function uploadUrlToCloud(imageUrl, openid) {
+  const response = await fetch(imageUrl)
+  if (!response.ok) {
+    throw new Error(`下载生成图失败 HTTP ${response.status}`)
+  }
+  const buffer = Buffer.from(await response.arrayBuffer())
+  const contentType = response.headers.get('content-type') || 'image/png'
+  const ext =
+    contentType.includes('jpeg') || contentType.includes('jpg') ? 'jpg' : 'png'
+  const cloudPath = `tryon/${openid}/${Date.now()}.${ext}`
+  const uploadRes = await cloud.uploadFile({
+    cloudPath,
+    fileContent: buffer,
+  })
+  return uploadRes.fileID
+}
+
+async function uploadSeedreamImageToCloud(imageResult, openid) {
+  if (imageResult.b64) {
+    const b64Value = imageResult.b64.startsWith('data:')
+      ? imageResult.b64
+      : `data:image/png;base64,${imageResult.b64}`
+    return uploadBase64ToCloud(b64Value, openid)
+  }
+  if (imageResult.url) {
+    return uploadUrlToCloud(imageResult.url, openid)
+  }
+  return null
+}
+
 exports.main = async (event) => {
   const {
     imageFileIds = [],
@@ -56,9 +86,6 @@ exports.main = async (event) => {
       return { error: 'NO_IMAGE_URL', message: '无法解析图片' }
     }
 
-    let coverFileId
-    let coverUrl
-
     try {
       const result = await generateSeedreamImage({
         prompt: buildTryonPrompt({
@@ -72,26 +99,21 @@ exports.main = async (event) => {
         imageUrls,
       })
 
-      if (result.url) {
-        coverUrl = result.url
-      } else if (result.b64) {
-        const b64Value = result.b64.startsWith('data:')
-          ? result.b64
-          : `data:image/png;base64,${result.b64}`
-        coverFileId = await uploadBase64ToCloud(b64Value, openid)
-        const [resolved] = await resolveImageUrls(cloud, [coverFileId])
-        if (resolved) coverUrl = resolved
-      }
-
-      if (!coverUrl && !coverFileId) {
+      if (!result) {
         return { error: 'SEEDREAM_FAILED', message: 'Seedream 未返回可用图片' }
       }
+
+      const coverFileId = await uploadSeedreamImageToCloud(result, openid)
+      if (!coverFileId) {
+        return { error: 'SEEDREAM_FAILED', message: 'Seedream 未返回可用图片' }
+      }
+
+      const [coverUrl] = await resolveImageUrls(cloud, [coverFileId])
+      return { coverFileId, coverUrl: coverUrl || undefined }
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err)
       return { error: 'SEEDREAM_FAILED', message }
     }
-
-    return { coverFileId, coverUrl }
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
     return { error: 'GENERATE_FAILED', message }

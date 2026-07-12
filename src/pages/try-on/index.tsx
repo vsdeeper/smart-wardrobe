@@ -58,7 +58,6 @@ function TryOnPage() {
   const { saving, handleWearOutfit } = useTryOnWear({
     recommendation,
     selectedPieces,
-    heroImageUrl,
     heroCoverFileId,
     weatherSnapshot,
   });

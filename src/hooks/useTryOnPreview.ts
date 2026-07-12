@@ -7,6 +7,7 @@ import { resolveCloudFileUrl } from "@/services/wardrobe";
 import { generateTryonImage } from "@/services/tryOnPreview";
 import { readTryOnCache, writeTryOnCache } from "@/services/tryOnCache";
 import type { SavedReturnMeta } from "@/hooks/useTryOnRecommend";
+import { isEphemeralExternalImageUrl } from "@/utils/imageUrl";
 
 interface UseTryOnPreviewOptions {
   selectedPieces: WardrobeItem[];
@@ -50,28 +51,32 @@ export function useTryOnPreview({
     }
 
     const coverFileId = cache.heroCoverFileId ?? null;
-    let coverUrl = cache.heroImageUrl ?? null;
-
-    if (coverFileId) {
-      const freshUrl = await resolveCloudFileUrl(coverFileId);
-      if (freshUrl) {
-        coverUrl = freshUrl;
+    if (!coverFileId) {
+      const cachedUrl = cache.heroImageUrl;
+      if (!cachedUrl || isEphemeralExternalImageUrl(cachedUrl)) {
+        return false;
       }
+      setPreviewErrorMessage(null);
+      applyHero(cachedUrl, null, true);
+      return true;
+    }
+
+    const freshUrl = await resolveCloudFileUrl(coverFileId);
+    if (!freshUrl) {
+      return false;
     }
 
     setPreviewErrorMessage(null);
-    applyHero(coverUrl, coverFileId, true);
+    applyHero(freshUrl, coverFileId, true);
 
-    if (coverUrl && cache) {
-      writeTryOnCache({
-        recommendation: cache.recommendation,
-        selectedPieces: cache.selectedPieces,
-        heroCoverFileId: coverFileId ?? undefined,
-        heroImageUrl: coverUrl,
-      });
-    }
+    writeTryOnCache({
+      recommendation: cache.recommendation,
+      selectedPieces: cache.selectedPieces,
+      heroCoverFileId: coverFileId,
+      heroImageUrl: freshUrl,
+    });
 
-    return Boolean(coverUrl || coverFileId);
+    return true;
   }, [applyHero]);
 
   const generatePreview = useCallback(async () => {
@@ -110,10 +115,18 @@ export function useTryOnPreview({
         throw new Error(result.message || result.error);
       }
 
-      const coverUrl = result.coverUrl ?? null;
       const coverFileId = result.coverFileId ?? null;
+      let coverUrl = result.coverUrl ?? null;
 
-      if (!coverUrl && !coverFileId) {
+      if (!coverFileId) {
+        throw new Error("试穿图生成未返回图片");
+      }
+
+      if (!coverUrl || isEphemeralExternalImageUrl(coverUrl)) {
+        coverUrl = (await resolveCloudFileUrl(coverFileId)) ?? null;
+      }
+
+      if (!coverUrl) {
         throw new Error("试穿图生成未返回图片");
       }
 
@@ -124,8 +137,8 @@ export function useTryOnPreview({
         writeTryOnCache({
           recommendation: cache.recommendation,
           selectedPieces,
-          heroCoverFileId: coverFileId ?? undefined,
-          heroImageUrl: coverUrl ?? undefined,
+          heroCoverFileId: coverFileId,
+          heroImageUrl: coverUrl,
         });
       }
     } catch (err) {
