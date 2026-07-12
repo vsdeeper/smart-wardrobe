@@ -196,10 +196,9 @@ types/
 
 ## Design Context
 
-设计与产品战略文档（Impeccable 维护，做 UI/UX 任务前先读）：
+设计与产品战略文档（做 UI/UX 任务前先读）：
 
 - **[PRODUCT.md](./PRODUCT.md)** — 注册表 `product`；用户（穿搭爱好者）、产品目的、品牌气质（有机温暖）、反参考、设计原则、无障碍
 - **[DESIGN.md](./DESIGN.md)** — 视觉体系「Botanica & Steel」：叶绿/钢蓝色板、Plus Jakarta Sans + Be Vietnam Pro、圆角与阴影令牌
 - **代码令牌** — `src/styles/theme.scss`（`--nutui-*` / `--sw-*` CSS 变量，与 DESIGN.md 对齐）
 
-H5 视觉迭代可用 `/impeccable live`（需先 `pnpm dev:h5`）；Live 配置见 `.impeccable/live/config.json`。
