@@ -32,7 +32,7 @@ type DiaryLayout = "grid" | "list";
 
 function MinePage() {
   const { activeTab, onTabChange } = useMainTabNavigation(3);
-  const [diaryLayout, setDiaryLayout] = useState<DiaryLayout>("grid");
+  const [diaryLayout, setDiaryLayout] = useState<DiaryLayout>("list");
   const { profile, avatarUrl, itemCount, loading: profileLoading, onAvatarLoadError } =
     useUserProfile();
   const { entries, totalCount, loading: diaryLoading } = useVisualDiary({
@@ -87,7 +87,7 @@ function MinePage() {
   };
 
   const diaryToggleIcon =
-    diaryLayout === "grid" ? "icon-list" : "icon-category";
+    diaryLayout === "list" ? "icon-list" : "icon-category";
 
   const stats = [
     { key: "height", label: "身高", value: formatHeightLabel(profile.heightCm), iconClass: "icon-height" },
