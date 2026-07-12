@@ -104,7 +104,7 @@ types/
 | 同一 UI 被 ≥2 个页面使用                            | `src/components/<Name>/`（大驼峰，如 [`AppNavbar`](src/components/AppNavbar/index.tsx)） |
 | 可复用状态/副作用（分页、轮询、表单）               | `src/hooks/useXxx.ts`（如 [`useWeather`](src/hooks/useWeather.ts)）                      |
 | 云函数 / HTTP / 数据库访问                          | `src/services/`（如 [`wardrobe.ts`](src/services/wardrobe.ts)）                          |
-| 无 UI 的纯计算/格式化                               | `src/utils/`（如 [`wardrobeLayout.ts`](src/utils/wardrobeLayout.ts)）                    |
+| 无 UI 的纯计算/格式化                               | `src/utils/`（如 [`outfitSelection.ts`](src/utils/outfitSelection.ts)）                  |
 | 类型、枚举、分页常量                                | `src/data/`（如 [`wardrobe.ts`](src/data/wardrobe.ts)）                                  |
 
 - **页面私有组件**：仅单页使用时放 `src/pages/<page>/components/<ComponentName>/`（大驼峰 + `index.tsx` / `index.scss`）；页面内 `import X from "./components/X"`。组件样式与组件同目录；页面级布局/网格仍留 `index.scss`。

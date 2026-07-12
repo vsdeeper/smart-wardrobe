@@ -9,7 +9,6 @@ import { WARDROBE_ITEM_ACTION_OPTIONS } from "@/data/wardrobe";
 import { useGenderSetup } from "@/hooks/useGenderSetup";
 import { useWardrobeList } from "@/hooks/useWardrobeList";
 import { useWardrobeUpload } from "@/hooks/useWardrobeUpload";
-import { getCardLayout } from "@/utils/wardrobeLayout";
 import { useMainTabNavigation } from "@/hooks/useMainTabNavigation";
 import PrivacyAuthorizeDialog from "./components/PrivacyAuthorizeDialog";
 import WardrobeItemCard from "./components/WardrobeItemCard";
@@ -86,11 +85,10 @@ function WardrobePage() {
           </View>
         ) : (
           <View className="wardrobe-grid">
-            {items.map((item, index) => (
+            {items.map((item) => (
               <WardrobeItemCard
                 key={item._id}
                 item={item}
-                layout={getCardLayout(index, items.length)}
                 onClick={handleItemClick}
                 onLongPress={handleItemLongPress}
               />

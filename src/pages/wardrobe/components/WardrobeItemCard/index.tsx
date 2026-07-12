@@ -5,41 +5,23 @@ import "./index.scss";
 
 export interface WardrobeItemCardProps {
   item: WardrobeItem;
-  layout?: "large" | "wide";
   onClick?: (item: WardrobeItem) => void;
   onLongPress?: (item: WardrobeItem) => void;
 }
 
 export default function WardrobeItemCard({
   item,
-  layout,
   onClick,
   onLongPress,
 }: WardrobeItemCardProps) {
-  const isLarge = layout === "large";
-  const isWide = layout === "wide";
-
   return (
     <View
-      className={[
-        "wardrobe-card",
-        isLarge && "wardrobe-card--large",
-        isWide && "wardrobe-card--wide",
-      ]
-        .filter(Boolean)
-        .join(" ")}
+      className="wardrobe-card"
       onClick={() => onClick?.(item)}
       onLongPress={() => onLongPress?.(item)}
     >
       <View className="wardrobe-card__inner">
-        <View
-          className={[
-            "wardrobe-card__image-wrap",
-            isLarge && "wardrobe-card__image-wrap--large",
-          ]
-            .filter(Boolean)
-            .join(" ")}
-        >
+        <View className="wardrobe-card__image-wrap">
           <Image
             className="wardrobe-card__image"
             src={item.imageUrl || item.imageFileId}
@@ -49,17 +31,7 @@ export default function WardrobeItemCard({
         </View>
         <View className="wardrobe-card__body">
           <Text className="wardrobe-card__category">{item.typeName}</Text>
-          <Text
-            className={[
-              "wardrobe-card__name",
-              isLarge && "wardrobe-card__name--large",
-              isWide && "wardrobe-card__name--wide",
-            ]
-              .filter(Boolean)
-              .join(" ")}
-          >
-            {item.name}
-          </Text>
+          <Text className="wardrobe-card__name">{item.name}</Text>
           {item.tags && item.tags.length > 0 && (
             <ScrollView
               className="wardrobe-card__tags-scroll"
