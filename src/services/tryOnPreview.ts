@@ -1,4 +1,5 @@
 import type { Gender } from "@/data/profile";
+import type { WeatherConditionCode } from "@/data/weather";
 import Taro from "@tarojs/taro";
 
 export interface GenerateTryonInput {
@@ -8,6 +9,8 @@ export interface GenerateTryonInput {
   gender: Gender;
   pieceLabels?: string[];
   pieceTypeNames?: string[];
+  /** 当前天气，用于试穿图光影氛围；缺省时云端按晴天处理 */
+  weatherConditionCode?: WeatherConditionCode;
 }
 
 export interface GenerateTryonResult {

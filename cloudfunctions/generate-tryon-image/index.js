@@ -76,6 +76,7 @@ exports.main = async (event) => {
     gender,
     pieceLabels = [],
     pieceTypeNames = [],
+    weatherConditionCode,
   } = event || {}
 
   try {
@@ -119,6 +120,7 @@ exports.main = async (event) => {
           pieceTypeNames,
           imageCount: clothingUrls.length,
           hasModelTemplate,
+          weatherConditionCode,
         }),
         imageUrls,
       })

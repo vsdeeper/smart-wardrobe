@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { isGenderSet, isMetricsSet } from "@/data/profile";
 import type { TryOnPreviewStatus } from "@/data/tryOn";
 import type { WardrobeItem } from "@/data/wardrobe";
+import type { WeatherSnapshot } from "@/data/weather";
 import { fetchUserProfile } from "@/services/profile";
 import { resolveCloudFileUrl } from "@/services/wardrobe";
 import { generateTryonImage } from "@/services/tryOnPreview";
@@ -16,6 +17,7 @@ interface UseTryOnPreviewOptions {
   fromCache: boolean;
   savedReturn: SavedReturnMeta | null;
   recommendReady: boolean;
+  weatherSnapshot?: WeatherSnapshot | null;
 }
 
 export function useTryOnPreview({
@@ -23,6 +25,7 @@ export function useTryOnPreview({
   fromCache,
   savedReturn,
   recommendReady,
+  weatherSnapshot,
 }: UseTryOnPreviewOptions) {
   const [status, setStatus] = useState<TryOnPreviewStatus>("idle");
   const [heroImageUrl, setHeroImageUrl] = useState<string | null>(null);
@@ -109,6 +112,7 @@ export function useTryOnPreview({
         pieceTypeNames: selectedPieces
           .map((p) => p.typeName)
           .filter(Boolean),
+        weatherConditionCode: weatherSnapshot?.conditionCode,
       });
 
       if (result.error) {
@@ -149,7 +153,7 @@ export function useTryOnPreview({
     } finally {
       loadingRef.current = false;
     }
-  }, [selectedPieces, applyHero]);
+  }, [selectedPieces, applyHero, weatherSnapshot?.conditionCode]);
 
   useEffect(() => {
     if (!recommendReady || selectedPieces.length === 0) return;

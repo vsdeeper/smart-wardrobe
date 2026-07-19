@@ -1,6 +1,6 @@
 const DEFAULT_BASE_URL = 'https://ark.cn-beijing.volces.com/api/v3'
-// Hero 区域有效比例 335×480；1600x2304 为 Seedream 5.0 像素下限内最小近似尺寸
-const DEFAULT_HERO_SIZE = '1600x2304'
+// Hero 1:1；1920x1920 = 3686400 像素，为 Seedream 5.0 像素下限
+const DEFAULT_HERO_SIZE = '1920x1920'
 // 衣橱单品卡片 1:1；1920x1920 = 3686400 像素，为 Seedream 5.0 像素下限（1024x1024 会报错）
 const DEFAULT_ITEM_DISPLAY_SIZE = '1920x1920'
 const MAX_REFERENCE_IMAGES = 10

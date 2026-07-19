@@ -1,6 +1,7 @@
 .diary-detail-hero {
   position: relative;
-  height: 480px;
+  width: 100%;
+  aspect-ratio: 1 / 1;
   margin-bottom: var(--nutui-spacing-8);
   border-radius: 32px;
   overflow: hidden;

@@ -444,7 +444,9 @@ LLM 失败时回退规则推荐 `buildFallbackRecommendation`。
 
 部署前若修改过 `cloudfunctions/common/` 下 `doubaoVision.js`、`tryonImageRules.js`、`modelTemplateMatch.js` 或 `modelTemplateFileIds.js`，须先执行 `pnpm cf:sync-common`。
 
-调用火山方舟 **Seedream 图像生成 API**：`POST {DOUBAO_API_BASE_URL}/images/generations`（非 `/chat/completions`）。参考图通过 `image` 传入：若已配置固定模特模板，则 **图1 = 模特人物参考**，其后为衣物参考图；文本需求通过 `prompt` 描述。
+调用火山方舟 **Seedream 图像生成 API**：`POST {DOUBAO_API_BASE_URL}/images/generations`（非 `/chat/completions`）。参考图通过 `image` 传入：若已配置固定模特模板，则 **图1 = 模特人物参考**（锁定脸型/发型/肤质，姿势不沿用模板），其后为衣物参考图；文本需求通过 `prompt` 描述。
+
+场景约定（`tryonImageRules.js`）：始终**全身**生活方式构图；身体略侧、一手插袋；背景为简洁浅色纹理墙 + 中性地面；光影按 `weatherConditionCode` 调节（缺省按晴天暖日光）。
 
 环境变量（云开发控制台 → `generate-tryon-image` → 配置）：
 
@@ -453,9 +455,9 @@ LLM 失败时回退规则推荐 `buildFallbackRecommendation`。
 | `DOUBAO_API_KEY` | 火山方舟 API Key（可与其它云函数共用） |
 | `DOUBAO_API_BASE_URL` | 可选，默认 `https://ark.cn-beijing.volces.com/api/v3` |
 | `DOUBAO_VISION_MODEL` | Hero 试穿图专用 Seedream 模型 ID，示例 `doubao-seedream-5-0-260128` |
-| `DOUBAO_VISION_SIZE` | 可选，输出尺寸，默认 `1600x2304`（Hero 335×480，Seedream 5.0 最小合规尺寸；若控制台仍配 `2K` 或 `1920x2752` 会覆盖代码默认值） |
+| `DOUBAO_VISION_SIZE` | 可选，输出尺寸，默认 `1920x1920`（Hero 1:1，Seedream 5.0 像素下限；若控制台仍配竖版如 `1600x2304` / `2K` 会覆盖默认值，请改为 `1920x1920` 或清空） |
 
-入参：`imageFileIds[]`（衣物）、`heightCm`、`weightKg`、`gender`（`male`/`female`）、`pieceLabels[]`、`pieceTypeNames[]`。
+入参：`imageFileIds[]`（衣物）、`heightCm`、`weightKg`、`gender`（`male`/`female`）、`pieceLabels[]`、`pieceTypeNames[]`、可选 `weatherConditionCode`（如 `sunny`/`rainy`，用于背景光影）。
 
 成功时返回 `{ coverFileId, coverUrl }`，解析响应 `data[0].url` 或 `b64_json`。失败时返回 `{ error, message }`。
 

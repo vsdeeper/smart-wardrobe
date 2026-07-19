@@ -1,6 +1,6 @@
 /** 虚拟试穿模特模板图 — 文生图 prompt（离线生成用） */
 
-/** 与 Hero / doubaoVision DEFAULT_HERO_SIZE 一致 */
+/** 模特模板参考图竖版尺寸（与 Hero 出图 1:1 无关，仅作人物参考） */
 const MODEL_TEMPLATE_SIZE = "1600x2304";
 
 const PRESET_META = {

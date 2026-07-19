@@ -54,6 +54,7 @@ function TryOnPage() {
     fromCache,
     savedReturn,
     recommendReady,
+    weatherSnapshot,
   });
 
   const { saving, handleWearOutfit } = useTryOnWear({

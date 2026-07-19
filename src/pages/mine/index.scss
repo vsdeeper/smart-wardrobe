@@ -228,8 +228,8 @@
 
   &__item {
     position: relative;
-    // 与试穿 Hero / Seedream 输出比例一致，避免裁切头部
-    aspect-ratio: 335 / 480;
+    // 与试穿 Hero / Seedream 输出比例一致（1:1）
+    aspect-ratio: 1 / 1;
     border-radius: var(--sw-radius-card);
     overflow: hidden;
     background: var(--sw-color-image-bg);
@@ -266,7 +266,7 @@
     position: relative;
     width: 80px;
     flex-shrink: 0;
-    aspect-ratio: 335 / 480;
+    aspect-ratio: 1 / 1;
     border-radius: var(--nutui-radius-6);
     overflow: hidden;
     background: var(--sw-color-image-bg);
