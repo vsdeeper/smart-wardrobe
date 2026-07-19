@@ -45,6 +45,8 @@ export interface WeatherCardViewModel {
   locationLine: string;
   detailLine: string;
   airQualityLabel: string;
+  temperature: number;
+  conditionLabel: string;
 }
 
 export const WEATHER_CONDITION_PRESETS: Record<
@@ -174,5 +176,7 @@ export function buildWeatherCardView(
     locationLine: `${condition.label}，${locationLabel}`,
     detailLine: `${snapshot.temperature}°C • 湿度 ${snapshot.humidity}%`,
     airQualityLabel: air.label,
+    temperature: snapshot.temperature,
+    conditionLabel: condition.label,
   };
 }

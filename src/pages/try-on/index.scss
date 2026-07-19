@@ -1,17 +1,6 @@
 // ============================================================
-// 试穿页面 — 对齐 Botanica 设计稿
+// 试穿页面 — 对齐设计图
 // ============================================================
-
-@keyframes sw-pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-
-  50% {
-    opacity: 0.5;
-  }
-}
 
 @keyframes nut-loading-rotation {
   0% {
@@ -20,143 +9,6 @@
 
   100% {
     transform: rotate(360deg);
-  }
-}
-
-// ========== 天气卡片 ==========
-.weather-card {
-  min-height: 70px;
-  box-sizing: border-box;
-  margin-bottom: var(--nutui-spacing-8);
-  padding: 14px var(--nutui-spacing-5);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--nutui-spacing-5);
-  background: var(--nutui-gray-2);
-  border-radius: var(--nutui-radius-6);
-  box-shadow: var(--sw-shadow-card);
-  border: 1px solid rgba(255, 255, 255, 0.65);
-  transition: transform 0.2s ease;
-
-  &--pressed {
-    transform: scale(0.98);
-  }
-
-  &--loading {
-    opacity: 0.92;
-  }
-
-  &__main {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex: 1;
-    min-width: 0;
-  }
-
-  &__icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-
-    .nut-icon {
-      display: inline-block;
-    }
-
-    &--glyph {
-      font-size: 36px;
-      line-height: 1;
-      color: var(--nutui-brand-5);
-    }
-
-    &--location {
-      color: var(--nutui-secondary-1);
-    }
-
-    &--error {
-      color: var(--nutui-color-warning);
-    }
-  }
-
-  &__info {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    min-width: 0;
-  }
-
-  &__location {
-    font-family: var(--sw-font-heading);
-    font-size: var(--nutui-font-size-4);
-    font-weight: var(--nutui-font-weight-bold);
-    color: var(--nutui-gray-7);
-  }
-
-  &__detail {
-    font-family: var(--sw-font-body);
-    font-size: var(--nutui-font-size-2);
-    color: var(--nutui-gray-5);
-    margin-top: 4px;
-  }
-
-  &__air {
-    flex-shrink: 0;
-    font-family: var(--sw-font-body);
-    font-size: var(--nutui-font-size-2);
-    font-weight: 500;
-    color: var(--nutui-brand-6);
-  }
-
-  &__skeleton {
-    &--icon {
-      width: 50rpx;
-      height: 50rpx;
-      flex-shrink: 0;
-      --nutui-loading-icon-size: 50rpx;
-      --nutui-loading-icon-color: var(--nutui-brand-5);
-
-      .nut-loading {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 100%;
-        height: 100%;
-      }
-
-      .nut-loading-icon-box {
-        display: inline-block;
-        font-size: 0;
-        line-height: 0;
-        animation: nut-loading-rotation 1s infinite linear;
-      }
-
-      .nut-loading-icon,
-      .nut-icon {
-        display: inline-block;
-        width: 50rpx;
-        height: 50rpx;
-        color: var(--nutui-brand-5);
-        background-color: currentColor;
-      }
-    }
-  }
-
-  &__hint {
-    display: block;
-    margin-top: 4px;
-    font-family: var(--sw-font-body);
-    font-size: var(--nutui-font-size-1);
-    color: var(--nutui-gray-5);
-  }
-
-  &__action {
-    display: block;
-    font-family: var(--sw-font-body);
-    font-size: var(--nutui-font-size-2);
-    font-weight: 500;
-    color: var(--nutui-brand-6);
   }
 }
 
@@ -211,14 +63,27 @@
   color: var(--sw-color-on-primary);
 }
 
-// ========== 主推荐卡片 ==========
+// ========== 整卡：主图 + 信息区（对齐设计稿） ==========
+.outfit-card {
+  margin-bottom: var(--nutui-spacing-8);
+  border-radius: var(--nutui-radius-6);
+  overflow: hidden;
+  background: var(--nutui-gray-1);
+  box-shadow: 0 20px 40px -16px rgba(176, 196, 222, 0.28);
+
+  &__body {
+    padding: 20px 16px 20px;
+    background: var(--nutui-gray-1);
+  }
+}
+
 .outfit-hero {
   position: relative;
-  height: 480px;
-  margin-bottom: var(--nutui-spacing-10);
-  border-radius: 32px;
+  width: 100%;
+  height: 0;
+  padding-bottom: 118%;
   overflow: hidden;
-  box-shadow: 0 25px 50px -12px rgba(176, 196, 222, 0.25);
+  background: var(--sw-color-image-bg);
 
   &__image {
     position: absolute;
@@ -283,133 +148,141 @@
     font-weight: 500;
     color: var(--sw-color-on-primary);
   }
+}
 
-  &__gradient {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-      180deg,
-      rgba(0, 0, 0, 0) 0%,
-      rgba(0, 0, 0, 0) 45%,
-      rgba(0, 0, 0, 0.6) 100%
-    );
-    pointer-events: none;
+.weather-chip {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 2px 12px rgba(54, 69, 79, 0.1);
+  transition: transform 0.2s ease;
+
+  &--pressed {
+    transform: scale(0.96);
   }
 
-  &__badge {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    z-index: 2;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 12px;
-    border-radius: var(--sw-radius-pill);
-    background: rgba(255, 255, 255, 0.5);
-  }
-
-  &__badge-icon {
+  &__icon {
     font-size: 16px;
-    color: var(--nutui-brand-6);
     line-height: 1;
+    color: var(--nutui-gray-7);
   }
 
-  &__badge-text {
+  &__temp,
+  &__label,
+  &__text {
     font-family: var(--sw-font-heading);
-    font-size: var(--nutui-font-size-3);
+    font-size: var(--nutui-font-size-2);
     font-weight: 500;
-    color: var(--nutui-brand-6);
+    color: var(--nutui-gray-7);
+    line-height: 1.2;
   }
 
-  &__content {
-    position: absolute;
-    left: 20px;
-    right: 20px;
-    bottom: 30px;
-    z-index: 2;
+  &__temp {
+    font-weight: var(--nutui-font-weight-bold);
+  }
+}
+
+// ========== 标题 / 风格标签 / AI 建议 ==========
+.outfit-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+
+  &__title-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
   }
 
   &__title {
-    display: block;
-    margin-bottom: 4px;
+    flex: 1;
+    min-width: 0;
     font-family: var(--sw-font-heading);
     font-size: var(--nutui-font-size-6);
     font-weight: var(--nutui-font-weight-bold);
-    color: var(--sw-color-on-primary);
+    color: var(--nutui-gray-7);
     letter-spacing: -0.02em;
     line-height: 1.3;
   }
 
-  &__desc {
-    display: block;
-    font-family: var(--sw-font-body);
-    font-size: var(--nutui-font-size-3);
-    line-height: 1.6;
-    color: var(--sw-color-on-primary);
-    opacity: 0.9;
-  }
-}
-
-// ========== 搭配清单 ==========
-.outfit-list {
-  margin-bottom: var(--nutui-spacing-8);
-
-  &__header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: var(--nutui-spacing-5);
+  &__tags {
+    flex-shrink: 0;
+    max-width: 48%;
+    line-height: 1;
+    padding: 6px 12px;
+    border-radius: var(--sw-radius-pill);
+    background: var(--nutui-gray-2);
   }
 
-  &__title {
-    font-family: var(--sw-font-heading);
-    font-size: var(--nutui-font-size-5);
-    font-weight: var(--nutui-font-weight-bold);
-    color: var(--nutui-gray-7);
-  }
-
-  &__edit {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
-
-  &__edit-text {
+  &__tags-text {
     font-family: var(--sw-font-body);
     font-size: var(--nutui-font-size-2);
     font-weight: 500;
-    color: var(--nutui-brand-6);
+    color: var(--nutui-gray-5);
+    line-height: 1.3;
   }
 
-  &__grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--nutui-spacing-5);
+  &__suggestion {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  &__suggestion-icon {
+    flex-shrink: 0;
+    margin-top: 2px;
+    font-size: 12px;
+    line-height: 1.4;
+    color: var(--nutui-gray-5);
+  }
+
+  &__suggestion-text {
+    flex: 1;
+    min-width: 0;
+    font-family: var(--sw-font-body);
+    font-size: var(--nutui-font-size-2);
+    color: var(--nutui-gray-5);
+    line-height: 1.55;
   }
 }
 
+// ========== 单品：横向一行可滑动（设计图约 4 格可视宽） ==========
+.outfit-list {
+  width: 100%;
+}
+
+.outfit-list__row {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
 .outfit-piece {
-  min-width: 0;
+  flex: none;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: var(--nutui-spacing-4);
-  border-radius: var(--nutui-radius-6);
-  background: var(--nutui-gray-1);
-  border: 1px solid var(--sw-color-progress-track);
-  box-shadow: var(--sw-shadow-card);
-  transition: transform 0.2s ease;
+  align-items: center;
+  gap: 8px;
+  // 卡片内容区约可并排 4 格，对齐设计图比例；超出可横滑
+  width: 68px;
 
   &__image-wrap {
     position: relative;
     width: 100%;
-    flex-shrink: 0;
     height: 0;
     padding-bottom: 100%;
     border-radius: var(--nutui-radius-4);
     overflow: hidden;
-    background: var(--sw-color-image-bg);
+    background: var(--nutui-gray-2);
   }
 
   &__image {
@@ -435,71 +308,18 @@
     height: 100%;
   }
 
-  &__category {
+  &__name {
     display: block;
-    margin-bottom: 4px;
+    width: 100%;
     font-family: var(--sw-font-body);
     font-size: var(--nutui-font-size-2);
     font-weight: 500;
     color: var(--nutui-gray-5);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-
-  &__name {
-    display: block;
-    font-family: var(--sw-font-heading);
-    font-size: var(--nutui-font-size-3);
-    font-weight: 500;
-    color: var(--nutui-gray-7);
-    line-height: 1.4;
-  }
-
-  &--pressed,
-  &:active {
-    transform: scale(0.95);
-  }
-}
-
-// ========== 搭配小贴士 ==========
-.outfit-tips {
-  margin-bottom: var(--nutui-spacing-10);
-
-  &__title {
-    display: block;
-    margin-bottom: var(--nutui-spacing-5);
-    font-family: var(--sw-font-heading);
-    font-size: var(--nutui-font-size-5);
-    font-weight: var(--nutui-font-weight-bold);
-    color: var(--nutui-gray-7);
-  }
-
-  &__tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--nutui-spacing-4);
-  }
-
-  &__tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 10px 16px;
-    border-radius: var(--sw-radius-pill);
-    background: var(--nutui-gray-2);
-  }
-
-  &__tag-icon {
-    font-size: 14px;
-    line-height: 1;
-  }
-
-  &__tag-text {
-    font-family: var(--sw-font-body);
-    font-size: var(--nutui-font-size-2);
-    font-weight: 500;
-    color: var(--nutui-gray-7);
-    line-height: 1.2;
+    line-height: 1.3;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }
 
@@ -510,12 +330,14 @@
 
 // ========== 主操作按钮容器（外观见 app.scss .sw-btn） ==========
 .try-on-actions {
-  --try-on-btn-primary-height: 48px;
+  --try-on-btn-height: 48px;
 
   display: flex;
   flex-direction: column;
-  gap: var(--nutui-spacing-5);
-  padding: 0 20px 30px;
+  align-items: stretch;
+  gap: 12px;
+  margin-top: 4px;
+  padding-bottom: 8px;
   box-sizing: border-box;
 
   .wear-btn-wrap {
@@ -523,16 +345,16 @@
 
     .sw-btn--block {
       flex: none;
-      height: var(--try-on-btn-primary-height);
+      height: var(--try-on-btn-height);
     }
   }
 
-  // 「换一套」：品牌色轻底 + 叶绿字，区别于表单取消类 secondary
+  // 「换一套推荐」：白底 + 叶绿描边，对齐设计图
   &__refresh {
     flex: none;
-    height: var(--sw-btn-height-sm);
-    background: var(--nutui-brand-1);
-    border: 1px solid var(--nutui-brand-3);
+    height: var(--try-on-btn-height);
+    background: var(--nutui-gray-1);
+    border: 1px solid var(--nutui-brand-6);
     box-shadow: none;
 
     .sw-btn__text {
@@ -541,12 +363,22 @@
 
     &:active:not(.sw-btn--disabled) {
       opacity: 1;
-      background: var(--nutui-brand-2);
+      background: var(--nutui-brand-1);
     }
+  }
+
+  &__ai-hint {
+    display: block;
+    margin-top: 4px;
+    font-family: var(--sw-font-body);
+    font-size: var(--nutui-font-size-1);
+    color: var(--nutui-gray-5);
+    line-height: 1.4;
+    text-align: center;
   }
 }
 
 .wear-btn-wrap {
-  padding: 0 20px 30px;
+  padding: 0;
   box-sizing: border-box;
 }

@@ -41,7 +41,7 @@ page {
   // ========== 表面与背景（以 gray-7 石板灰为基调的渐浅色阶） ==========
   --nutui-gray-1: #ffffff; // surface-container-lowest — 卡片
   --nutui-gray-2: #ebeff2; // surface-container-low — AI 状态条
-  --nutui-gray-3: #F7F7F7; // background / surface — 页面底色
+  --nutui-gray-3: #f7f7f7; // background / surface — 页面底色
 
   // ========== 文字色（DESIGN.md on-* / 设计稿层级） ==========
   --nutui-gray-4: #c4ccd2; // outline-variant — 边框/禁用
@@ -56,7 +56,7 @@ page {
 
   // ========== 字体（DESIGN.md typography） ==========
   --nutui-font-size-1: 10px;
-  --nutui-font-size-2: 13px; // label-sm
+  --nutui-font-size-2: 12px; // label-sm
   --nutui-font-size-3: 14px;
   --nutui-font-size-4: 16px; // body-md
   --nutui-font-size-5: 18px; // body-lg
@@ -171,7 +171,7 @@ page {
 
   --sw-color-tag-bg: #e8f2ff;
   --sw-color-tag-text: #5b9bd5;
-  --sw-color-image-bg: #F0F0F0; // 图片加载前占位 / 透明区域填充（与展示图生成底色一致）
+  --sw-color-image-bg: #f5f2ed; // 图片加载前占位 / 透明区域填充（与展示图生成底色一致）
 
   --sw-color-ai-label: var(--nutui-brand-5); // AI 状态条标签 / 进度填充叶绿
   --sw-color-progress-track: #d5e5f1; // surface-container-highest — 进度轨道

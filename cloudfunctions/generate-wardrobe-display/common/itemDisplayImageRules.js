@@ -1,10 +1,10 @@
-const ITEM_DISPLAY_BG = '#F0F0F0' // 与 src/styles/theme.scss --sw-color-image-bg 一致
+const ITEM_DISPLAY_BG = '#F5F2ED' // 与 src/styles/theme.scss --sw-color-image-bg 一致
 
 const BACKGROUND_RULES = `【背景硬性要求 — 最高优先级】
-- 背景必须是均匀纯色 RGB(240,240,240) / ${ITEM_DISPLAY_BG}，全图可见区域均为该浅灰底，不得有任何色相偏移
-- 电商产品图布光：背景为均匀中性浅灰工作室底，禁止纯白过曝（#FFFFFF）、过浅灰（如 #F7F7F7）、深灰底、米白、暖白、冷白、米色或任何色调偏移
-- 禁止：阴影、接触阴影、投影、渐变、晕影、纹理、噪点、环境光染色
-- 衣物边缘直接落在 ${ITEM_DISPLAY_BG} 背景上，不得出现衣物下方的灰色晕圈或 soft shadow`
+- 背景必须是均匀暖米白 RGB(245,242,237) / ${ITEM_DISPLAY_BG}，全图可见区域均为该底色，不得有冷灰、纯白过曝或色相漂移
+- 目录风产品图布光：高调、漫射、柔和；背景为暖米白/浅奶油灰，禁止冷灰工作室底（如 #F0F0F0）、纯白过曝（#FFFFFF）、深灰底、米色斑块或明显色调偏移
+- 允许极轻、边缘柔和的接触投影（soft contact shadow），使单品呈 flat-lay 贴台感；禁止硬阴影、长投影、黑色阴影块
+- 禁止：背景渐变、晕影、明显纹理/纸纹、噪点、环境光染色`
 
 /** 临时限制：Seedream 每次只生成 1 张展示图，避免云函数超时 */
 const DISPLAY_IMAGE_MAX_COUNT = 1
@@ -69,7 +69,7 @@ function buildItemsDisplayPrompt(items) {
   const itemLines = list.map((item, index) => formatItemLine(index, item)).join('\n')
   const count = list.length
 
-  return `参考附带原图（图1），请从原图中提取下列衣物单品，生成 ${count} 张 RGB(240,240,240) 浅灰底电商产品展示图（background color exactly ${ITEM_DISPLAY_BG}）。
+  return `参考附带原图（图1），请从原图中提取下列衣物单品，生成 ${count} 张 RGB(245,242,237) 暖米白目录风产品展示图（background color exactly ${ITEM_DISPLAY_BG}）。
 不得自行识别、增删或调换顺序；不得脱离原图凭空生成。
 
 <items>

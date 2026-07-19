@@ -12,18 +12,19 @@ import { useWeather } from "@/hooks/useWeather";
 import type { Gender } from "@/data/profile";
 import { applyGenderSetupWithToast } from "@/services/applyGenderSetup";
 import Main from "@/layouts/Main";
-import { setTryOnDraft } from "@/services/tryOnDraft";
-import { getPieceIds } from "@/utils/outfitSelection";
 import OutfitHero from "./components/OutfitHero";
+import OutfitMeta from "./components/OutfitMeta";
 import OutfitPieceList from "./components/OutfitPieceList";
-import OutfitTips from "./components/OutfitTips";
-import WeatherCard from "./components/WeatherCard";
 import WearCta from "./components/WearCta";
 import "./index.scss";
 
 function TryOnPage() {
   const { activeTab, onTabChange } = useMainTabNavigation(1);
-  const { viewModel, status, isStale, handleCardClick } = useWeather();
+  const {
+    viewModel: weatherViewModel,
+    status: weatherStatus,
+    handleCardClick: handleWeatherClick,
+  } = useWeather();
   const [genderSaving, setGenderSaving] = useState(false);
 
   const {
@@ -79,22 +80,10 @@ function TryOnPage() {
     Taro.redirectTo({ url: "/pages/wardrobe/index" });
   }, []);
 
-  const handleEditOutfit = () => {
-    if (selectedPieces.length === 0) {
-      Taro.showToast({ title: "暂无搭配单品", icon: "none" });
-      return;
-    }
-    setTryOnDraft({
-      mode: "edit",
-      outfitName: recommendation?.outfitName,
-      description: recommendation?.description,
-      matchScore: recommendation?.matchScore,
-      tips: recommendation?.tips,
-      selectedPieces,
-      baselinePieceIds: getPieceIds(selectedPieces),
-    });
-    Taro.redirectTo({ url: "/pages/outfit/index" });
-  };
+  const styleTags = (recommendation?.tips ?? [])
+    .map((tip) => tip.label)
+    .filter(Boolean)
+    .join(" / ");
 
   const renderBody = () => {
     if (recommendStatus === "loading" || recommendStatus === "idle") {
@@ -150,19 +139,35 @@ function TryOnPage() {
 
     return (
       <>
-        <OutfitHero
-          title={recommendation?.outfitName ?? "今日推荐"}
-          description={recommendation?.description ?? ""}
-          matchScore={recommendation?.matchScore ?? 90}
-          heroImageUrl={heroImageUrl}
-          heroCoverFileId={heroCoverFileId}
-          previewStatus={previewStatus}
-          previewErrorMessage={previewErrorMessage}
-          onRetryPreview={generatePreview}
-        />
-        <OutfitPieceList pieces={selectedPieces} onEditOutfit={handleEditOutfit} />
-        <OutfitTips tips={recommendation?.tips ?? []} />
+        <View className="outfit-card">
+          <OutfitHero
+            heroImageUrl={heroImageUrl}
+            heroCoverFileId={heroCoverFileId}
+            previewStatus={previewStatus}
+            previewErrorMessage={previewErrorMessage}
+            onRetryPreview={generatePreview}
+            weatherStatus={weatherStatus}
+            weatherViewModel={weatherViewModel}
+            onWeatherClick={handleWeatherClick}
+          />
+          <View className="outfit-card__body">
+            <OutfitMeta
+              title={recommendation?.outfitName ?? "今日推荐"}
+              styleTags={styleTags}
+              suggestion={recommendation?.description ?? ""}
+            />
+            <OutfitPieceList pieces={selectedPieces} />
+          </View>
+        </View>
         <View className="try-on-actions">
+          <WearCta
+            disabled={
+              saving ||
+              previewStatus === "loading" ||
+              previewStatus === "error"
+            }
+            onWear={handleWearOutfit}
+          />
           {!isManualOutfit ? (
             <View
               className={[
@@ -177,17 +182,12 @@ function TryOnPage() {
                   : refreshRecommend
               }
             >
-              <Text className="sw-btn__text">换一套</Text>
+              <Text className="sw-btn__text">换一套推荐</Text>
             </View>
           ) : null}
-          <WearCta
-            disabled={
-              saving ||
-              previewStatus === "loading" ||
-              previewStatus === "error"
-            }
-            onWear={handleWearOutfit}
-          />
+          <Text className="try-on-actions__ai-hint">
+            效果由 AI 生成，仅供参考
+          </Text>
         </View>
       </>
     );
@@ -200,15 +200,7 @@ function TryOnPage() {
       scrollClassName="main-scroll--try-on"
       header={<AppNavbar />}
     >
-      <Main.Scroll>
-        <WeatherCard
-          status={status}
-          viewModel={viewModel}
-          isStale={isStale}
-          onClick={handleCardClick}
-        />
-        {renderBody()}
-      </Main.Scroll>
+      <Main.Scroll>{renderBody()}</Main.Scroll>
     </Main>
   );
 }

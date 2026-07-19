@@ -1,27 +1,67 @@
 import { View, Text } from "@tarojs/components";
 import { Image, Loading } from "@nutui/nutui-react-taro";
 import type { TryOnPreviewStatus } from "@/data/tryOn";
+import type { WeatherCardViewModel } from "@/data/weather";
+import type { WeatherLoadStatus } from "@/services/weather";
 
 export interface OutfitHeroProps {
-  title: string;
-  description: string;
-  matchScore: number;
   heroImageUrl: string | null;
   heroCoverFileId: string | null;
   previewStatus: TryOnPreviewStatus;
   previewErrorMessage?: string | null;
   onRetryPreview?: () => void;
+  weatherStatus: WeatherLoadStatus;
+  weatherViewModel: WeatherCardViewModel | null;
+  onWeatherClick: () => void;
+}
+
+function WeatherChip({
+  status,
+  viewModel,
+  onClick,
+}: {
+  status: WeatherLoadStatus;
+  viewModel: WeatherCardViewModel | null;
+  onClick: () => void;
+}) {
+  const isSuccess = status === "success" && viewModel;
+
+  return (
+    <View
+      className="weather-chip"
+      hoverClass="weather-chip--pressed"
+      hoverStartTime={0}
+      hoverStayTime={100}
+      onClick={onClick}
+    >
+      {status === "loading" || status === "idle" ? (
+        <Text className="weather-chip__text">获取中…</Text>
+      ) : status === "location_denied" ? (
+        <Text className="weather-chip__text">开启定位</Text>
+      ) : isSuccess ? (
+        <>
+          <Text
+            className={`iconfont ${viewModel.icon} weather-chip__icon`}
+          />
+          <Text className="weather-chip__temp">{viewModel.temperature}°C</Text>
+          <Text className="weather-chip__label">{viewModel.conditionLabel}</Text>
+        </>
+      ) : (
+        <Text className="weather-chip__text">点击重试</Text>
+      )}
+    </View>
+  );
 }
 
 export default function OutfitHero({
-  title,
-  description,
-  matchScore,
   heroImageUrl,
   heroCoverFileId,
   previewStatus,
   previewErrorMessage,
   onRetryPreview,
+  weatherStatus,
+  weatherViewModel,
+  onWeatherClick,
 }: OutfitHeroProps) {
   const isLoading = previewStatus === "loading";
   const isError = previewStatus === "error";
@@ -53,15 +93,11 @@ export default function OutfitHero({
           ) : null}
         </View>
       )}
-      <View className="outfit-hero__gradient" aria-hidden />
-      <View className="outfit-hero__badge">
-        <Text className="outfit-hero__badge-icon">★</Text>
-        <Text className="outfit-hero__badge-text">匹配度 {matchScore}%</Text>
-      </View>
-      <View className="outfit-hero__content">
-        <Text className="outfit-hero__title">{title}</Text>
-        <Text className="outfit-hero__desc">{description}</Text>
-      </View>
+      <WeatherChip
+        status={weatherStatus}
+        viewModel={weatherViewModel}
+        onClick={onWeatherClick}
+      />
     </View>
   );
 }

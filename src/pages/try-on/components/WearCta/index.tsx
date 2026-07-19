@@ -17,7 +17,7 @@ export default function WearCta({ disabled, onWear }: WearCtaProps) {
           .join(" ")}
         onClick={disabled ? undefined : onWear}
       >
-        <Text className="sw-btn__text sw-btn__text--primary">就穿这一身</Text>
+        <Text className="sw-btn__text sw-btn__text--primary">穿上这身</Text>
       </View>
     </View>
   );

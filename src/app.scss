@@ -143,7 +143,7 @@ page .nut-avatar .avatar-img {
 
   &--primary {
     background: var(--nutui-brand-6);
-    box-shadow: var(--sw-shadow-fab);
+    box-shadow: none;
   }
 
   &--secondary {
