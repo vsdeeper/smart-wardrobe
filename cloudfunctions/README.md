@@ -217,7 +217,7 @@ wx.cloud
 pnpm cf:sync-common
 ```
 
-同步后：`recognize-clothing/common/` 含 `recognitionRules.js`、`wardrobeSave.js`；`generate-wardrobe-display/common/` 含 `doubaoVision.js`、`itemDisplayImageRules.js`；`process-recognition-batch/common/` 含 `recognitionRules.js`、`doubaoVision.js`、`itemDisplayImageRules.js`；`save-wardrobe-items/common/` 仅含 `wardrobeSave.js`。**修改 `cloudfunctions/common/` 下源码后，须重新执行上述命令再上传部署。**
+同步后：`recognize-clothing/common/` 含 `recognitionRules.js`、`wardrobeSave.js`；`generate-wardrobe-display/common/` 含 `doubaoVision.js`、`itemDisplayImageRules.js`；`process-recognition-batch/common/` 含 `recognitionRules.js`、`doubaoVision.js`、`itemDisplayImageRules.js`；`save-wardrobe-items/common/` 仅含 `wardrobeSave.js`；`generate-tryon-image/common/` 含 `doubaoVision.js`、`tryonImageRules.js`、`modelTemplateMatch.js`、`modelTemplateFileIds.js`；`recommend-outfit/common/` 含 `recommendOutfitRules.js`。**修改 `cloudfunctions/common/` 下源码后，须重新执行上述命令再上传部署。**
 
 业务约束（typeName 白名单、name 长度、tags 规则、name/tags 互斥）由 **Prompt** 负责；云函数侧仅做 JSON 解析与非空 trim，不再做白名单归并或截断兜底。
 
@@ -442,9 +442,9 @@ LLM 失败时回退规则推荐 `buildFallbackRecommendation`。
 
 右键 `cloudfunctions/generate-tryon-image` → **上传并部署：云端安装依赖**。
 
-部署前若修改过 `cloudfunctions/common/doubaoVision.js` 或 `tryonImageRules.js`，须先执行 `pnpm cf:sync-common`。
+部署前若修改过 `cloudfunctions/common/` 下 `doubaoVision.js`、`tryonImageRules.js`、`modelTemplateMatch.js` 或 `modelTemplateFileIds.js`，须先执行 `pnpm cf:sync-common`。
 
-调用火山方舟 **Seedream 图像生成 API**：`POST {DOUBAO_API_BASE_URL}/images/generations`（非 `/chat/completions`）。参考衣物图通过 `image` 参数传入，文本需求通过 `prompt` 描述。
+调用火山方舟 **Seedream 图像生成 API**：`POST {DOUBAO_API_BASE_URL}/images/generations`（非 `/chat/completions`）。参考图通过 `image` 传入：若已配置固定模特模板，则 **图1 = 模特人物参考**，其后为衣物参考图；文本需求通过 `prompt` 描述。
 
 环境变量（云开发控制台 → `generate-tryon-image` → 配置）：
 
@@ -455,7 +455,7 @@ LLM 失败时回退规则推荐 `buildFallbackRecommendation`。
 | `DOUBAO_VISION_MODEL` | Hero 试穿图专用 Seedream 模型 ID，示例 `doubao-seedream-5-0-260128` |
 | `DOUBAO_VISION_SIZE` | 可选，输出尺寸，默认 `1600x2304`（Hero 335×480，Seedream 5.0 最小合规尺寸；若控制台仍配 `2K` 或 `1920x2752` 会覆盖代码默认值） |
 
-入参：`imageFileIds[]`、`heightCm`、`weightKg`、`outfitName`、`description`。
+入参：`imageFileIds[]`（衣物）、`heightCm`、`weightKg`、`gender`（`male`/`female`）、`pieceLabels[]`、`pieceTypeNames[]`。
 
 成功时返回 `{ coverFileId, coverUrl }`，解析响应 `data[0].url` 或 `b64_json`。失败时返回 `{ error, message }`。
 
@@ -464,7 +464,19 @@ LLM 失败时回退规则推荐 `buildFallbackRecommendation`。
 | `未配置 DOUBAO_VISION_MODEL` | 未在 `generate-tryon-image` 云函数配置 Hero 专用模型 ID |
 | `Seedream 未返回图片` | 模型 ID 无图像生成权限，或 prompt/参考图不符合要求 |
 
-**离线生成模特模板候选图**（试穿人物参考，非云函数部署）：
+**固定模特模板（运行时按性别匹配）**：
+
+- 匹配规则：仅按 `gender` 选择 `female-standard-*` / `male-standard-*`；发型变体 `01/02/03` 由用户 `openid` 稳定哈希决定；**身高体重不参与选图**（仍写入 prompt 作文案提示）。
+- 缺图回退：目标变体无 fileID 时回退同性别 `*-standard-01`；仍无或临时链解析失败时降级为纯文案模式（不阻断试穿）。
+- fileID 清单：[`common/modelTemplateFileIds.js`](common/modelTemplateFileIds.js)。
+
+上传并启用（一次性）：
+
+1. 将 [`output/model-templates/`](../output/model-templates/) 下 `female/male-standard-{01,02,03}.jpg` 上传到云存储目录 `model-templates/`（微信开发者工具 → 云开发 → 云存储）。
+2. 把各文件的 `cloud://...` fileID 填入 [`common/modelTemplateFileIds.js`](common/modelTemplateFileIds.js) 对应键。
+3. 执行 `pnpm cf:sync-common`，再重新部署 `generate-tryon-image`。
+
+**离线生成模特模板候选图**（非云函数部署）：
 
 1. 在项目根目录 `.env.local` 配置与 `generate-tryon-image` 相同的 `DOUBAO_API_KEY`、`DOUBAO_VISION_MODEL`（脚本固定竖版 `1600x2304`）。
 2. 执行 `pnpm generate:model-templates`，默认生成 `female-standard` 的 3 张变体，输出至 `output/model-templates/`（如 `female-standard-01.jpg`）。
@@ -476,9 +488,9 @@ LLM 失败时回退规则推荐 `buildFallbackRecommendation`。
 | `--variant <n>` | 无 | 仅生成该 preset 第 n 个变体（1-based，不可与 `all` 同用） |
 | `--help` | - | 列出 preset 与示例 |
 
-可用 preset：`female-slim`、`female-standard`、`female-curvy`、`male-slim`、`male-standard`、`male-curvy`、`neutral`（1 变体）。Prompt 定义见 [`common/modelTemplatePrompts.js`](common/modelTemplatePrompts.js)。
+可用 preset：`female-slim`、`female-standard`、`female-curvy`、`male-slim`、`male-standard`、`male-curvy`、`neutral`（1 变体）。Prompt 定义见 [`common/modelTemplatePrompts.js`](common/modelTemplatePrompts.js)。当前运行时仅使用 `*-standard-*`。
 
-4. 本地预览选定 1 张后，可删除其余候选；该目录可提交 git，便于留存对比。
+4. 本地预览后可将选定图提交 git；启用试穿前须按上文上传云存储并填写 fileID。
 
 ### get-phone-number
 

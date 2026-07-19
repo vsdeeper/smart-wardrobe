@@ -4,6 +4,10 @@ const {
   generateSeedreamImage,
 } = require('./common/doubaoVision')
 const { buildTryonPrompt } = require('./common/tryonImageRules')
+const {
+  matchModelTemplate,
+  resolveModelTemplateFileId,
+} = require('./common/modelTemplateMatch')
 
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 
@@ -51,6 +55,19 @@ async function uploadSeedreamImageToCloud(imageResult, openid) {
   return null
 }
 
+async function resolveModelTemplateUrl(openid, gender) {
+  const { templateId } = matchModelTemplate({ gender, openid })
+  const resolved = resolveModelTemplateFileId(templateId)
+  if (!resolved) return null
+
+  try {
+    const [modelUrl] = await resolveImageUrls(cloud, [resolved.fileId])
+    return modelUrl || null
+  } catch {
+    return null
+  }
+}
+
 exports.main = async (event) => {
   const {
     imageFileIds = [],
@@ -80,11 +97,17 @@ exports.main = async (event) => {
       return { error: 'NO_IMAGES', message: '缺少衣物图片' }
     }
 
-    const imageUrls = await resolveImageUrls(cloud, fileIds)
+    const clothingUrls = await resolveImageUrls(cloud, fileIds)
 
-    if (imageUrls.length === 0) {
+    if (clothingUrls.length === 0) {
       return { error: 'NO_IMAGE_URL', message: '无法解析图片' }
     }
+
+    const modelUrl = await resolveModelTemplateUrl(openid, gender)
+    const hasModelTemplate = Boolean(modelUrl)
+    const imageUrls = hasModelTemplate
+      ? [modelUrl, ...clothingUrls]
+      : clothingUrls
 
     try {
       const result = await generateSeedreamImage({
@@ -94,7 +117,8 @@ exports.main = async (event) => {
           gender,
           pieceLabels,
           pieceTypeNames,
-          imageCount: imageUrls.length,
+          imageCount: clothingUrls.length,
+          hasModelTemplate,
         }),
         imageUrls,
       })

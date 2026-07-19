@@ -19,10 +19,10 @@ const TRYON_PROMPT_TEMPLATE = `你的任务是根据用户提供的衣物单品�
 </person_features>
 
 生成试穿效果图时，请遵守以下规则：
-1. 将所有提供的衣物单品合理搭配并展示在符合人物特征的虚拟模特身上（纯摄影风格）
+1. {{RULE_1}}
 2. 背景使用随机的浅色柔和色调（如浅灰、米白、淡蓝等），简洁无杂物
 3. 确保衣物的款式、颜色、材质等细节与参考图及单品信息一致
-4. 人物的体型、肤质、发型等特征需匹配提供的人物信息
+4. {{RULE_4}}
 5. 效果图需清晰展示衣物的穿着效果和整体搭配；人物在画面中居中，头部与上边缘距离合适
 
 最终输出要求：
@@ -32,6 +32,10 @@ const TRYON_PROMPT_TEMPLATE = `你的任务是根据用户提供的衣物单品�
 - 确保图片格式符合常见的图像标准（如 JPG、PNG 等）
 
 请直接生成并输出符合要求的试穿效果图。`
+
+function clothingImageStartIndex(hasModelTemplate) {
+  return hasModelTemplate ? 2 : 1
+}
 
 function buildCompositionHint(pieceTypeNames) {
   const types = Array.isArray(pieceTypeNames) ? pieceTypeNames : []
@@ -49,24 +53,32 @@ function buildCompositionHint(pieceTypeNames) {
   return `上半身构图，裁切至腰/髋部以上，突出展示推荐单品，不展示参考图以外的下装、短裤或鞋履${HEAD_COMPOSITION_HINT}`
 }
 
-function buildPieceListHint(pieceLabels, imageCount) {
+function buildPieceListHint(pieceLabels, imageCount, startIndex) {
   const labels = (pieceLabels || []).filter(Boolean)
   if (labels.length > 0) {
     return labels.join('、')
   }
   const count = Math.max(1, imageCount)
-  return count === 1 ? '参考图1中的衣物单品' : `参考图1至图${count}中的全部衣物单品`
+  if (count === 1) {
+    return `参考图${startIndex}中的衣物单品`
+  }
+  return `参考图${startIndex}至图${startIndex + count - 1}中的全部衣物单品`
 }
 
-function buildReferenceImageHint(imageCount) {
+function buildReferenceImageHint(imageCount, startIndex) {
   const count = Math.max(1, imageCount)
   if (count === 1) {
-    return '参考附带图1共 1 张衣物参考图'
+    return `参考附带图${startIndex}共 1 张衣物参考图`
   }
-  return `参考附带图1至图${count}共 ${count} 张衣物参考图`
+  return `参考附带图${startIndex}至图${startIndex + count - 1}共 ${count} 张衣物参考图`
 }
 
-function buildClothingItemLines(pieceLabels, pieceTypeNames, imageCount) {
+function buildClothingItemLines(
+  pieceLabels,
+  pieceTypeNames,
+  imageCount,
+  startIndex,
+) {
   const count = Math.max(1, imageCount)
   const labels = pieceLabels || []
   const types = pieceTypeNames || []
@@ -75,12 +87,15 @@ function buildClothingItemLines(pieceLabels, pieceTypeNames, imageCount) {
   for (let i = 0; i < count; i += 1) {
     const label = labels[i]
     const typeName = types[i]
+    const imageNo = startIndex + i
     if (label) {
       lines.push(
-        typeName ? `- 图${i + 1}：${label}（${typeName}）` : `- 图${i + 1}：${label}`,
+        typeName
+          ? `- 图${imageNo}：${label}（${typeName}）`
+          : `- 图${imageNo}：${label}`,
       )
     } else if (typeName) {
-      lines.push(`- 图${i + 1}：${typeName}`)
+      lines.push(`- 图${imageNo}：${typeName}`)
     }
   }
 
@@ -88,7 +103,7 @@ function buildClothingItemLines(pieceLabels, pieceTypeNames, imageCount) {
     return lines.join('\n')
   }
 
-  const fallback = buildPieceListHint(pieceLabels, count)
+  const fallback = buildPieceListHint(pieceLabels, count, startIndex)
   return `- ${fallback}`
 }
 
@@ -96,17 +111,28 @@ function buildClothingItemsBlock({
   pieceLabels = [],
   pieceTypeNames = [],
   imageCount = 1,
+  hasModelTemplate = false,
 }) {
   const count = Math.max(1, imageCount)
+  const startIndex = clothingImageStartIndex(hasModelTemplate)
   const pieceCount = Math.max(
     (pieceLabels || []).filter(Boolean).length,
     count,
   )
-  const refHint = buildReferenceImageHint(count)
-  const itemLines = buildClothingItemLines(pieceLabels, pieceTypeNames, count)
+  const refHint = buildReferenceImageHint(count, startIndex)
+  const itemLines = buildClothingItemLines(
+    pieceLabels,
+    pieceTypeNames,
+    count,
+    startIndex,
+  )
   const compositionHint = buildCompositionHint(pieceTypeNames)
 
-  return `${refHint}，需试穿搭配的单品如下：
+  const modelHint = hasModelTemplate
+    ? `图1 为固定模特人物参考图：须保持其脸型、发型、肤质、站姿与大体轮廓一致，仅将服装替换为下列单品，不得另造面孔或更换人物身份。\n`
+    : ''
+
+  return `${modelHint}${refHint}，需试穿搭配的单品如下：
 ${itemLines}
 
 视觉细节说明：各单品的款式、颜色、材质、图案等以对应参考图为准，须高度还原。
@@ -116,11 +142,19 @@ ${compositionHint}。
 人物在画面中水平居中，头顶与画面上边缘距离适中、留白自然，避免头部贴顶或被裁切。`
 }
 
-function buildPersonFeaturesBlock({ heightCm, weightKg, gender }) {
-  const lines = [
-    `- 身高：${heightCm} cm`,
-    `- 体重：${weightKg} kg`,
-  ]
+function buildPersonFeaturesBlock({
+  heightCm,
+  weightKg,
+  gender,
+  hasModelTemplate = false,
+}) {
+  const lines = []
+
+  if (hasModelTemplate) {
+    lines.push('- 人物基准：以附带图1 固定模特为人物身份与外观基准，勿另造面孔')
+  }
+
+  lines.push(`- 身高：${heightCm} cm`, `- 体重：${weightKg} kg`)
 
   const genderLabel = GENDER_LABELS[gender]
   if (genderLabel) {
@@ -129,12 +163,21 @@ function buildPersonFeaturesBlock({ heightCm, weightKg, gender }) {
     lines.push('- 性别：未指定，选用中性自然形象')
   }
 
-  lines.push(
-    '- 体型：符合上述身高体重的自然比例',
-    '- 肤质：真实自然，保留细腻肤质与柔和光影，避免蜡像感、过度磨皮或塑料感',
-    '- 发型：自然得体，与整体穿搭风格协调（无用户指定时由模型合理推断）',
-    '- 构图：人物水平居中；头部完整入镜，头顶与面部清晰可见，头顶与画面上边缘留白适中，不得裁切或遮挡头部',
-  )
+  if (hasModelTemplate) {
+    lines.push(
+      '- 体型：以图1 模特体态为主，可按上述身高体重作轻微自然比例调整，勿大幅改变身材或五官',
+      '- 肤质：与图1 一致，真实自然，保留细腻肤质与柔和光影，避免蜡像感、过度磨皮或塑料感',
+      '- 发型：与图1 保持一致',
+      '- 构图：人物水平居中；头部完整入镜，头顶与面部清晰可见，头顶与画面上边缘留白适中，不得裁切或遮挡头部',
+    )
+  } else {
+    lines.push(
+      '- 体型：符合上述身高体重的自然比例',
+      '- 肤质：真实自然，保留细腻肤质与柔和光影，避免蜡像感、过度磨皮或塑料感',
+      '- 发型：自然得体，与整体穿搭风格协调（无用户指定时由模型合理推断）',
+      '- 构图：人物水平居中；头部完整入镜，头顶与面部清晰可见，头顶与画面上边缘留白适中，不得裁切或遮挡头部',
+    )
+  }
 
   return lines.join('\n')
 }
@@ -146,21 +189,34 @@ function buildTryonPrompt({
   pieceLabels = [],
   pieceTypeNames = [],
   imageCount = 1,
+  hasModelTemplate = false,
 }) {
   const clothingItems = buildClothingItemsBlock({
     pieceLabels,
     pieceTypeNames,
     imageCount,
+    hasModelTemplate,
   })
   const personFeatures = buildPersonFeaturesBlock({
     heightCm,
     weightKg,
     gender,
+    hasModelTemplate,
   })
+
+  const rule1 = hasModelTemplate
+    ? '以图1 固定模特为人物基准，将图2 起提供的衣物单品合理搭配并试穿在其身上（纯摄影风格）；保持图1 的脸型、发型、肤质与站姿，勿另造面孔'
+    : '将所有提供的衣物单品合理搭配并展示在符合人物特征的虚拟模特身上（纯摄影风格）'
+
+  const rule4 = hasModelTemplate
+    ? '人物须与图1 模特一致；可按人物特征中的身高体重作轻微体型调整，但不得更换面孔、发型或人物身份'
+    : '人物的体型、肤质、发型等特征需匹配提供的人物信息'
 
   return TRYON_PROMPT_TEMPLATE
     .replace('{{CLOTHING_ITEMS}}', clothingItems)
     .replace('{{PERSON_FEATURES}}', personFeatures)
+    .replace('{{RULE_1}}', rule1)
+    .replace('{{RULE_4}}', rule4)
 }
 
 module.exports = {

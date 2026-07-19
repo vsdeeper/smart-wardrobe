@@ -19,7 +19,12 @@ const SYNC_MAP = {
   ],
   'save-wardrobe-items': ['wardrobeSave.js'],
   'recommend-outfit': ['recommendOutfitRules.js'],
-  'generate-tryon-image': ['doubaoVision.js', 'tryonImageRules.js'],
+  'generate-tryon-image': [
+    'doubaoVision.js',
+    'tryonImageRules.js',
+    'modelTemplateMatch.js',
+    'modelTemplateFileIds.js',
+  ],
 }
 
 function sync() {
