@@ -6,10 +6,11 @@ function buildRecommendSystemPrompt() {
 2. 每个 slot 的 selectedId 必须来自对应 typeName 下的衣橱 id
 3. alternatives 为同类别其他候选 id（0–3 个），不得重复 selectedId
 4. matchScore 为 0–100 整数
-5. tips 为 2–4 条穿搭提示，含 emoji icon
-6. 考虑温度与 warmthLevel（1 极薄 → 5 极厚）匹配
-7. description 须与 slots 实际选品一致，勿描述未选入 slots 的单品
-8. 只返回 JSON，无其他文字
+5. outfitName 为 4–8 字中文意境短名，体现天气/场景与材质或廓形（如「晴日亚麻层叠」）；禁止「今日推荐」「清爽搭配」等空泛名
+6. tips 为 2–4 个风格标签：label 为无 emoji 的短词（如「清爽」「自然」「舒适」）；icon 可填空字符串或占位，UI 主要展示 label；禁止天气预警类文案（如「高紫外线」「注意防晒」）
+7. description 为「AI 搭配建议」正文：一句约 20–40 字，说明材质、色彩或体感为何适合当前天气/场景（如「亚麻材质透气亲肤，浅色系在阳光下更显轻盈。」）；须与 slots 实际选品一致，勿描述未选入 slots 的单品，勿带「AI 搭配建议：」前缀，勿罗列单品清单
+8. 考虑温度与 warmthLevel（1 极薄 → 5 极厚）匹配
+9. 只返回 JSON，无其他文字
 
 搭配常识（请自主判断，勿为凑齐类别而混搭互斥单品）：
 - 连衣裙/连体类：通常单穿，不与上装、下装同时出现
@@ -19,13 +20,17 @@ function buildRecommendSystemPrompt() {
 
 格式：
 {
-  "outfitName": "搭配名称",
-  "description": "场景化描述",
+  "outfitName": "晴日亚麻层叠",
+  "description": "亚麻材质透气亲肤，浅色系在阳光下更显轻盈。",
   "matchScore": 95,
   "slots": [
     { "typeName": "上装", "selectedId": "id", "alternatives": ["id2"] }
   ],
-  "tips": [{ "icon": "☀️", "label": "高紫外线" }]
+  "tips": [
+    { "icon": "", "label": "清爽" },
+    { "icon": "", "label": "自然" },
+    { "icon": "", "label": "舒适" }
+  ]
 }`
 }
 
@@ -141,14 +146,37 @@ function buildFallbackRecommendation(wardrobeByType, season, weather) {
   const shoeSlot = buildSlotFromItems('鞋靴', getItems('鞋靴'))
   if (shoeSlot) slots.push(shoeSlot)
 
-  const tips = [
-    { id: 1, icon: temp >= 28 ? '☀️' : '🌤️', label: temp >= 28 ? '注意防晒' : '舒适出行' },
-    { id: 2, icon: '🍃', label: `${season}季搭配` },
-  ]
+  const tips =
+    temp >= 28
+      ? [
+          { id: 1, icon: '', label: '清爽' },
+          { id: 2, icon: '', label: '轻盈' },
+          { id: 3, icon: '', label: '舒适' },
+        ]
+      : temp < 18
+        ? [
+            { id: 1, icon: '', label: '温暖' },
+            { id: 2, icon: '', label: '层叠' },
+            { id: 3, icon: '', label: '得体' },
+          ]
+        : [
+            { id: 1, icon: '', label: '自然' },
+            { id: 2, icon: '', label: '舒适' },
+            { id: 3, icon: '', label: '随性' },
+          ]
+
+  const outfitName =
+    temp >= 28 ? '晴日轻盈层叠' : temp < 18 ? '微凉温暖层叠' : `${season}日自在穿搭`
+  const description =
+    temp >= 28
+      ? '轻薄透气面料更宜出行，浅色系在阳光下更显清爽。'
+      : temp < 18
+        ? '适度叠穿兼顾保暖与层次，触感亲肤更显从容。'
+        : `结合${season}季气温选材，体感舒适且便于日常活动。`
 
   return {
-    outfitName: '今日推荐',
-    description: `根据${season}季与当前天气，为您搭配了 ${slots.length} 件单品。`,
+    outfitName,
+    description,
     matchScore: 85,
     slots,
     tips,
