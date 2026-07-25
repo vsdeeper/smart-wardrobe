@@ -56,16 +56,18 @@ function OutfitPage() {
           </View>
         ) : (
           <>
-            <Tabs
-              value={activeCategoryIndex}
-              activeType="button"
-              className="category-tabs"
-              onChange={(v) => handleCategoryChange(v as number)}
-            >
-              {typeNames.map((cat, idx) => (
-                <Tabs.TabPane key={cat} title={cat} value={idx} />
-              ))}
-            </Tabs>
+            <View className="outfit-filter">
+              <Tabs
+                value={activeCategoryIndex}
+                activeType="button"
+                className="type-tabs"
+                onChange={(v) => handleCategoryChange(v as number)}
+              >
+                {typeNames.map((cat, idx) => (
+                  <Tabs.TabPane key={cat} title={cat} value={idx} />
+                ))}
+              </Tabs>
+            </View>
 
             <View className="match-grid">
               {listLoading ? (

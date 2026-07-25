@@ -1,23 +1,26 @@
 .match-card {
-  position: relative;
-  overflow: hidden;
-  background: var(--nutui-gray-1);
-  border-radius: var(--sw-radius-card);
-  box-shadow: var(--sw-shadow-card);
-  border: 2px solid transparent;
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
+  min-width: 0;
 
-  &--selected {
+  &__inner {
+    overflow: hidden;
+    background: var(--nutui-gray-1);
+    border-radius: var(--sw-radius-card);
+    box-shadow: var(--sw-shadow-card);
+    border: 2px solid transparent;
+    transition:
+      border-color 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+
+  &--selected &__inner {
     border-color: var(--nutui-brand-6);
     box-shadow: var(--sw-shadow-tab-active);
   }
 
   &__image-wrap {
     position: relative;
-    aspect-ratio: 1 / 1;
     overflow: hidden;
+    aspect-ratio: 1 / 1;
     background: var(--sw-color-image-bg);
   }
 
@@ -29,10 +32,10 @@
 
   &__check {
     position: absolute;
-    top: 8px;
-    right: 8px;
-    width: 24px;
-    height: 24px;
+    top: 6px;
+    right: 6px;
+    width: 20px;
+    height: 20px;
     border-radius: var(--sw-radius-pill);
     background: var(--nutui-brand-6);
     display: flex;
@@ -41,27 +44,22 @@
   }
 
   &__body {
-    padding: var(--nutui-spacing-5);
-  }
-
-  &__series {
-    display: block;
-    font-family: var(--sw-font-body);
-    font-size: 10px;
-    font-weight: 500;
-    color: var(--nutui-gray-5);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    min-width: 0;
+    overflow: hidden;
+    padding: var(--nutui-spacing-3);
   }
 
   &__name {
-    display: block;
-    margin-top: 4px;
     font-family: var(--sw-font-heading);
-    font-size: var(--nutui-font-size-4);
-    font-weight: 500;
+    font-size: var(--nutui-font-size-2);
     color: var(--nutui-gray-7);
-    line-height: 1.4;
+    line-height: 1.35;
+    display: block;
+    overflow: hidden;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
   }
 
   &:active {

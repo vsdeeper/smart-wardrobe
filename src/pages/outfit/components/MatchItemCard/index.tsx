@@ -15,8 +15,6 @@ export default function MatchItemCard({
   selected,
   onToggle,
 }: MatchItemCardProps) {
-  const series = item.tags?.[0] ?? item.typeName;
-
   return (
     <View
       className={["match-card", selected && "match-card--selected"]
@@ -24,22 +22,20 @@ export default function MatchItemCard({
         .join(" ")}
       onClick={() => onToggle(item)}
     >
-      <View className="match-card__image-wrap">
-        <Image
-          className="match-card__image"
-          src={item.imageUrl ?? ""}
-          mode="aspectFill"
-          radius="0"
-        />
-        {selected && (
-          <View className="match-card__check">
-            <Check size={14} color="var(--sw-color-on-primary)" />
-          </View>
-        )}
-      </View>
-      <View className="match-card__body">
-        <Text className="match-card__series">{series}</Text>
-        <Text className="match-card__name">{item.name}</Text>
+      <View className="match-card__inner">
+        <View className="match-card__image-wrap">
+          <Image
+            className="match-card__image"
+            src={item.imageUrl || item.imageFileId}
+            mode="aspectFill"
+            radius="0"
+          />
+          {selected && (
+            <View className="match-card__check">
+              <Check size={12} color="var(--sw-color-on-primary)" />
+            </View>
+          )}
+        </View>
       </View>
     </View>
   );

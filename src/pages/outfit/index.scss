@@ -2,16 +2,22 @@
 // 搭配页面 — 对齐 Botanica 设计稿
 // ============================================================
 
-// ========== 分类筛选（NutUI Tabs button 类型） ==========
-.category-tabs {
-  margin-bottom: var(--nutui-spacing-8);
+// ========== 分类筛选（与衣橱 type-tabs 同构） ==========
+.outfit-filter {
+  margin-bottom: var(--nutui-spacing-4);
 
-  .nut-tabs-content-wrap {
-    display: none;
-  }
+  .type-tabs {
+    .nut-tabs-content-wrap {
+      display: none;
+    }
 
-  .nut-tabs-list {
-    justify-content: flex-start;
+    .nut-tabs-list {
+      justify-content: center;
+    }
+
+    .nut-tabs-titles-item {
+      align-items: start;
+    }
   }
 }
 
@@ -83,7 +89,7 @@
 // ========== 单品网格 ==========
 .match-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: var(--nutui-spacing-5);
 }
 

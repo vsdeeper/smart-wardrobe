@@ -494,16 +494,6 @@ page {
   }
 }
 
-// 搭配页分类 Tab：非激活态使用钢蓝浅底（区别于衣橱白底胶囊）
-page .category-tabs {
-  .nut-tabs-titles-item:not(.nut-tabs-titles-item-active)
-    .nut-tabs-titles-item-text {
-    background: var(--sw-color-tabs-inactive-bg);
-    border: none;
-    color: var(--nutui-secondary-1);
-  }
-}
-
 // 通用进度条 NutUI 覆写
 .sw-progress {
   .nut-progress-outer {
