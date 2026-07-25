@@ -7,17 +7,6 @@
   margin-bottom: var(--nutui-spacing-7);
   text-align: center;
 
-  &__title {
-    font-family: var(--sw-font-heading);
-    font-size: var(--nutui-font-size-10);
-    font-weight: var(--nutui-font-weight-bold);
-    color: var(--nutui-gray-7);
-    line-height: 1.2;
-    letter-spacing: -0.02em;
-    display: block;
-    margin-bottom: var(--nutui-spacing-8);
-  }
-
   // 类型筛选：变量见 theme.scss；NutUI 覆写见 app.scss；此处仅隐藏 TabPane
   // 选择器挂 .page-header 下，优先级高于 app.scss 的 page .nut-tabs-titles-button .nut-tabs-list { center }
   .type-tabs {

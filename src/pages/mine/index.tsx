@@ -34,10 +34,19 @@ type DiaryLayout = "grid" | "list";
 
 function MinePage() {
   const { activeTab, onTabChange } = useMainTabNavigation(3);
-  const [diaryLayout, setDiaryLayout] = useState<DiaryLayout>("list");
-  const { profile, avatarUrl, itemCount, loading: profileLoading, onAvatarLoadError } =
-    useUserProfile();
-  const { entries, totalCount, loading: diaryLoading } = useVisualDiary({
+  const [diaryLayout, setDiaryLayout] = useState<DiaryLayout>("grid");
+  const {
+    profile,
+    avatarUrl,
+    itemCount,
+    loading: profileLoading,
+    onAvatarLoadError,
+  } = useUserProfile();
+  const {
+    entries,
+    totalCount,
+    loading: diaryLoading,
+  } = useVisualDiary({
     previewLimit: MINE_DIARY_PREVIEW_LIMIT,
   });
   const {
@@ -92,10 +101,30 @@ function MinePage() {
     diaryLayout === "list" ? "icon-list" : "icon-category";
 
   const stats = [
-    { key: "height", label: "身高", value: formatHeightLabel(profile.heightCm), iconClass: "icon-height" },
-    { key: "weight", label: "体重", value: formatWeightLabel(profile.weightKg), iconClass: "icon-weight" },
-    { key: "items", label: "单品", value: String(itemCount), iconClass: "icon-wardrobe" },
-    { key: "outfits", label: "搭配", value: String(totalCount), iconClass: "icon-like" },
+    {
+      key: "height",
+      label: "身高",
+      value: formatHeightLabel(profile.heightCm),
+      iconClass: "icon-height",
+    },
+    {
+      key: "weight",
+      label: "体重",
+      value: formatWeightLabel(profile.weightKg),
+      iconClass: "icon-weight",
+    },
+    {
+      key: "items",
+      label: "单品",
+      value: String(itemCount),
+      iconClass: "icon-wardrobe",
+    },
+    {
+      key: "outfits",
+      label: "搭配",
+      value: String(totalCount),
+      iconClass: "icon-like",
+    },
   ];
 
   const showDiaryViewAll = totalCount > MINE_DIARY_PREVIEW_LIMIT;

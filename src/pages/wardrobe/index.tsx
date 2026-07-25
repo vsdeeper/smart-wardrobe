@@ -58,7 +58,6 @@ function WardrobePage() {
     <Main activeTab={mainTab} onTabChange={onTabChange} header={<AppNavbar />}>
       <Main.Scroll lowerThreshold={120} onScrollToLower={handleScrollToLower}>
         <View className="page-header">
-          <Text className="page-header__title">个人衣橱</Text>
           <Tabs
             value={activeTab}
             activeType="button"
