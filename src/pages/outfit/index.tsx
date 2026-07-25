@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { View, Text } from "@tarojs/components";
-import { Loading, Tabs } from "@nutui/nutui-react-taro";
+import { Tabs } from "@nutui/nutui-react-taro";
 import AppNavbar from "@/components/AppNavbar";
+import PageLoading from "@/components/PageLoading";
 import { useMainTabNavigation } from "@/hooks/useMainTabNavigation";
 import { useOutfitPage } from "@/hooks/useOutfitPage";
 import Main from "@/layouts/Main";
@@ -56,9 +57,7 @@ function OutfitPage() {
     >
       <Main.Scroll>
         {initialLoading ? (
-          <View className="outfit-loading">
-            <Loading type="circular" />
-          </View>
+          <PageLoading />
         ) : wardrobeEmpty ? (
           <View className="outfit-empty">
             <Text className="outfit-empty__title">衣橱还是空的</Text>
@@ -86,9 +85,7 @@ function OutfitPage() {
 
             <View className="match-grid">
               {listLoading ? (
-                <View className="outfit-loading outfit-loading--inline">
-                  <Loading type="circular" />
-                </View>
+                <PageLoading className="page-loading--inline" />
               ) : filteredItems.length === 0 ? (
                 <View className="outfit-empty-hint">
                   <Text>该分类暂无单品，请切换其他分类</Text>
@@ -108,7 +105,7 @@ function OutfitPage() {
         )}
       </Main.Scroll>
 
-      {!wardrobeEmpty && (
+      {!initialLoading && !wardrobeEmpty && (
         <OutfitPanel
           pieces={outfitPieces}
           collapsed={collapsed}

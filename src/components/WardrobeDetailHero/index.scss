@@ -11,6 +11,8 @@
     height: 0;
     padding-bottom: 100%;
     background: var(--sw-color-image-bg);
+    border-radius: var(--sw-radius-card);
+    overflow: hidden;
   }
 
   &__image {

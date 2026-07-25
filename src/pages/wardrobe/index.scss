@@ -48,9 +48,7 @@
   }
 }
 
-// ========== 加载与空状态 ==========
-.wardrobe-loading,
-.wardrobe-load-more,
+// ========== 空状态 ==========
 .wardrobe-empty {
   display: flex;
   flex-direction: column;
@@ -58,16 +56,6 @@
   justify-content: center;
   gap: var(--nutui-spacing-5);
   padding: var(--nutui-spacing-10) var(--nutui-spacing-8);
-}
-
-.wardrobe-loading__text,
-.wardrobe-load-more__text {
-  font-family: var(--sw-font-body);
-  font-size: var(--nutui-font-size-4);
-  color: var(--nutui-gray-5);
-}
-
-.wardrobe-empty {
   min-height: 200px;
 
   &__title {

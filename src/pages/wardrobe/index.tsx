@@ -4,6 +4,7 @@ import { Add } from "@nutui/icons-react-taro";
 import { ActionSheet, Loading, Tabs } from "@nutui/nutui-react-taro";
 import AppNavbar from "@/components/AppNavbar";
 import GenderSetupDialog from "@/components/GenderSetupDialog";
+import PageLoading from "@/components/PageLoading";
 import Main from "@/layouts/Main";
 import { WARDROBE_ITEM_ACTION_OPTIONS } from "@/data/wardrobe";
 import { useGenderSetup } from "@/hooks/useGenderSetup";
@@ -71,10 +72,7 @@ function WardrobePage() {
         </View>
 
         {initialLoading ? (
-          <View className="wardrobe-loading">
-            <Loading type="circular" />
-            <Text className="wardrobe-loading__text">加载中...</Text>
-          </View>
+          <PageLoading />
         ) : items.length === 0 ? (
           <View className="wardrobe-empty">
             <Text className="wardrobe-empty__title">衣橱还是空的</Text>
@@ -96,10 +94,7 @@ function WardrobePage() {
         )}
 
         {listLoading && items.length > 0 && (
-          <View className="wardrobe-load-more">
-            <Loading type="circular" />
-            <Text className="wardrobe-load-more__text">加载更多...</Text>
-          </View>
+          <PageLoading text="加载更多..." />
         )}
       </Main.Scroll>
 

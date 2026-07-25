@@ -2,6 +2,7 @@ import { useCallback, useRef } from "react";
 import { View, Text, ScrollView } from "@tarojs/components";
 import Taro from "@tarojs/taro";
 import { Loading, NavBar, Swipe } from "@nutui/nutui-react-taro";
+import PageLoading from "@/components/PageLoading";
 import { useAiRecognitionList } from "@/hooks/useAiRecognitionList";
 import RecognitionItemCard from "./components/RecognitionItemCard";
 import "./index.scss";
@@ -75,9 +76,7 @@ function AiRecognitionPage() {
           ["--sw-safe-area-bottom" as string]: `${safeAreaBottom}px`,
         }}
       >
-        <View className="ai-recognition-page__loading">
-          <Loading type="circular" />
-        </View>
+        <PageLoading className="ai-recognition-page__loading" />
       </View>
     );
   }

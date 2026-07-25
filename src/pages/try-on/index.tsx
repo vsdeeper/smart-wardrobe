@@ -1,9 +1,9 @@
 import { useCallback, useState } from "react";
 import { View, Text } from "@tarojs/components";
 import Taro from "@tarojs/taro";
-import { Loading } from "@nutui/nutui-react-taro";
 import AppNavbar from "@/components/AppNavbar";
 import GenderSetupChoices from "@/components/GenderSetupChoices";
+import PageLoading from "@/components/PageLoading";
 import { useMainTabNavigation } from "@/hooks/useMainTabNavigation";
 import { useTryOnPreview } from "@/hooks/useTryOnPreview";
 import { useTryOnRecommend } from "@/hooks/useTryOnRecommend";
@@ -88,12 +88,7 @@ function TryOnPage() {
 
   const renderBody = () => {
     if (recommendStatus === "loading" || recommendStatus === "idle") {
-      return (
-        <View className="try-on-loading">
-          <Loading type="circular" />
-          <Text className="try-on-loading__text">AI 正在推荐穿搭…</Text>
-        </View>
-      );
+      return <PageLoading text="AI 正在推荐穿搭…" />;
     }
 
     if (recommendStatus === "needsGender") {

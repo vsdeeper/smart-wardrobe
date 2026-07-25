@@ -30,9 +30,9 @@ export default function OutfitPanel({
       <View className="outfit-panel__card">
         <View className="outfit-panel__toggle" onClick={onToggleCollapsed}>
           {collapsed ? (
-            <ArrowUp size={14} color="var(--nutui-gray-4)" />
+            <ArrowUp size={8} color="var(--nutui-gray-4)" />
           ) : (
-            <ArrowDown size={14} color="var(--nutui-gray-4)" />
+            <ArrowDown size={8} color="var(--nutui-gray-4)" />
           )}
         </View>
         <View className="outfit-panel__header">
@@ -78,7 +78,7 @@ export default function OutfitPanel({
                       onRemovePiece(piece);
                     }}
                   >
-                    <Close size={12} color="var(--sw-color-on-primary)" />
+                    <Close size={8} color="var(--sw-color-on-primary)" />
                   </View>
                 </View>
               </View>

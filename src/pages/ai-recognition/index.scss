@@ -23,9 +23,6 @@
 
   &__loading {
     flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     min-height: 60vh;
   }
 
@@ -45,11 +42,14 @@
     height: 0;
     padding: var(--nutui-spacing-5) var(--nutui-spacing-5)
       calc(88px + var(--sw-safe-area-bottom, 0px));
+    margin-top: calc(-1 * var(--nutui-navbar-margin-bottom, 20px));
     box-sizing: border-box;
   }
 
   &--readonly &__scroll {
-    padding-bottom: calc(var(--nutui-spacing-8) + var(--sw-safe-area-bottom, 0px));
+    padding-bottom: calc(
+      var(--nutui-spacing-8) + var(--sw-safe-area-bottom, 0px)
+    );
   }
 
   &__list {

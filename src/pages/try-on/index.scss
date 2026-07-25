@@ -12,8 +12,7 @@
   }
 }
 
-// ========== 加载 / 空态 ==========
-.try-on-loading,
+// ========== 空态 ==========
 .try-on-empty {
   display: flex;
   flex-direction: column;
@@ -27,13 +26,12 @@
   &--gender {
     gap: var(--nutui-spacing-7);
   }
-}
 
-.try-on-loading__text,
-.try-on-empty__desc {
-  font-family: var(--sw-font-body);
-  font-size: var(--nutui-font-size-3);
-  color: var(--nutui-gray-5);
+  &__desc {
+    font-family: var(--sw-font-body);
+    font-size: var(--nutui-font-size-3);
+    color: var(--nutui-gray-5);
+  }
 }
 
 .try-on-empty__title {
@@ -66,7 +64,7 @@
 // ========== 整卡：主图 + 信息区（对齐设计稿） ==========
 .outfit-card {
   margin-bottom: var(--nutui-spacing-8);
-  border-radius: var(--nutui-radius-6);
+  border-radius: var(--sw-radius-card);
   overflow: hidden;
   background: var(--nutui-gray-1);
   box-shadow: 0 20px 40px -16px rgba(176, 196, 222, 0.28);

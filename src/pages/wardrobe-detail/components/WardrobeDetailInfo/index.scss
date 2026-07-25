@@ -1,8 +1,8 @@
 .wardrobe-detail-info {
   display: flex;
   flex-direction: column;
-  gap: var(--nutui-spacing-5);
-  padding-top: var(--nutui-spacing-6);
+  gap: var(--nutui-spacing-6);
+  padding: var(--nutui-spacing-6);
 
   &__row {
     display: flex;
@@ -42,7 +42,7 @@
   &__outfit {
     display: flex;
     flex-direction: column;
-    gap: var(--nutui-spacing-2);
+    gap: var(--nutui-spacing-3);
     margin-top: var(--nutui-spacing-2);
   }
 

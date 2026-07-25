@@ -8,7 +8,7 @@ import {
 } from "react";
 import { View, Text } from "@tarojs/components";
 import Taro from "@tarojs/taro";
-import { Add } from "@nutui/icons-react-taro";
+import { Add, ArrowRight } from "@nutui/icons-react-taro";
 import {
   ActionSheet,
   Dialog,
@@ -109,7 +109,7 @@ function useWardrobeEditFormContext() {
   const context = useContext(WardrobeEditFormContext);
   if (!context) {
     throw new Error(
-      "WardrobeEditForm 子组件必须在 WardrobeEditFormProvider 内使用",
+      "WardrobeEditForm 子组件必须在 WardrobeEditFormProvider 内使用"
     );
   }
   return context;
@@ -148,7 +148,7 @@ export function WardrobeEditFormProvider({
       ...clothingTypes.map((type) => ({ name: type.name })),
       { name: NEW_CATEGORY_OPTION },
     ],
-    [clothingTypes],
+    [clothingTypes]
   );
 
   const openTypeSheet = useCallback(() => {
@@ -171,7 +171,7 @@ export function WardrobeEditFormProvider({
         onTypeNameChange(option.name);
       }
     },
-    [closeTypeSheet, onTypeNameChange],
+    [closeTypeSheet, onTypeNameChange]
   );
 
   const handleNewTypeConfirm = useCallback(() => {
@@ -194,7 +194,7 @@ export function WardrobeEditFormProvider({
     (tag: string) => {
       onTagsChange(tags.filter((item) => item !== tag));
     },
-    [onTagsChange, tags],
+    [onTagsChange, tags]
   );
 
   const tagAddDisabled = tags.length >= MAX_TAGS;
@@ -281,7 +281,7 @@ export function WardrobeEditFormProvider({
       tagInput,
       handleTagDialogConfirm,
       handleTagDialogCancel,
-    ],
+    ]
   );
 
   return (
@@ -331,7 +331,11 @@ export function WardrobeEditFormFields() {
           >
             {typeName || "请选择类别"}
           </Text>
-          <Text className="sw-field-select__arrow">›</Text>
+          <ArrowRight
+            className="sw-field-select__arrow"
+            color="var(--sw-field-placeholder-color)"
+            size={8}
+          />
         </View>
       </FormRow>
 

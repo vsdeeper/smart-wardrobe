@@ -304,7 +304,7 @@ page .nut-avatar .avatar-img {
 .sw-form-row {
   display: flex;
   flex-direction: column;
-  gap: var(--nutui-spacing-2);
+  gap: var(--nutui-spacing-3);
 }
 
 .sw-form-label {
@@ -405,9 +405,6 @@ page .nut-avatar .avatar-img {
 
   &__arrow {
     flex-shrink: 0;
-    font-size: 20px;
-    line-height: 1;
-    color: var(--sw-field-placeholder-color);
   }
 }
 

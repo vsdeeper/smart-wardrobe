@@ -1,8 +1,8 @@
 .wardrobe-edit-form {
   display: flex;
   flex-direction: column;
-  gap: var(--nutui-spacing-5);
-  padding-top: var(--nutui-spacing-6);
+  gap: var(--nutui-spacing-6);
+  padding: var(--nutui-spacing-6);
 
   &__tags {
     display: flex;
