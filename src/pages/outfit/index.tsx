@@ -16,7 +16,6 @@ function OutfitPage() {
     activeCategoryIndex,
     filteredItems,
     outfitPieces,
-    outfitName,
     initialLoading,
     listLoading,
     wardrobeEmpty,
@@ -100,7 +99,7 @@ function OutfitPage() {
               <View className="outfit-panel__info">
                 <Text className="outfit-panel__title">当前搭配</Text>
                 <Text className="outfit-panel__desc">
-                  已选 {outfitPieces.length} 件单品 • 「{outfitName}」
+                  已选 {outfitPieces.length} 件单品
                 </Text>
               </View>
               <View className="outfit-panel__save" onClick={handleSaveOutfit}>

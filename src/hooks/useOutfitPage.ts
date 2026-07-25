@@ -25,7 +25,6 @@ export function useOutfitPage() {
   const [outfitByCategory, setOutfitByCategory] = useState<
     Record<string, WardrobeItem>
   >({});
-  const [outfitName, setOutfitName] = useState("我的搭配");
   const [baselinePieceIds, setBaselinePieceIds] = useState<string[]>([]);
   const [fromTryOnEdit, setFromTryOnEdit] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
@@ -72,7 +71,6 @@ export function useOutfitPage() {
         byCat[piece.typeName] = piece;
       });
       setOutfitByCategory(byCat);
-      setOutfitName(draft.outfitName ?? "我的搭配");
       setBaselinePieceIds(
         draft.baselinePieceIds ?? getPieceIds(draft.selectedPieces),
       );
@@ -131,7 +129,6 @@ export function useOutfitPage() {
       );
       setTryOnDraft({
         mode: "saved",
-        outfitName,
         selectedPieces: outfitPieces,
         piecesChanged,
       });
@@ -145,12 +142,11 @@ export function useOutfitPage() {
 
     setTryOnDraft({
       mode: "saved",
-      outfitName,
       selectedPieces: outfitPieces,
       piecesChanged,
     });
     Taro.redirectTo({ url: "/pages/try-on/index" });
-  }, [outfitPieces, fromTryOnEdit, baselinePieceIds, outfitName]);
+  }, [outfitPieces, fromTryOnEdit, baselinePieceIds]);
 
   const handleGoWardrobe = useCallback(() => {
     Taro.redirectTo({ url: "/pages/wardrobe/index" });
@@ -185,7 +181,6 @@ export function useOutfitPage() {
     activeCategoryIndex,
     filteredItems,
     outfitPieces,
-    outfitName,
     initialLoading,
     listLoading,
     wardrobeEmpty,

@@ -1,4 +1,4 @@
-import { View, Text } from "@tarojs/components";
+import { View } from "@tarojs/components";
 import { Check } from "@nutui/icons-react-taro";
 import { Image } from "@nutui/nutui-react-taro";
 import type { WardrobeItem } from "@/data/wardrobe";

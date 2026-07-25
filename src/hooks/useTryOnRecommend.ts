@@ -180,7 +180,7 @@ export function useTryOnRecommend() {
         setRecommendation(cache.recommendation);
       } else {
         setRecommendation({
-          outfitName: draft.outfitName ?? "我的搭配",
+          outfitName: "我的搭配",
           description: "",
           matchScore: 90,
           slots: [],

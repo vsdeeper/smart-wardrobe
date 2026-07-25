@@ -49,7 +49,6 @@ export type TryOnDraftMode = "edit" | "saved";
 
 export interface TryOnDraft {
   mode: TryOnDraftMode;
-  outfitName?: string;
   description?: string;
   matchScore?: number;
   tips?: TryOnTip[];
