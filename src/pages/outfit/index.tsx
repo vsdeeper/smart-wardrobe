@@ -1,12 +1,12 @@
+import { useEffect, useRef, useState } from "react";
 import { View, Text } from "@tarojs/components";
-import { Close } from "@nutui/icons-react-taro";
-// import { Add } from "@nutui/icons-react-taro"; // 添加单品入口暂隐藏
-import { Image, Loading, Tabs } from "@nutui/nutui-react-taro";
+import { Loading, Tabs } from "@nutui/nutui-react-taro";
 import AppNavbar from "@/components/AppNavbar";
 import { useMainTabNavigation } from "@/hooks/useMainTabNavigation";
 import { useOutfitPage } from "@/hooks/useOutfitPage";
 import Main from "@/layouts/Main";
 import MatchItemCard from "./components/MatchItemCard";
+import OutfitPanel from "./components/OutfitPanel";
 import "./index.scss";
 
 function OutfitPage() {
@@ -27,15 +27,31 @@ function OutfitPage() {
     handleGoWardrobe,
   } = useOutfitPage();
 
-  // const handleAddPiece = () => {
-  //   Taro.showToast({ title: "从上方列表选择单品", icon: "none" });
-  // };
+  const [collapsed, setCollapsed] = useState(true);
+  const prevPieceCountRef = useRef(0);
+
+  useEffect(() => {
+    const count = outfitPieces.length;
+    if (count === 0) {
+      setCollapsed(true);
+    } else if (prevPieceCountRef.current === 0) {
+      setCollapsed(false);
+    }
+    prevPieceCountRef.current = count;
+  }, [outfitPieces.length]);
+
+  const scrollClassName = [
+    "main-scroll--outfit",
+    collapsed && "main-scroll--outfit--collapsed",
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <Main
       activeTab={activeTab}
       onTabChange={onTabChange}
-      scrollClassName="main-scroll--outfit"
+      scrollClassName={scrollClassName}
       header={<AppNavbar />}
     >
       <Main.Scroll>
@@ -93,56 +109,13 @@ function OutfitPage() {
       </Main.Scroll>
 
       {!wardrobeEmpty && (
-        <View className="outfit-panel">
-          <View className="outfit-panel__card">
-            <View className="outfit-panel__header">
-              <View className="outfit-panel__info">
-                <Text className="outfit-panel__title">当前搭配</Text>
-                <Text className="outfit-panel__desc">
-                  已选 {outfitPieces.length} 件单品
-                </Text>
-              </View>
-              <View className="outfit-panel__save" onClick={handleSaveOutfit}>
-                <Text className="outfit-panel__save-text">保存搭配</Text>
-              </View>
-            </View>
-            <View className="outfit-panel__thumbs">
-              <View className="outfit-panel__thumbs-inner">
-                {outfitPieces.map((piece) => (
-                  <View key={piece._id} className="outfit-thumb">
-                    <View className="outfit-thumb__box">
-                      <View className="outfit-thumb__media">
-                        <Image
-                          className="outfit-thumb__image"
-                          src={piece.imageUrl ?? ""}
-                          mode="aspectFill"
-                        />
-                      </View>
-                      <View
-                        className="outfit-thumb__remove"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleRemovePiece(piece);
-                        }}
-                      >
-                        <Close size={12} color="var(--sw-color-on-primary)" />
-                      </View>
-                    </View>
-                  </View>
-                ))}
-                {/* 添加单品入口暂隐藏，仅从上方分类列表选品
-                <View
-                  className="outfit-thumb outfit-thumb--add"
-                  onClick={handleAddPiece}
-                >
-                  <Add size={20} color="var(--nutui-gray-5)" />
-                  <Text className="outfit-thumb__add-label">添加单品</Text>
-                </View>
-                */}
-              </View>
-            </View>
-          </View>
-        </View>
+        <OutfitPanel
+          pieces={outfitPieces}
+          collapsed={collapsed}
+          onToggleCollapsed={() => setCollapsed((v) => !v)}
+          onSave={handleSaveOutfit}
+          onRemovePiece={handleRemovePiece}
+        />
       )}
     </Main>
   );

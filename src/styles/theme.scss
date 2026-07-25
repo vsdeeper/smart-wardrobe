@@ -83,12 +83,12 @@ page {
   --nutui-spacing-10: 40px; // xl — 区块间距
 
   // ========== 圆角（DESIGN.md rounded） ==========
-  --nutui-radius-1: 0;
-  --nutui-radius-2: 4px; // sm — 0.25rem
-  --nutui-radius-3: 4px;
-  --nutui-radius-4: 8px; // DEFAULT — 按钮/输入
-  --nutui-radius-5: 8px;
-  --nutui-radius-6: 12px; // md — AI 状态条
+  --nutui-radius-1: 4px;
+  --nutui-radius-2: 6px; // sm — 0.25rem
+  --nutui-radius-3: 8px;
+  --nutui-radius-4: 10px; // DEFAULT — 按钮/输入
+  --nutui-radius-5: 12px;
+  --nutui-radius-6: 14px; // md — AI 状态条
   --nutui-radius-7: 16px; // lg — 卡片（设计稿 ~16–20px）
 
   // ========== 阴影（石板灰下沉，轻量 elevation） ==========
@@ -178,10 +178,10 @@ page {
   --sw-color-on-primary: #ffffff; // FAB 图标、主色上的文字/图标
   --sw-color-tabs-inactive-bg: #daeaf7; // 搭配页分类 Tab 非激活底
 
-  --sw-radius-card: var(--nutui-radius-5); // 卡片圆角
+  --sw-radius-card: var(--nutui-radius-4); // 卡片圆角
   --sw-radius-banner: 16px;
   --sw-radius-pill: 9999px;
-  --sw-radius-field: var(--nutui-radius-5); // Input / TextArea 及同类表单控件
+  --sw-radius-field: var(--nutui-radius-4); // Input / TextArea 及同类表单控件
 
   // NutUI Tag 基准（与 sw-tag--add 共用同一套尺寸）
   --nutui-tag-height: 20px;
@@ -228,7 +228,8 @@ page {
   --sw-status-bar-height: 0px; // 运行时由页面覆盖
   --sw-safe-area-bottom: 0px; // 运行时由页面覆盖
   --sw-tabbar-offset: 56px; // 运行时由 Main 覆盖；TabBar 内容区高度
-  --sw-outfit-panel-height: 298px; // 搭配浮层内容区预估高度
+  --sw-outfit-panel-height: 298px; // 搭配浮层展开态预估高度（含切换钮）
+  --sw-outfit-panel-collapsed-height: 120px; // 收起态：header 可见 + 切换钮外露
   --sw-bottom-inset: calc(
     var(--sw-tabbar-offset, 56px) +
       max(env(safe-area-inset-bottom, 0px), var(--sw-safe-area-bottom, 0px))
