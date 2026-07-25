@@ -116,13 +116,42 @@ function normalizeBatch(raw: Record<string, unknown>): RecognitionBatch {
   return batch;
 }
 
+function getBatchCoverFileId(batch: RecognitionBatch): string | undefined {
+  return batch.sourceFileIds[0] || batch.coverFileId;
+}
+
 async function resolveBatchCover(
   batch: RecognitionBatch,
 ): Promise<RecognitionBatch> {
-  if (batch.coverUrl || !batch.coverFileId) return batch;
-  const url = await resolveCloudFileUrl(batch.coverFileId);
+  const preferredId = batch.sourceFileIds[0];
+  const fallbackId = batch.coverFileId;
+  if (!preferredId && !fallbackId) return batch;
+
+  if (preferredId) {
+    if (batch.coverUrl && batch.coverFileId === preferredId) {
+      return batch;
+    }
+    const url = await resolveCloudFileUrl(preferredId);
+    if (url) {
+      return { ...batch, coverFileId: preferredId, coverUrl: url };
+    }
+    // 原图已删（旧数据）时回退到库内 coverFileId（可能是单品图）
+    if (fallbackId && fallbackId !== preferredId) {
+      if (batch.coverUrl && batch.coverFileId === fallbackId) {
+        return batch;
+      }
+      const fallbackUrl = await resolveCloudFileUrl(fallbackId);
+      if (fallbackUrl) {
+        return { ...batch, coverFileId: fallbackId, coverUrl: fallbackUrl };
+      }
+    }
+    return { ...batch, coverFileId: preferredId };
+  }
+
+  if (batch.coverUrl && batch.coverFileId === fallbackId) return batch;
+  const url = await resolveCloudFileUrl(fallbackId!);
   if (url) {
-    return { ...batch, coverUrl: url };
+    return { ...batch, coverFileId: fallbackId, coverUrl: url };
   }
   return batch;
 }
@@ -134,16 +163,24 @@ async function resolveBatchCovers(
 }
 
 /**
- * 合并轮询结果到已有条目：coverFileId 未变则复用 coverUrl，避免临时链接刷新导致闪图。
+ * 合并轮询结果到已有条目：封面原图未变则复用 coverUrl，避免临时链接刷新导致闪图。
  */
 export async function mergeBatchCover(
   prev: RecognitionBatch | undefined,
   next: RecognitionBatch,
 ): Promise<RecognitionBatch> {
-  if (prev?.coverFileId && prev.coverFileId === next.coverFileId && prev.coverUrl) {
-    return { ...next, coverUrl: prev.coverUrl };
+  const nextCoverId = getBatchCoverFileId(next);
+  const prevCoverId = prev ? getBatchCoverFileId(prev) : undefined;
+  if (prevCoverId && prevCoverId === nextCoverId && prev?.coverUrl) {
+    return {
+      ...next,
+      coverFileId: nextCoverId,
+      coverUrl: prev.coverUrl,
+    };
   }
-  if (next.coverUrl) return next;
+  if (next.coverUrl && next.coverFileId === nextCoverId) {
+    return nextCoverId ? { ...next, coverFileId: nextCoverId } : next;
+  }
   return resolveBatchCover(next);
 }
 
@@ -221,46 +258,10 @@ export async function fetchRecognitionBatchById(
   return resolveBatchCover(normalizeBatch(raw));
 }
 
-/** 上传原图、创建识别批次并触发云端异步处理（不阻塞等待结果） */
-export async function createRecognitionBatchAndStart(
-  filePaths: string[],
-): Promise<{ batchId: string }> {
-  if (filePaths.length === 0) {
-    throw new Error("请选择图片");
-  }
-
-  const sourceFileIds: string[] = [];
-  for (const filePath of filePaths) {
-    const ext = filePath.includes(".")
-      ? filePath.slice(filePath.lastIndexOf("."))
-      : ".jpg";
-    const cloudPath = `wardrobe/${Date.now()}-${Math.random().toString(36).slice(2)}${ext}`;
-    const uploadRes = await Taro.cloud.uploadFile({
-      cloudPath,
-      filePath,
-    });
-    sourceFileIds.push(uploadRes.fileID);
-  }
-
-  const now = Date.now();
-  const db = Taro.cloud.database();
-  const addRes = await db.collection(COLLECTION).add({
-    data: {
-      status: "processing",
-      confirmStatus: "pending",
-      sourceFileIds,
-      coverFileId: sourceFileIds[0],
-      progress: { current: 0, total: sourceFileIds.length },
-      itemCount: 0,
-      items: [],
-      createdAt: now,
-      updatedAt: now,
-    },
-  });
-
-  const batchId = String(addRes._id);
-  const userGender = await resolveUserGenderForRecognition();
-
+function triggerProcessRecognitionBatch(
+  batchId: string,
+  userGender: string | undefined,
+): void {
   void Taro.cloud
     .callFunction({
       name: "process-recognition-batch",
@@ -291,8 +292,50 @@ export async function createRecognitionBatchAndStart(
         normalizeRecognitionErrorMessage(message),
       );
     });
+}
 
-  return { batchId };
+/** 上传原图：每张图独立建批次并触发云端异步处理（不阻塞等待结果） */
+export async function createRecognitionBatchAndStart(
+  filePaths: string[],
+): Promise<{ batchIds: string[] }> {
+  if (filePaths.length === 0) {
+    throw new Error("请选择图片");
+  }
+
+  const userGender = await resolveUserGenderForRecognition();
+  const db = Taro.cloud.database();
+  const batchIds: string[] = [];
+
+  for (const filePath of filePaths) {
+    const ext = filePath.includes(".")
+      ? filePath.slice(filePath.lastIndexOf("."))
+      : ".jpg";
+    const cloudPath = `wardrobe/${Date.now()}-${Math.random().toString(36).slice(2)}${ext}`;
+    const uploadRes = await Taro.cloud.uploadFile({
+      cloudPath,
+      filePath,
+    });
+    const fileID = uploadRes.fileID;
+    const now = Date.now();
+    const addRes = await db.collection(COLLECTION).add({
+      data: {
+        status: "processing",
+        confirmStatus: "pending",
+        sourceFileIds: [fileID],
+        coverFileId: fileID,
+        progress: { current: 0, total: 1 },
+        itemCount: 0,
+        items: [],
+        createdAt: now,
+        updatedAt: now,
+      },
+    });
+    const batchId = String(addRes._id);
+    batchIds.push(batchId);
+    triggerProcessRecognitionBatch(batchId, userGender);
+  }
+
+  return { batchIds };
 }
 
 /** 将仍为 processing 的批次标记为失败（触发失败 / 超时兜底） */

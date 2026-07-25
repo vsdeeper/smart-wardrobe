@@ -211,7 +211,15 @@ async function failBatch(batchId, message, extra = {}) {
   }
 }
 
-async function processOneSource(fileID, userGender, apiKey, baseUrl, seedModel, openid) {
+async function processOneSource(
+  fileID,
+  userGender,
+  apiKey,
+  baseUrl,
+  seedModel,
+  openid,
+  { keepSource = false } = {},
+) {
   const imageUrl = await resolveImageUrl(fileID)
   const rawItems = await recognizeItemsFromImage(
     imageUrl,
@@ -234,7 +242,10 @@ async function processOneSource(fileID, userGender, apiKey, baseUrl, seedModel, 
     throw new Error('未能生成展示图')
   }
 
-  await deleteSourceFile(fileID)
+  // 封面原图需保留供列表展示；其余源图可删以控存储
+  if (!keepSource) {
+    await deleteSourceFile(fileID)
+  }
   return previews
 }
 
@@ -304,6 +315,8 @@ exports.main = async (event) => {
     const errors = []
     const total = sourceFileIds.length
 
+    const coverFileId = sourceFileIds[0]
+
     for (let i = 0; i < total; i++) {
       const fileID = sourceFileIds[i]
       await updateBatch(batchId, {
@@ -321,6 +334,7 @@ exports.main = async (event) => {
           baseUrl,
           seedModel,
           openid,
+          { keepSource: i === 0 },
         )
         allItems.push(...previews)
       } catch (err) {
@@ -334,16 +348,21 @@ exports.main = async (event) => {
     }
 
     if (allItems.length === 0) {
-      try {
-        await cloud.deleteFile({ fileList: sourceFileIds })
-      } catch {
-        // 清理原图失败不阻断
+      // 保留封面原图供失败卡片展示；其余源图可清理
+      const toDelete = sourceFileIds.slice(1)
+      if (toDelete.length > 0) {
+        try {
+          await cloud.deleteFile({ fileList: toDelete })
+        } catch {
+          // 清理原图失败不阻断
+        }
       }
       const message = errors[0]?.message || '识别失败'
       await failBatch(batchId, message, {
         progress: { current: total, total },
         itemCount: 0,
         items: [],
+        coverFileId,
       })
       return {
         error: 'RECOGNIZE_FAILED',
@@ -351,8 +370,6 @@ exports.main = async (event) => {
         failed: errors,
       }
     }
-
-    const coverFileId = allItems[0]?.imageFileId || batch.coverFileId
 
     await updateBatch(batchId, {
       status: 'succeeded',

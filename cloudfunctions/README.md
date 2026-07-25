@@ -182,8 +182,8 @@ wx.cloud
 | `_openid`       | string   | 用户隔离                                                             |
 | `status`        | string   | `processing` \| `succeeded` \| `failed`                              |
 | `confirmStatus` | string   | `pending` \| `confirmed` \| `discarded`（创建时 `pending`）          |
-| `sourceFileIds` | array    | 原图云存储 fileID 列表                                               |
-| `coverFileId`   | string   | 列表封面（首张原图，成功后可为首件展示图）                           |
+| `sourceFileIds` | array    | 原图云存储 fileID 列表（新流程一图一卡，通常长度为 1）               |
+| `coverFileId`   | string   | 列表封面（始终为原图 `sourceFileIds[0]`）                            |
 | `progress`      | object   | `{ current, total, phase? }` 识别中进度                              |
 | `items`         | array    | 成功后的预览单品（含 `tempId` / `name` / `typeName` / `imageFileId` 等） |
 | `itemCount`     | number   | 成功件数                                                             |

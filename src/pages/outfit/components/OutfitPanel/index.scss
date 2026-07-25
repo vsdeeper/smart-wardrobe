@@ -26,7 +26,7 @@
   }
 
   &--collapsed &__card {
-    height: 96px;
+    height: 90px;
   }
 
   &__toggle {
@@ -105,7 +105,7 @@
       font-size: var(--nutui-font-size-4);
       font-weight: 500;
       color: var(--sw-color-on-primary);
-      line-height: 1.2;
+      line-height: 1;
       white-space: nowrap;
     }
 

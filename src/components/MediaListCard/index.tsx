@@ -18,7 +18,10 @@ export default function MediaListCard({
   onClick,
 }: MediaListCardProps) {
   return (
-    <View className="media-list-card card" onClick={onClick}>
+    <View
+      className="media-list-card card border-radius-unset"
+      onClick={onClick}
+    >
       <View className="media-list-card__media">
         {imageSrc ? (
           <Image

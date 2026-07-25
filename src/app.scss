@@ -45,6 +45,9 @@ page .nut-avatar .avatar-img {
   border-radius: var(--sw-radius-card);
   background: var(--nutui-gray-1);
   box-shadow: var(--sw-shadow-card);
+  &.border-radius-unset {
+    border-radius: unset;
+  }
 }
 
 // 胶囊形态 Chip（DESIGN.md 组件-标签）
