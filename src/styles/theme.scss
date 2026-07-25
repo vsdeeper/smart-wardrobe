@@ -178,10 +178,10 @@ page {
   --sw-color-on-primary: #ffffff; // FAB 图标、主色上的文字/图标
   --sw-color-tabs-inactive-bg: #daeaf7; // 搭配页分类 Tab 非激活底
 
-  --sw-radius-card: var(--nutui-radius-4); // 卡片圆角
+  --sw-radius-card: var(--nutui-radius-2); // 卡片圆角
   --sw-radius-banner: 16px;
   --sw-radius-pill: 9999px;
-  --sw-radius-field: var(--nutui-radius-4); // Input / TextArea 及同类表单控件
+  --sw-radius-field: var(--nutui-radius-2); // Input / TextArea 及同类表单控件
 
   // NutUI Tag 基准（与 sw-tag--add 共用同一套尺寸）
   --nutui-tag-height: 20px;
