@@ -1,10 +1,8 @@
-import { View, Text } from "@tarojs/components";
-import { Image } from "@nutui/nutui-react-taro";
+import MediaListCard from "@/components/MediaListCard";
 import type { RecognitionBatch } from "@/data/recognition";
 import { getRecognitionBatchStatusLabel } from "@/data/recognition";
 import { formatDateTime } from "@/utils/formatDateTime";
 import { normalizeRecognitionErrorMessage } from "@/utils/recognition";
-import "./index.scss";
 
 export interface RecognitionBatchCardProps {
   batch: RecognitionBatch;
@@ -23,38 +21,20 @@ export default function RecognitionBatchCard({
         ? `${batch.sourceFileIds.length} 张`
         : null;
 
+  const description =
+    batch.status === "failed"
+      ? normalizeRecognitionErrorMessage(batch.errorMessage)
+      : countLabel
+        ? `衣物识别 · ${countLabel}`
+        : "衣物识别";
+
   return (
-    <View
-      className="recognition-batch-card card"
+    <MediaListCard
+      imageSrc={batch.coverUrl || batch.coverFileId || undefined}
+      title={statusLabel}
+      time={formatDateTime(batch.createdAt)}
+      description={description}
       onClick={() => onClick?.(batch)}
-    >
-      <View className="recognition-batch-card__media">
-        {batch.coverUrl || batch.coverFileId ? (
-          <Image
-            className="recognition-batch-card__image"
-            src={batch.coverUrl || batch.coverFileId || ""}
-            mode="aspectFit"
-            radius="0"
-          />
-        ) : (
-          <View className="recognition-batch-card__placeholder" />
-        )}
-      </View>
-      <View className="recognition-batch-card__body">
-        <View className="recognition-batch-card__head">
-          <Text className="recognition-batch-card__status">{statusLabel}</Text>
-          <Text className="recognition-batch-card__time">
-            {formatDateTime(batch.createdAt)}
-          </Text>
-        </View>
-        <Text className="recognition-batch-card__desc">
-          {batch.status === "failed"
-            ? normalizeRecognitionErrorMessage(batch.errorMessage)
-            : countLabel
-              ? `衣物识别 · ${countLabel}`
-              : "衣物识别"}
-        </Text>
-      </View>
-    </View>
+    />
   );
 }

@@ -4,6 +4,7 @@ import Taro from "@tarojs/taro";
 import { ArrowRight, Edit } from "@nutui/icons-react-taro";
 import { Image, Loading } from "@nutui/nutui-react-taro";
 import DefaultAvatar from "@/components/DefaultAvatar";
+import MediaListCard from "@/components/MediaListCard";
 import RecognitionBatchCard from "@/components/RecognitionBatchCard";
 import {
   canOpenRecognitionBatch,
@@ -247,33 +248,14 @@ function MinePage() {
             ) : (
               <View className="mine-diary mine-diary--list">
                 {entries.map((entry) => (
-                  <View
+                  <MediaListCard
                     key={entry._id}
-                    className="mine-diary-row card"
+                    imageSrc={entry.coverUrl || entry.coverFileId || undefined}
+                    title={entry.title}
+                    time={formatDateTime(entry.createdAt)}
+                    description={entry.description}
                     onClick={() => handleOpenDiaryDetail(entry._id)}
-                  >
-                    <View className="mine-diary-row__media">
-                      <Image
-                        className="mine-diary-row__image"
-                        src={entry.coverUrl || entry.coverFileId || ""}
-                        mode="aspectFit"
-                        radius="0"
-                      />
-                    </View>
-                    <View className="mine-diary-row__body">
-                      <View className="mine-diary-row__head">
-                        <Text className="mine-diary-row__title">
-                          {entry.title}
-                        </Text>
-                        <Text className="mine-diary-row__time">
-                          {formatDateTime(entry.createdAt)}
-                        </Text>
-                      </View>
-                      <Text className="mine-diary-row__desc">
-                        {entry.description}
-                      </Text>
-                    </View>
-                  </View>
+                  />
                 ))}
               </View>
             )}
