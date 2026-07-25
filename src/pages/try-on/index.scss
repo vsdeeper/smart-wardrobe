@@ -325,10 +325,8 @@
   padding-bottom: calc(75px + var(--sw-safe-area-bottom, 0px));
 }
 
-// ========== 主操作按钮容器（外观见 app.scss .sw-btn） ==========
+// ========== 主操作按钮容器 ==========
 .try-on-actions {
-  --try-on-btn-height: 48px;
-
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -336,33 +334,6 @@
   margin-top: 4px;
   padding-bottom: 8px;
   box-sizing: border-box;
-
-  .wear-btn-wrap {
-    padding: 0;
-
-    .sw-btn--block {
-      flex: none;
-      height: var(--try-on-btn-height);
-    }
-  }
-
-  // 「换一套推荐」：白底 + 叶绿描边，对齐设计图
-  &__refresh {
-    flex: none;
-    height: var(--try-on-btn-height);
-    background: var(--nutui-gray-1);
-    border: 1px solid var(--nutui-brand-6);
-    box-shadow: none;
-
-    .sw-btn__text {
-      color: var(--nutui-brand-6);
-    }
-
-    &:active:not(.sw-btn--disabled) {
-      opacity: 1;
-      background: var(--nutui-brand-1);
-    }
-  }
 
   &__ai-hint {
     display: block;

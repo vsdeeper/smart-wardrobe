@@ -1,0 +1,53 @@
+.outline-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  width: auto;
+  height: var(--sw-btn-height);
+  padding: 0 28px;
+  border-radius: var(--sw-radius-pill);
+  background: var(--nutui-gray-1);
+  border: 1px solid var(--nutui-brand-6);
+  box-shadow: none;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    opacity 0.2s ease;
+
+  &--block {
+    display: flex;
+    width: 100%;
+  }
+
+  &--disabled {
+    border-color: var(--nutui-gray-4);
+    opacity: 0.7;
+    pointer-events: none;
+
+    .outline-button__text {
+      color: var(--nutui-gray-5);
+    }
+
+    &:active {
+      transform: none;
+      background: var(--nutui-gray-1);
+    }
+  }
+
+  &:active:not(.outline-button--disabled) {
+    opacity: 1;
+    background: var(--nutui-brand-1);
+    transform: scale(0.98);
+  }
+
+  &__text {
+    font-family: var(--sw-font-heading);
+    font-size: var(--nutui-font-size-4);
+    font-weight: var(--nutui-font-weight-bold);
+    color: var(--nutui-brand-6);
+    line-height: 1;
+    white-space: nowrap;
+  }
+}

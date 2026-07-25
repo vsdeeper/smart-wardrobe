@@ -1,6 +1,7 @@
 import { View, Text } from "@tarojs/components";
 import { ArrowDown, ArrowUp, Close } from "@nutui/icons-react-taro";
 import { Image } from "@nutui/nutui-react-taro";
+import SolidButton from "@/components/SolidButton";
 import type { WardrobeItem } from "@/data/wardrobe";
 import "./index.scss";
 
@@ -30,9 +31,9 @@ export default function OutfitPanel({
       <View className="outfit-panel__card">
         <View className="outfit-panel__toggle" onClick={onToggleCollapsed}>
           {collapsed ? (
-            <ArrowUp size={8} color="var(--nutui-gray-4)" />
+            <ArrowUp size={12} color="var(--nutui-gray-4)" />
           ) : (
-            <ArrowDown size={8} color="var(--nutui-gray-4)" />
+            <ArrowDown size={12} color="var(--nutui-gray-4)" />
           )}
         </View>
         <View className="outfit-panel__header">
@@ -42,21 +43,9 @@ export default function OutfitPanel({
               已选 {pieces.length} 件单品
             </Text>
           </View>
-          <View
-            className={[
-              "outfit-panel__save",
-              !canSave && "outfit-panel__save--disabled",
-            ]
-              .filter(Boolean)
-              .join(" ")}
-            onClick={() => {
-              if (canSave) onSave();
-            }}
-          >
-            <Text className="outfit-panel__save-text">
-              {canSave ? "保存搭配" : "请选单品"}
-            </Text>
-          </View>
+          <SolidButton disabled={!canSave} onClick={onSave}>
+            {canSave ? "保存搭配" : "请选单品"}
+          </SolidButton>
         </View>
 
         <View className="outfit-panel__thumbs">

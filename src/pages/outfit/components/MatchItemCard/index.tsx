@@ -32,7 +32,7 @@ export default function MatchItemCard({
           />
           {selected && (
             <View className="match-card__check">
-              <Check size={12} color="var(--sw-color-on-primary)" />
+              <Check size={8} color="var(--sw-color-on-primary)" />
             </View>
           )}
         </View>

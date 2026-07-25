@@ -3,6 +3,7 @@ import { View, Text } from "@tarojs/components";
 import Taro from "@tarojs/taro";
 import AppNavbar from "@/components/AppNavbar";
 import GenderSetupChoices from "@/components/GenderSetupChoices";
+import OutlineButton from "@/components/OutlineButton";
 import PageLoading from "@/components/PageLoading";
 import { useMainTabNavigation } from "@/hooks/useMainTabNavigation";
 import { useTryOnPreview } from "@/hooks/useTryOnPreview";
@@ -165,21 +166,13 @@ function TryOnPage() {
             onWear={handleWearOutfit}
           />
           {!isManualOutfit ? (
-            <View
-              className={[
-                "sw-btn sw-btn--block try-on-actions__refresh",
-                (saving || previewStatus === "loading") && "sw-btn--disabled",
-              ]
-                .filter(Boolean)
-                .join(" ")}
-              onClick={
-                saving || previewStatus === "loading"
-                  ? undefined
-                  : refreshRecommend
-              }
+            <OutlineButton
+              block
+              disabled={saving || previewStatus === "loading"}
+              onClick={refreshRecommend}
             >
-              <Text className="sw-btn__text">换一套推荐</Text>
-            </View>
+              换一套推荐
+            </OutlineButton>
           ) : null}
           <Text className="try-on-actions__ai-hint">
             效果由 AI 生成，仅供参考

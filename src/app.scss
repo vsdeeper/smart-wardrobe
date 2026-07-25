@@ -245,6 +245,14 @@ page .nut-avatar .avatar-img {
   background: var(--nutui-gray-1);
   border-top: 1px solid var(--sw-color-progress-track);
   box-sizing: border-box;
+
+  // 底栏并排时均分宽度（组件默认不用 flex:1，避免纵向堆叠高度被压扁）
+  .solid-button,
+  .outline-button {
+    flex: 1;
+    width: auto;
+    min-width: 0;
+  }
 }
 
 // Dialog 内容区 + 自定义 footer（全局，穿透 NutUI Dialog 组件样式隔离）
