@@ -4,6 +4,7 @@ import type { TryOnRecommendation } from "@/data/tryOn";
 import type { WeatherSnapshot } from "@/data/weather";
 import type { WardrobeItem } from "@/data/wardrobe";
 import { saveVisualDiaryEntry } from "@/services/visualDiary";
+import { afterToastNavigate } from "@/utils/afterToastNavigate";
 
 interface UseTryOnWearOptions {
   recommendation: TryOnRecommendation | null;
@@ -48,9 +49,9 @@ export function useTryOnWear({
       });
 
       Taro.showToast({ title: "已记录到视觉日记", icon: "success" });
-      setTimeout(() => {
+      afterToastNavigate(() => {
         Taro.redirectTo({ url: "/pages/mine/index" });
-      }, 400);
+      });
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "保存失败，请稍后重试";

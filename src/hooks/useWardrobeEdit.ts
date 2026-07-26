@@ -10,6 +10,7 @@ import {
   fetchWardrobeItemById,
   updateWardrobeItem,
 } from "@/services/wardrobe";
+import { afterToastNavigate } from "@/utils/afterToastNavigate";
 
 function recognitionItemToDisplayItem(
   preview: RecognizedPreviewItem,
@@ -87,7 +88,7 @@ export function useWardrobeEdit() {
           tags,
         });
         Taro.showToast({ title: "已保存", icon: "success" });
-        Taro.navigateBack();
+        afterToastNavigate(() => Taro.navigateBack());
         return;
       }
 
@@ -100,7 +101,7 @@ export function useWardrobeEdit() {
         previousTypeId: item.typeId,
       });
       Taro.showToast({ title: "已保存", icon: "success" });
-      Taro.navigateBack();
+      afterToastNavigate(() => Taro.navigateBack());
     } catch (err) {
       const message = err instanceof Error ? err.message : "保存失败";
       Taro.showToast({ title: message, icon: "none" });

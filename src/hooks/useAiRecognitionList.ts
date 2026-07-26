@@ -17,6 +17,7 @@ import {
   resolvePreviewImageUrls,
   saveWardrobeItems,
 } from "@/services/wardrobe";
+import { afterToastNavigate } from "@/utils/afterToastNavigate";
 
 export function useAiRecognitionList() {
   const [items, setItems] = useState<RecognizedPreviewItem[]>([]);
@@ -51,7 +52,7 @@ export function useAiRecognitionList() {
 
     if (!batchId) {
       Taro.showToast({ title: "缺少识别记录", icon: "none" });
-      setTimeout(() => Taro.navigateBack(), 500);
+      afterToastNavigate(() => Taro.navigateBack());
       return;
     }
 
@@ -64,7 +65,7 @@ export function useAiRecognitionList() {
             ? "识别中，请稍候"
             : batch.errorMessage || "识别失败";
         Taro.showToast({ title, icon: "none" });
-        setTimeout(() => Taro.navigateBack(), 800);
+        afterToastNavigate(() => Taro.navigateBack());
         return;
       }
 
@@ -84,7 +85,7 @@ export function useAiRecognitionList() {
     } catch (err) {
       const message = err instanceof Error ? err.message : "加载失败";
       Taro.showToast({ title: message, icon: "none" });
-      setTimeout(() => Taro.navigateBack(), 800);
+      afterToastNavigate(() => Taro.navigateBack());
     }
   });
 

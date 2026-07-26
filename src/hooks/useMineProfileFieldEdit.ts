@@ -8,6 +8,7 @@ import {
   PROFILE_EDITABLE_FIELDS,
 } from "@/data/profile";
 import { useUserProfile } from "@/hooks/useUserProfile";
+import { afterToastNavigate } from "@/utils/afterToastNavigate";
 import {
   isValidMetric,
   METRIC_INVALID_TOAST,
@@ -64,7 +65,7 @@ export function useMineProfileFieldEdit() {
       const ok = await updateProfile({ occupation: value });
       if (ok) {
         Taro.showToast({ title: "已保存", icon: "success" });
-        Taro.navigateBack();
+        afterToastNavigate(() => Taro.navigateBack());
       }
       return;
     }
@@ -81,7 +82,7 @@ export function useMineProfileFieldEdit() {
       const ok = await updateProfile({ gender: genderDraft });
       if (ok) {
         Taro.showToast({ title: "已保存", icon: "success" });
-        Taro.navigateBack();
+        afterToastNavigate(() => Taro.navigateBack());
       }
       return;
     }
@@ -104,7 +105,7 @@ export function useMineProfileFieldEdit() {
       const ok = await updateProfile(patch);
       if (ok) {
         Taro.showToast({ title: "已保存", icon: "success" });
-        Taro.navigateBack();
+        afterToastNavigate(() => Taro.navigateBack());
       }
     }
   }, [
