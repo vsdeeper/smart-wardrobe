@@ -3,13 +3,15 @@ import "./index.scss";
 
 export interface OutfitMetaProps {
   title: string;
-  styleTags: string;
-  suggestion: string;
+  styleTags?: string;
+  subtitle?: string;
+  suggestion?: string;
 }
 
 export default function OutfitMeta({
   title,
   styleTags,
+  subtitle,
   suggestion,
 }: OutfitMetaProps) {
   return (
@@ -27,6 +29,9 @@ export default function OutfitMeta({
           </ScrollView>
         ) : null}
       </View>
+      {subtitle ? (
+        <Text className="outfit-meta__subtitle">{subtitle}</Text>
+      ) : null}
       {suggestion ? (
         <View className="outfit-meta__suggestion">
           <Text className="outfit-meta__suggestion-icon">✦</Text>

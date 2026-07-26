@@ -1,7 +1,7 @@
 import Taro from "@tarojs/taro";
 import { VISUAL_DIARY_PAGE_SIZE } from "@/data/tryOn";
+import type { TryOnTip, VisualDiaryEntry } from "@/data/tryOn";
 import type { WeatherSnapshot } from "@/data/weather";
-import type { VisualDiaryEntry } from "@/data/tryOn";
 import { isEphemeralExternalImageUrl } from "@/utils/imageUrl";
 
 export interface SaveVisualDiaryInput {
@@ -10,12 +10,31 @@ export interface SaveVisualDiaryInput {
   coverFileId?: string;
   coverUrl?: string;
   pieceIds: string[];
+  tips?: TryOnTip[];
   weatherSnapshot?: WeatherSnapshot;
 }
 
 export interface FetchVisualDiaryEntriesOptions {
   skip?: number;
   limit?: number;
+}
+
+function normalizeTips(raw: unknown): TryOnTip[] | undefined {
+  if (!Array.isArray(raw)) return undefined;
+  const tips = raw
+    .map((item) => {
+      if (!item || typeof item !== "object") return null;
+      const tip = item as Record<string, unknown>;
+      const label = typeof tip.label === "string" ? tip.label.trim() : "";
+      if (!label) return null;
+      return {
+        id: typeof tip.id === "number" ? tip.id : 0,
+        icon: typeof tip.icon === "string" ? tip.icon : "",
+        label,
+      } satisfies TryOnTip;
+    })
+    .filter((tip): tip is TryOnTip => tip !== null);
+  return tips.length > 0 ? tips : undefined;
 }
 
 function normalizeEntry(raw: Record<string, unknown>): VisualDiaryEntry {
@@ -34,6 +53,7 @@ function normalizeEntry(raw: Record<string, unknown>): VisualDiaryEntry {
       typeof raw.coverFileId === "string" ? raw.coverFileId : undefined,
     coverUrl: typeof raw.coverUrl === "string" ? raw.coverUrl : undefined,
     pieceIds: Array.isArray(raw.pieceIds) ? raw.pieceIds.map(String) : [],
+    tips: normalizeTips(raw.tips),
     weatherSnapshot:
       raw.weatherSnapshot &&
       typeof raw.weatherSnapshot === "object"
@@ -77,6 +97,7 @@ export async function saveVisualDiaryEntry(
     title: input.title.trim(),
     description: input.description.trim(),
     pieceIds: input.pieceIds,
+    tips: input.tips ?? [],
     weatherSnapshot: input.weatherSnapshot ?? null,
     createdAt: now,
   };

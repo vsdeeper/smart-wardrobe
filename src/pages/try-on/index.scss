@@ -61,20 +61,6 @@
   color: var(--sw-color-on-primary);
 }
 
-// ========== 整卡：主图 + 信息区（对齐设计稿） ==========
-.outfit-card {
-  margin-bottom: var(--nutui-spacing-8);
-  border-radius: var(--sw-radius-card);
-  overflow: hidden;
-  background: var(--nutui-gray-1);
-  box-shadow: 0 20px 40px -16px rgba(176, 196, 222, 0.28);
-
-  &__body {
-    padding: 20px 16px 20px;
-    background: var(--nutui-gray-1);
-  }
-}
-
 // ========== 试穿页滚动区（底部留白，避免按钮阴影被 TabBar 区域裁切） ==========
 .main-scroll--try-on {
   padding-bottom: calc(75px + var(--sw-safe-area-bottom, 0px));

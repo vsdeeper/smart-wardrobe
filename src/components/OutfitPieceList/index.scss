@@ -16,6 +16,11 @@
   gap: 8px;
   // 卡片内容区约可并排 4 格，对齐设计图比例；超出可横滑
   width: 68px;
+  transition: transform 0.2s ease;
+
+  &--pressed {
+    transform: scale(0.96);
+  }
 
   &__image-wrap {
     position: relative;

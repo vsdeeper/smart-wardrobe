@@ -114,6 +114,7 @@ export function useTryOnRecommend() {
         writeTryOnCache({
           recommendation: rec,
           selectedPieces: pieces,
+          weatherSnapshot: weather,
         });
         setStatus("success");
       } catch (err) {
@@ -142,6 +143,7 @@ export function useTryOnRecommend() {
     allItemsRef.current = pieces;
     setRecommendation(cache.recommendation);
     setSelectedPieces(pieces);
+    setWeatherSnapshot(cache.weatherSnapshot ?? null);
     setFromCache(true);
     setSavedReturn(null);
     setStatus("success");
@@ -178,6 +180,7 @@ export function useTryOnRecommend() {
       const cache = readTryOnCache();
       if (cache) {
         setRecommendation(cache.recommendation);
+        setWeatherSnapshot(cache.weatherSnapshot ?? null);
       } else {
         setRecommendation({
           outfitName: "我的搭配",

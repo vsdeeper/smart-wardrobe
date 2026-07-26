@@ -5,9 +5,13 @@ import "./index.scss";
 
 export interface OutfitPieceListProps {
   pieces: WardrobeItem[];
+  onPieceClick?: (pieceId: string) => void;
 }
 
-export default function OutfitPieceList({ pieces }: OutfitPieceListProps) {
+export default function OutfitPieceList({
+  pieces,
+  onPieceClick,
+}: OutfitPieceListProps) {
   if (pieces.length === 0) return null;
 
   return (
@@ -19,7 +23,16 @@ export default function OutfitPieceList({ pieces }: OutfitPieceListProps) {
     >
       <View className="outfit-list__row">
         {pieces.map((piece) => (
-          <View key={piece._id} className="outfit-piece">
+          <View
+            key={piece._id}
+            className="outfit-piece"
+            hoverClass={onPieceClick ? "outfit-piece--pressed" : undefined}
+            hoverStartTime={0}
+            hoverStayTime={100}
+            onClick={
+              onPieceClick ? () => onPieceClick(piece._id) : undefined
+            }
+          >
             <View className="outfit-piece__image-wrap">
               <Image
                 className="outfit-piece__image"

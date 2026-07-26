@@ -24,6 +24,7 @@ export interface TryOnDailyCache {
   dateKey: string;
   recommendation: TryOnRecommendation;
   selectedPieces: WardrobeItem[];
+  weatherSnapshot?: WeatherSnapshot;
   heroCoverFileId?: string;
   heroImageUrl?: string;
   cachedAt: number;
@@ -39,6 +40,7 @@ export interface VisualDiaryEntry {
   coverFileId?: string;
   coverUrl?: string;
   pieceIds: string[];
+  tips?: TryOnTip[];
   weatherSnapshot?: WeatherSnapshot;
   createdAt: number;
 }

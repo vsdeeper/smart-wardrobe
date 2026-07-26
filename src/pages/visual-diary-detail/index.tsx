@@ -1,11 +1,33 @@
 import { View, Text, ScrollView } from "@tarojs/components";
 import Taro from "@tarojs/taro";
 import { Loading, NavBar } from "@nutui/nutui-react-taro";
+import OutfitCard from "@/components/OutfitCard";
+import OutfitHero from "@/components/OutfitHero";
+import OutfitMeta from "@/components/OutfitMeta";
+import OutfitPieceList from "@/components/OutfitPieceList";
+import {
+  buildWeatherCardView,
+  formatLocationLabel,
+  type WeatherSnapshot,
+} from "@/data/weather";
 import { useVisualDiaryDetail } from "@/hooks/useVisualDiaryDetail";
-import DiaryDetailHero from "./components/DiaryDetailHero";
-import DiaryDetailMeta from "./components/DiaryDetailMeta";
-import DiaryDetailPieces from "./components/DiaryDetailPieces";
+import { formatDateTime } from "@/utils/formatDateTime";
 import "./index.scss";
+
+function buildDiarySubtitle(
+  createdAt: number,
+  weatherSnapshot: WeatherSnapshot | undefined,
+): string {
+  const date = formatDateTime(createdAt);
+  if (!weatherSnapshot) return date;
+
+  const weather = buildWeatherCardView(weatherSnapshot);
+  const location = formatLocationLabel(
+    weatherSnapshot.city,
+    weatherSnapshot.district,
+  );
+  return `${date} · ${location} · ${weather.temperature}°C ${weather.conditionLabel}`;
+}
 
 function VisualDiaryDetailPage() {
   const { entry, pieces, loading, error, handleBack, handlePieceClick } =
@@ -15,6 +37,11 @@ function VisualDiaryDetailPage() {
   const safeAreaBottom = safeArea
     ? Taro.getWindowInfo().screenHeight - safeArea.bottom
     : 0;
+
+  const styleTags = (entry?.tips ?? [])
+    .map((tip) => tip.label)
+    .filter(Boolean)
+    .join(" / ");
 
   return (
     <View
@@ -52,11 +79,28 @@ function VisualDiaryDetailPage() {
         )}
 
         {!loading && entry && (
-          <View className="visual-diary-detail-page__content">
-            <DiaryDetailHero entry={entry} />
-            <DiaryDetailMeta entry={entry} />
-            <DiaryDetailPieces pieces={pieces} onPieceClick={handlePieceClick} />
-          </View>
+          <OutfitCard
+            hero={
+              <OutfitHero
+                heroImageUrl={entry.coverUrl}
+                heroCoverFileId={entry.coverFileId}
+              />
+            }
+          >
+            <OutfitMeta
+              title={entry.title}
+              styleTags={styleTags}
+              subtitle={buildDiarySubtitle(
+                entry.createdAt,
+                entry.weatherSnapshot,
+              )}
+              suggestion={entry.description}
+            />
+            <OutfitPieceList
+              pieces={pieces}
+              onPieceClick={handlePieceClick}
+            />
+          </OutfitCard>
         )}
       </ScrollView>
     </View>

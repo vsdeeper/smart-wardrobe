@@ -33,6 +33,8 @@ export function writeTryOnCache(
     dateKey: partial.dateKey ?? getDateKey(),
     recommendation: partial.recommendation ?? existing?.recommendation!,
     selectedPieces: partial.selectedPieces ?? existing?.selectedPieces ?? [],
+    weatherSnapshot:
+      partial.weatherSnapshot ?? existing?.weatherSnapshot,
     heroCoverFileId: partial.heroCoverFileId ?? existing?.heroCoverFileId,
     heroImageUrl: partial.heroImageUrl ?? existing?.heroImageUrl,
     cachedAt: partial.cachedAt ?? Date.now(),

@@ -3,6 +3,10 @@ import { View, Text } from "@tarojs/components";
 import Taro from "@tarojs/taro";
 import AppNavbar from "@/components/AppNavbar";
 import GenderSetupChoices from "@/components/GenderSetupChoices";
+import OutfitCard from "@/components/OutfitCard";
+import OutfitHero from "@/components/OutfitHero";
+import OutfitMeta from "@/components/OutfitMeta";
+import OutfitPieceList from "@/components/OutfitPieceList";
 import OutlineButton from "@/components/OutlineButton";
 import PageLoading from "@/components/PageLoading";
 import { useMainTabNavigation } from "@/hooks/useMainTabNavigation";
@@ -13,9 +17,6 @@ import { useWeather } from "@/hooks/useWeather";
 import type { Gender } from "@/data/profile";
 import { applyGenderSetupWithToast } from "@/services/applyGenderSetup";
 import Main from "@/layouts/Main";
-import OutfitHero from "./components/OutfitHero";
-import OutfitMeta from "./components/OutfitMeta";
-import OutfitPieceList from "./components/OutfitPieceList";
 import WearCta from "./components/WearCta";
 import "./index.scss";
 
@@ -136,26 +137,27 @@ function TryOnPage() {
 
     return (
       <>
-        <View className="outfit-card">
-          <OutfitHero
-            heroImageUrl={heroImageUrl}
-            heroCoverFileId={heroCoverFileId}
-            previewStatus={previewStatus}
-            previewErrorMessage={previewErrorMessage}
-            onRetryPreview={generatePreview}
-            weatherStatus={weatherStatus}
-            weatherViewModel={weatherViewModel}
-            onWeatherClick={handleWeatherClick}
-          />
-          <View className="outfit-card__body">
-            <OutfitMeta
-              title={recommendation?.outfitName ?? "今日推荐"}
-              styleTags={styleTags}
-              suggestion={recommendation?.description ?? ""}
+        <OutfitCard
+          hero={
+            <OutfitHero
+              heroImageUrl={heroImageUrl}
+              heroCoverFileId={heroCoverFileId}
+              previewStatus={previewStatus}
+              previewErrorMessage={previewErrorMessage}
+              onRetryPreview={generatePreview}
+              weatherStatus={weatherStatus}
+              weatherViewModel={weatherViewModel}
+              onWeatherClick={handleWeatherClick}
             />
-            <OutfitPieceList pieces={selectedPieces} />
-          </View>
-        </View>
+          }
+        >
+          <OutfitMeta
+            title={recommendation?.outfitName ?? "今日推荐"}
+            styleTags={styleTags}
+            suggestion={recommendation?.description ?? ""}
+          />
+          <OutfitPieceList pieces={selectedPieces} />
+        </OutfitCard>
         <View className="try-on-actions">
           <WearCta
             loading={saving}

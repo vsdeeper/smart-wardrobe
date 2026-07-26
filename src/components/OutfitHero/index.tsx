@@ -6,14 +6,14 @@ import type { WeatherLoadStatus } from "@/services/weather";
 import "./index.scss";
 
 export interface OutfitHeroProps {
-  heroImageUrl: string | null;
-  heroCoverFileId: string | null;
-  previewStatus: TryOnPreviewStatus;
+  heroImageUrl?: string | null;
+  heroCoverFileId?: string | null;
+  previewStatus?: TryOnPreviewStatus;
   previewErrorMessage?: string | null;
   onRetryPreview?: () => void;
-  weatherStatus: WeatherLoadStatus;
-  weatherViewModel: WeatherCardViewModel | null;
-  onWeatherClick: () => void;
+  weatherStatus?: WeatherLoadStatus;
+  weatherViewModel?: WeatherCardViewModel | null;
+  onWeatherClick?: () => void;
 }
 
 function WeatherChip({
@@ -67,6 +67,8 @@ export default function OutfitHero({
   const isLoading = previewStatus === "loading";
   const isError = previewStatus === "error";
   const heroSrc = heroImageUrl || heroCoverFileId;
+  const showWeatherChip =
+    weatherStatus !== undefined && typeof onWeatherClick === "function";
 
   return (
     <View className="outfit-hero">
@@ -94,11 +96,13 @@ export default function OutfitHero({
           ) : null}
         </View>
       )}
-      <WeatherChip
-        status={weatherStatus}
-        viewModel={weatherViewModel}
-        onClick={onWeatherClick}
-      />
+      {showWeatherChip ? (
+        <WeatherChip
+          status={weatherStatus}
+          viewModel={weatherViewModel ?? null}
+          onClick={onWeatherClick}
+        />
+      ) : null}
     </View>
   );
 }
