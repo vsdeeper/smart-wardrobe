@@ -1,8 +1,9 @@
-import { View, Text, ScrollView } from "@tarojs/components";
-import Taro from "@tarojs/taro";
-import { Cell, Input as NutInput, Loading, NavBar } from "@nutui/nutui-react-taro";
+import { View, Text } from "@tarojs/components";
+import { Cell, Input as NutInput, Loading } from "@nutui/nutui-react-taro";
+import AppNavbar from "@/components/AppNavbar";
 import { GENDER_OPTIONS } from "@/data/profile";
 import { useMineProfileFieldEdit } from "@/hooks/useMineProfileFieldEdit";
+import Main from "@/layouts/Main";
 import "./index.scss";
 
 function MineProfileFieldPage() {
@@ -19,11 +20,6 @@ function MineProfileFieldPage() {
     handleBack,
     handleSave,
   } = useMineProfileFieldEdit();
-
-  const { statusBarHeight, safeArea } = Taro.getWindowInfo();
-  const safeAreaBottom = safeArea
-    ? Taro.getWindowInfo().screenHeight - safeArea.bottom
-    : 0;
 
   const renderFieldInput = () => {
     if (!field || !fieldMeta) return null;
@@ -95,38 +91,30 @@ function MineProfileFieldPage() {
   };
 
   return (
-    <View
-      className="mine-profile-field-page"
-      style={{
-        ["--sw-status-bar-height" as string]: `${statusBarHeight ?? 0}px`,
-        ["--sw-safe-area-bottom" as string]: `${safeAreaBottom}px`,
-      }}
+    <Main
+      showTabbar={false}
+      scrollClassName={
+        !loading && field ? "main-scroll--mine-profile-field" : undefined
+      }
+      header={
+        <AppNavbar
+          showBack
+          title={fieldMeta?.title ?? "编辑资料"}
+          onBack={handleBack}
+        />
+      }
     >
-      <NavBar
-        safeAreaInsetTop
-        className="mine-profile-field-page__navbar"
-        back={<Text className="mine-profile-field-page__back">返回</Text>}
-        onBackClick={handleBack}
-      >
-        <Text className="mine-profile-field-page__title">
-          {fieldMeta?.title ?? "编辑资料"}
-        </Text>
-      </NavBar>
-
-      <ScrollView
-        className="mine-profile-field-page__scroll"
-        scrollY
-        enhanced
-        showScrollbar={false}
-      >
-        {loading || !field ? (
-          <View className="mine-profile-field-page__state">
-            <Loading type="circular" />
-          </View>
-        ) : (
-          renderFieldInput()
-        )}
-      </ScrollView>
+      <Main.Scroll>
+        <View className="mine-profile-field-page">
+          {loading || !field ? (
+            <View className="mine-profile-field-page__state">
+              <Loading type="circular" />
+            </View>
+          ) : (
+            renderFieldInput()
+          )}
+        </View>
+      </Main.Scroll>
 
       {!loading && field ? (
         <View className="sw-action-bar">
@@ -163,7 +151,7 @@ function MineProfileFieldPage() {
           </View>
         </View>
       ) : null}
-    </View>
+    </Main>
   );
 }
 

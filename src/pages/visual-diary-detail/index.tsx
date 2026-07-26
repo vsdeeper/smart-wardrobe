@@ -1,6 +1,6 @@
-import { View, Text, ScrollView } from "@tarojs/components";
-import Taro from "@tarojs/taro";
-import { Loading, NavBar } from "@nutui/nutui-react-taro";
+import { View, Text } from "@tarojs/components";
+import { Loading } from "@nutui/nutui-react-taro";
+import AppNavbar from "@/components/AppNavbar";
 import OutfitCard from "@/components/OutfitCard";
 import OutfitHero from "@/components/OutfitHero";
 import OutfitMeta from "@/components/OutfitMeta";
@@ -11,6 +11,7 @@ import {
   type WeatherSnapshot,
 } from "@/data/weather";
 import { useVisualDiaryDetail } from "@/hooks/useVisualDiaryDetail";
+import Main from "@/layouts/Main";
 import { formatDateTime } from "@/utils/formatDateTime";
 import "./index.scss";
 
@@ -30,13 +31,8 @@ function buildDiarySubtitle(
 }
 
 function VisualDiaryDetailPage() {
-  const { entry, pieces, loading, error, handleBack, handlePieceClick } =
+  const { entry, pieces, loading, error, handlePieceClick } =
     useVisualDiaryDetail();
-
-  const { statusBarHeight, safeArea } = Taro.getWindowInfo();
-  const safeAreaBottom = safeArea
-    ? Taro.getWindowInfo().screenHeight - safeArea.bottom
-    : 0;
 
   const styleTags = (entry?.tips ?? [])
     .map((tip) => tip.label)
@@ -44,28 +40,11 @@ function VisualDiaryDetailPage() {
     .join(" / ");
 
   return (
-    <View
-      className="visual-diary-detail-page"
-      style={{
-        ["--sw-status-bar-height" as string]: `${statusBarHeight ?? 0}px`,
-        ["--sw-safe-area-bottom" as string]: `${safeAreaBottom}px`,
-      }}
+    <Main
+      showTabbar={false}
+      header={<AppNavbar showBack title="穿搭详情" />}
     >
-      <NavBar
-        safeAreaInsetTop
-        className="visual-diary-detail-page__navbar"
-        back={<Text className="visual-diary-detail-page__back">返回</Text>}
-        onBackClick={handleBack}
-      >
-        <Text className="visual-diary-detail-page__title">穿搭详情</Text>
-      </NavBar>
-
-      <ScrollView
-        className="visual-diary-detail-page__scroll"
-        scrollY
-        enhanced
-        showScrollbar={false}
-      >
+      <Main.Scroll>
         {loading && (
           <View className="visual-diary-detail-page__state">
             <Loading type="circular" />
@@ -102,8 +81,8 @@ function VisualDiaryDetailPage() {
             />
           </OutfitCard>
         )}
-      </ScrollView>
-    </View>
+      </Main.Scroll>
+    </Main>
   );
 }
 

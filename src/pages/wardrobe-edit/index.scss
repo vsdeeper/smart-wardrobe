@@ -1,35 +1,8 @@
+.main-scroll--wardrobe-edit {
+  padding-bottom: calc(88px + var(--sw-safe-area-bottom, 0px));
+}
+
 .wardrobe-edit-page {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  background: var(--nutui-gray-3);
-  box-sizing: border-box;
-
-  &__navbar {
-    flex-shrink: 0;
-  }
-
-  &__back {
-    font-size: var(--nutui-font-size-3);
-    color: var(--nutui-gray-7);
-  }
-
-  &__title {
-    font-family: var(--sw-font-heading);
-    font-size: var(--nutui-font-size-4);
-    font-weight: var(--nutui-font-weight-bold);
-    color: var(--nutui-gray-7);
-  }
-
-  &__scroll {
-    flex: 1;
-    height: 0;
-    padding: var(--nutui-spacing-5) var(--nutui-spacing-5)
-      calc(88px + var(--sw-safe-area-bottom, 0px));
-    margin-top: calc(-1 * var(--nutui-navbar-margin-bottom, 20px));
-    box-sizing: border-box;
-  }
-
   &__content {
     display: flex;
     flex-direction: column;
@@ -51,6 +24,7 @@
     color: var(--nutui-gray-5);
     text-align: center;
   }
+
   .wardrobe-detail-hero__image-wrap {
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;

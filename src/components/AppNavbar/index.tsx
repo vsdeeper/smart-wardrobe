@@ -10,7 +10,13 @@ import "./index.scss";
 const MINE_PROFILE_ROUTE = "pages/mine-profile/index";
 const NAVBAR_CONTENT_HEIGHT = 44;
 
-function AppNavbar() {
+export interface AppNavbarProps {
+  title?: string;
+  showBack?: boolean;
+  onBack?: () => void;
+}
+
+function AppNavbar({ title, showBack = false, onBack }: AppNavbarProps) {
   const { profile, avatarUrl, onAvatarLoadError } = useUserProfile();
   const { statusBarHeight = 0 } = Taro.getWindowInfo();
   const barHeight = statusBarHeight + NAVBAR_CONTENT_HEIGHT;
@@ -21,6 +27,14 @@ function AppNavbar() {
     if (currentRoute === MINE_PROFILE_ROUTE) return;
 
     Taro.navigateTo({ url: "/pages/mine-profile/index" });
+  };
+
+  const handleBackClick = () => {
+    if (onBack) {
+      onBack();
+      return;
+    }
+    Taro.navigateBack();
   };
 
   return (
@@ -34,20 +48,28 @@ function AppNavbar() {
         boxSizing: "border-box",
         ["--sw-navbar-inset-top" as string]: `${statusBarHeight}px`,
       }}
-      left={
-        <View className="navbar-brand" onClick={handleBrandClick}>
-          <DefaultAvatar
-            size="sm"
-            src={avatarUrl}
-            onLoadError={onAvatarLoadError}
-          />
-
-          <Text className="navbar-brand__title">
-            {getUserDisplayName(profile)}
-          </Text>
-        </View>
+      back={
+        showBack ? <Text className="app-navbar__back">返回</Text> : undefined
       }
-    />
+      onBackClick={showBack ? handleBackClick : undefined}
+      left={
+        showBack ? undefined : (
+          <View className="navbar-brand" onClick={handleBrandClick}>
+            <DefaultAvatar
+              size="sm"
+              src={avatarUrl}
+              onLoadError={onAvatarLoadError}
+            />
+
+            <Text className="navbar-brand__title">
+              {getUserDisplayName(profile)}
+            </Text>
+          </View>
+        )
+      }
+    >
+      {title ? <Text className="app-navbar__title">{title}</Text> : null}
+    </NavBar>
   );
 }
 

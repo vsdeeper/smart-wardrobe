@@ -1,55 +1,20 @@
+.main-scroll--ai-recognition {
+  padding-bottom: calc(88px + var(--sw-safe-area-bottom, 0px));
+}
+
 .ai-recognition-page {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  background: var(--nutui-gray-3);
-  box-sizing: border-box;
-
-  &__navbar {
-    flex-shrink: 0;
-  }
-
-  &__back {
-    font-size: var(--nutui-font-size-3);
-    color: var(--nutui-gray-7);
-  }
-
-  &__title {
-    font-family: var(--sw-font-heading);
-    font-size: var(--nutui-font-size-4);
-    font-weight: var(--nutui-font-weight-bold);
-    color: var(--nutui-gray-7);
-  }
-
   &__loading {
-    flex: 1;
     min-height: 60vh;
   }
 
   &__status {
-    flex-shrink: 0;
-    padding: var(--nutui-spacing-3) var(--nutui-spacing-5);
+    margin-bottom: var(--nutui-spacing-3);
   }
 
   &__status-text {
     font-family: var(--sw-font-body);
     font-size: var(--nutui-font-size-2);
     color: var(--nutui-gray-5);
-  }
-
-  &__scroll {
-    flex: 1;
-    height: 0;
-    padding: var(--nutui-spacing-5) var(--nutui-spacing-5)
-      calc(88px + var(--sw-safe-area-bottom, 0px));
-    margin-top: calc(-1 * var(--nutui-navbar-margin-bottom, 20px));
-    box-sizing: border-box;
-  }
-
-  &--readonly &__scroll {
-    padding-bottom: calc(
-      var(--nutui-spacing-8) + var(--sw-safe-area-bottom, 0px)
-    );
   }
 
   &__list {

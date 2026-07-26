@@ -1,8 +1,11 @@
-import { View, Text, ScrollView } from "@tarojs/components";
-import Taro from "@tarojs/taro";
-import { Loading, NavBar } from "@nutui/nutui-react-taro";
+import { View, Text } from "@tarojs/components";
+import { Loading } from "@nutui/nutui-react-taro";
+import AppNavbar from "@/components/AppNavbar";
+import OutlineButton from "@/components/OutlineButton";
+import SolidButton from "@/components/SolidButton";
 import WardrobeDetailHero from "@/components/WardrobeDetailHero";
 import { useWardrobeEdit } from "@/hooks/useWardrobeEdit";
+import Main from "@/layouts/Main";
 import {
   WardrobeEditFormFields,
   WardrobeEditFormOverlays,
@@ -30,61 +33,18 @@ function WardrobeEditPage() {
     isRecognitionMode,
   } = useWardrobeEdit();
 
-  const { statusBarHeight, safeArea } = Taro.getWindowInfo();
-  const safeAreaBottom = safeArea
-    ? Taro.getWindowInfo().screenHeight - safeArea.bottom
-    : 0;
+  const ready = !loading && !!item;
 
-  return (
-    <View
-      className="wardrobe-edit-page"
-      style={{
-        ["--sw-status-bar-height" as string]: `${statusBarHeight ?? 0}px`,
-        ["--sw-safe-area-bottom" as string]: `${safeAreaBottom}px`,
-      }}
+  const main = (
+    <Main
+      showTabbar={false}
+      header={
+        <AppNavbar showBack title="编辑衣物" onBack={handleCancel} />
+      }
+      scrollClassName={ready ? "main-scroll--wardrobe-edit" : undefined}
     >
-      <NavBar
-        safeAreaInsetTop
-        className="wardrobe-edit-page__navbar"
-        back={<Text className="wardrobe-edit-page__back">返回</Text>}
-        onBackClick={handleCancel}
-      >
-        <Text className="wardrobe-edit-page__title">编辑衣物</Text>
-      </NavBar>
-
-      {!loading && item ? (
-        <WardrobeEditFormProvider
-          name={name}
-          typeName={typeName}
-          tags={tags}
-          outfitRecommendation={outfitRecommendation}
-          clothingTypes={clothingTypes}
-          hideOutfitRecommendation={isRecognitionMode}
-          onNameChange={setName}
-          onTypeNameChange={setTypeName}
-          onTagsChange={setTags}
-          onOutfitRecommendationChange={setOutfitRecommendation}
-        >
-          <ScrollView
-            className="wardrobe-edit-page__scroll"
-            scrollY
-            enhanced
-            showScrollbar={false}
-          >
-            <View className="wardrobe-edit-page__content">
-              <WardrobeDetailHero item={item} />
-              <WardrobeEditFormFields />
-            </View>
-          </ScrollView>
-          <WardrobeEditFormOverlays />
-        </WardrobeEditFormProvider>
-      ) : (
-        <ScrollView
-          className="wardrobe-edit-page__scroll"
-          scrollY
-          enhanced
-          showScrollbar={false}
-        >
+      <Main.Scroll>
+        <View className="wardrobe-edit-page">
           {loading && (
             <View className="wardrobe-edit-page__state">
               <Loading type="circular" />
@@ -96,44 +56,47 @@ function WardrobeEditPage() {
               <Text className="wardrobe-edit-page__state-text">{error}</Text>
             </View>
           )}
-        </ScrollView>
-      )}
 
-      {!loading && item && (
-        <View className="sw-action-bar">
-          <View
-            className={[
-              "sw-btn sw-btn--block sw-btn--secondary",
-              saving && "sw-btn--disabled",
-            ]
-              .filter(Boolean)
-              .join(" ")}
-            onClick={handleCancel}
-          >
-            <Text className="sw-btn__text">取消</Text>
-          </View>
-          <View
-            className={[
-              "sw-btn sw-btn--block sw-btn--primary",
-              saving && "sw-btn--loading",
-            ]
-              .filter(Boolean)
-              .join(" ")}
-            onClick={handleSave}
-          >
-            {saving ? (
-              <Loading
-                type="circular"
-                color="var(--sw-color-on-primary)"
-                className="sw-btn-loading"
-              />
-            ) : (
-              <Text className="sw-btn__text sw-btn__text--primary">保存</Text>
-            )}
-          </View>
+          {ready && item && (
+            <View className="wardrobe-edit-page__content">
+              <WardrobeDetailHero item={item} />
+              <WardrobeEditFormFields />
+            </View>
+          )}
         </View>
-      )}
-    </View>
+      </Main.Scroll>
+
+      {ready ? <WardrobeEditFormOverlays /> : null}
+      {ready ? (
+        <View className="sw-action-bar">
+          <OutlineButton block disabled={saving} onClick={handleCancel}>
+            取消
+          </OutlineButton>
+          <SolidButton block loading={saving} onClick={handleSave}>
+            保存
+          </SolidButton>
+        </View>
+      ) : null}
+    </Main>
+  );
+
+  if (!ready) return main;
+
+  return (
+    <WardrobeEditFormProvider
+      name={name}
+      typeName={typeName}
+      tags={tags}
+      outfitRecommendation={outfitRecommendation}
+      clothingTypes={clothingTypes}
+      hideOutfitRecommendation={isRecognitionMode}
+      onNameChange={setName}
+      onTypeNameChange={setTypeName}
+      onTagsChange={setTags}
+      onOutfitRecommendationChange={setOutfitRecommendation}
+    >
+      {main}
+    </WardrobeEditFormProvider>
   );
 }
 

@@ -21,6 +21,12 @@
     )
     var(--nutui-spacing-7) calc(90px + var(--sw-safe-area-bottom, 0px));
   box-sizing: border-box;
+
+  &--no-tabbar {
+    padding-bottom: calc(
+      var(--nutui-spacing-10) + var(--sw-safe-area-bottom, 0px)
+    );
+  }
 }
 
 .main-tabbar {

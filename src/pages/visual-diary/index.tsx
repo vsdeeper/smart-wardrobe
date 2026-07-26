@@ -1,10 +1,11 @@
 import { useCallback, useRef } from "react";
-import { View, Text, ScrollView } from "@tarojs/components";
-import Taro from "@tarojs/taro";
-import { NavBar, Swipe } from "@nutui/nutui-react-taro";
+import { View, Text } from "@tarojs/components";
+import { Swipe } from "@nutui/nutui-react-taro";
+import AppNavbar from "@/components/AppNavbar";
 import MediaListCard from "@/components/MediaListCard";
 import PageLoading from "@/components/PageLoading";
 import { useVisualDiaryList } from "@/hooks/useVisualDiaryList";
+import Main from "@/layouts/Main";
 import { formatDateTime } from "@/utils/formatDateTime";
 import "./index.scss";
 
@@ -59,43 +60,18 @@ function VisualDiaryPage() {
     [handleDelete],
   );
 
-  const handleBack = useCallback(() => {
-    Taro.navigateBack();
-  }, []);
-
-  const { statusBarHeight, safeArea } = Taro.getWindowInfo();
-  const safeAreaBottom = safeArea
-    ? Taro.getWindowInfo().screenHeight - safeArea.bottom
-    : 0;
-
   return (
-    <View
-      className="visual-diary-page"
-      style={{
-        ["--sw-status-bar-height" as string]: `${statusBarHeight ?? 0}px`,
-        ["--sw-safe-area-bottom" as string]: `${safeAreaBottom}px`,
-      }}
+    <Main
+      showTabbar={false}
+      header={<AppNavbar showBack title="视觉日记" />}
     >
-      <NavBar
-        safeAreaInsetTop
-        className="visual-diary-page__navbar"
-        back={<Text className="visual-diary-page__back">返回</Text>}
-        onBackClick={handleBack}
+      <Main.Scroll
+        lowerThreshold={120}
+        onScrollToLower={handleScrollToLower}
       >
-        <Text className="visual-diary-page__title">视觉日记</Text>
-      </NavBar>
-
-      {initialLoading ? (
-        <PageLoading />
-      ) : (
-        <ScrollView
-          className="visual-diary-page__scroll"
-          scrollY
-          enhanced
-          showScrollbar={false}
-          lowerThreshold={120}
-          onScrollToLower={handleScrollToLower}
-        >
+        {initialLoading ? (
+          <PageLoading />
+        ) : (
           <View className="visual-diary-page__list">
             {entries.map((entry) => {
               const entryId = entry._id ?? "";
@@ -156,9 +132,9 @@ function VisualDiaryPage() {
               <PageLoading text="加载更多..." />
             )}
           </View>
-        </ScrollView>
-      )}
-    </View>
+        )}
+      </Main.Scroll>
+    </Main>
   );
 }
 

@@ -28,6 +28,8 @@ export interface MainProps {
   activeTab?: number;
   onTabChange?: (index: number) => void;
   scrollClassName?: string;
+  /** 二级页传 false，隐藏底部 Tabbar */
+  showTabbar?: boolean;
 }
 
 function Main({
@@ -36,6 +38,7 @@ function Main({
   activeTab: activeTabProp,
   onTabChange,
   scrollClassName,
+  showTabbar = true,
 }: MainProps) {
   const [internalTab, setInternalTab] = useState(0);
   const isControlled = activeTabProp !== undefined;
@@ -62,7 +65,11 @@ function Main({
     onTabChange?.(index);
   };
 
-  const scrollClass = ["main-scroll", scrollClassName]
+  const scrollClass = [
+    "main-scroll",
+    !showTabbar && "main-scroll--no-tabbar",
+    scrollClassName,
+  ]
     .filter(Boolean)
     .join(" ");
 
@@ -75,7 +82,7 @@ function Main({
       style={{
         ["--sw-status-bar-height" as string]: `${statusBarHeight ?? 0}px`,
         ["--sw-safe-area-bottom" as string]: `${safeAreaBottom}px`,
-        ["--sw-tabbar-offset" as string]: "56px",
+        ["--sw-tabbar-offset" as string]: showTabbar ? "56px" : "0px",
       }}
     >
       {header}
@@ -92,27 +99,29 @@ function Main({
         >
           {scrollContent}
         </ScrollView>
-        <Tabbar
-          fixed
-          safeArea
-          value={activeTab}
-          activeColor="var(--nutui-brand-6)"
-          inactiveColor="var(--nutui-gray-5)"
-          className="main-tabbar"
-          onSwitch={handleSwitch}
-        >
-          {BOTTOM_TABS.map((tab) => (
-            <Tabbar.Item
-              key={tab.key}
-              title={tab.label}
-              icon={
-                <View className="main-tabbar-icon">
-                  <Text className={`iconfont ${tab.iconClass}`} />
-                </View>
-              }
-            />
-          ))}
-        </Tabbar>
+        {showTabbar ? (
+          <Tabbar
+            fixed
+            safeArea
+            value={activeTab}
+            activeColor="var(--nutui-brand-6)"
+            inactiveColor="var(--nutui-gray-5)"
+            className="main-tabbar"
+            onSwitch={handleSwitch}
+          >
+            {BOTTOM_TABS.map((tab) => (
+              <Tabbar.Item
+                key={tab.key}
+                title={tab.label}
+                icon={
+                  <View className="main-tabbar-icon">
+                    <Text className={`iconfont ${tab.iconClass}`} />
+                  </View>
+                }
+              />
+            ))}
+          </Tabbar>
+        ) : null}
       </View>
       {overlayChildren}
     </View>

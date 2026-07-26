@@ -10,6 +10,18 @@
   .nut-navbar-right {
     top: var(--sw-navbar-inset-top, 0px);
   }
+
+  &__back {
+    font-size: var(--nutui-font-size-3);
+    color: var(--nutui-gray-7);
+  }
+
+  &__title {
+    font-family: var(--sw-font-heading);
+    font-size: var(--nutui-font-size-4);
+    font-weight: var(--nutui-font-weight-bold);
+    color: var(--nutui-gray-7);
+  }
 }
 
 .navbar-brand {

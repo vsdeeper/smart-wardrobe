@@ -1,9 +1,10 @@
 import { useCallback, useRef } from "react";
-import { View, Text, ScrollView } from "@tarojs/components";
-import Taro from "@tarojs/taro";
-import { Loading, NavBar, Swipe } from "@nutui/nutui-react-taro";
+import { View, Text } from "@tarojs/components";
+import { Loading, Swipe } from "@nutui/nutui-react-taro";
+import AppNavbar from "@/components/AppNavbar";
 import PageLoading from "@/components/PageLoading";
 import { useAiRecognitionList } from "@/hooks/useAiRecognitionList";
+import Main from "@/layouts/Main";
 import RecognitionItemCard from "./components/RecognitionItemCard";
 import "./index.scss";
 
@@ -16,7 +17,6 @@ function AiRecognitionPage() {
     confirmStatus,
     handleRemove,
     handleEdit,
-    handleBack,
     handleDiscard,
     handleConfirm,
   } = useAiRecognitionList();
@@ -62,25 +62,6 @@ function AiRecognitionPage() {
     [handleEdit],
   );
 
-  const { statusBarHeight, safeArea } = Taro.getWindowInfo();
-  const safeAreaBottom = safeArea
-    ? Taro.getWindowInfo().screenHeight - safeArea.bottom
-    : 0;
-
-  if (!initialized) {
-    return (
-      <View
-        className="ai-recognition-page"
-        style={{
-          ["--sw-status-bar-height" as string]: `${statusBarHeight ?? 0}px`,
-          ["--sw-safe-area-bottom" as string]: `${safeAreaBottom}px`,
-        }}
-      >
-        <PageLoading className="ai-recognition-page__loading" />
-      </View>
-    );
-  }
-
   const statusHint =
     confirmStatus === "confirmed"
       ? "已入库"
@@ -89,89 +70,78 @@ function AiRecognitionPage() {
         : null;
 
   return (
-    <View
-      className={[
-        "ai-recognition-page",
-        readonly && "ai-recognition-page--readonly",
-      ]
-        .filter(Boolean)
-        .join(" ")}
-      style={{
-        ["--sw-status-bar-height" as string]: `${statusBarHeight ?? 0}px`,
-        ["--sw-safe-area-bottom" as string]: `${safeAreaBottom}px`,
-      }}
+    <Main
+      showTabbar={false}
+      scrollClassName={
+        initialized && !readonly ? "main-scroll--ai-recognition" : undefined
+      }
+      header={<AppNavbar showBack title="AI 识别结果" />}
     >
-      <NavBar
-        safeAreaInsetTop
-        className="ai-recognition-page__navbar"
-        back={<Text className="ai-recognition-page__back">返回</Text>}
-        onBackClick={handleBack}
-      >
-        <Text className="ai-recognition-page__title">AI 识别结果</Text>
-      </NavBar>
+      <Main.Scroll>
+        {!initialized ? (
+          <PageLoading className="ai-recognition-page__loading" />
+        ) : (
+          <>
+            {statusHint ? (
+              <View className="ai-recognition-page__status">
+                <Text className="ai-recognition-page__status-text">
+                  {statusHint}
+                </Text>
+              </View>
+            ) : null}
 
-      {statusHint ? (
-        <View className="ai-recognition-page__status">
-          <Text className="ai-recognition-page__status-text">{statusHint}</Text>
-        </View>
-      ) : null}
+            <View className="ai-recognition-page__list">
+              {items.map((item) =>
+                readonly ? (
+                  <RecognitionItemCard key={item.tempId} item={item} />
+                ) : (
+                  <Swipe
+                    key={item.tempId}
+                    name={item.tempId}
+                    ref={(el) => setSwipeRef(item.tempId, el)}
+                    onOpen={() => handleSwipeOpen(item.tempId)}
+                    onClose={handleSwipeClose}
+                    rightAction={
+                      <View className="ai-recognition-page__swipe-actions">
+                        <View
+                          className="ai-recognition-page__edit"
+                          onClick={() => handleEditItem(item.tempId)}
+                        >
+                          <Text className="ai-recognition-page__edit-text">
+                            编辑
+                          </Text>
+                        </View>
+                        <View
+                          className="ai-recognition-page__delete"
+                          onClick={() => handleDelete(item.tempId)}
+                        >
+                          <Text className="ai-recognition-page__delete-text">
+                            删除
+                          </Text>
+                        </View>
+                      </View>
+                    }
+                  >
+                    <RecognitionItemCard item={item} />
+                  </Swipe>
+                ),
+              )}
 
-      <ScrollView
-        className="ai-recognition-page__scroll"
-        scrollY
-        enhanced
-        showScrollbar={false}
-      >
-        <View className="ai-recognition-page__list">
-          {items.map((item) =>
-            readonly ? (
-              <RecognitionItemCard key={item.tempId} item={item} />
-            ) : (
-              <Swipe
-                key={item.tempId}
-                name={item.tempId}
-                ref={(el) => setSwipeRef(item.tempId, el)}
-                onOpen={() => handleSwipeOpen(item.tempId)}
-                onClose={handleSwipeClose}
-                rightAction={
-                  <View className="ai-recognition-page__swipe-actions">
-                    <View
-                      className="ai-recognition-page__edit"
-                      onClick={() => handleEditItem(item.tempId)}
-                    >
-                      <Text className="ai-recognition-page__edit-text">
-                        编辑
-                      </Text>
-                    </View>
-                    <View
-                      className="ai-recognition-page__delete"
-                      onClick={() => handleDelete(item.tempId)}
-                    >
-                      <Text className="ai-recognition-page__delete-text">
-                        删除
-                      </Text>
-                    </View>
-                  </View>
-                }
-              >
-                <RecognitionItemCard item={item} />
-              </Swipe>
-            ),
-          )}
-
-          {items.length === 0 && (
-            <View className="ai-recognition-page__empty">
-              <Text className="ai-recognition-page__empty-text">
-                {readonly
-                  ? "暂无识别单品"
-                  : "已全部删除，请返回或确认放弃"}
-              </Text>
+              {items.length === 0 && (
+                <View className="ai-recognition-page__empty">
+                  <Text className="ai-recognition-page__empty-text">
+                    {readonly
+                      ? "暂无识别单品"
+                      : "已全部删除，请返回或确认放弃"}
+                  </Text>
+                </View>
+              )}
             </View>
-          )}
-        </View>
-      </ScrollView>
+          </>
+        )}
+      </Main.Scroll>
 
-      {!readonly ? (
+      {initialized && !readonly ? (
         <View className="sw-action-bar">
           <View
             className={[
@@ -206,7 +176,7 @@ function AiRecognitionPage() {
           </View>
         </View>
       ) : null}
-    </View>
+    </Main>
   );
 }
 
