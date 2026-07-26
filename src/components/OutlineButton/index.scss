@@ -21,6 +21,11 @@
     width: 100%;
   }
 
+  &--loading {
+    opacity: var(--sw-btn-disabled-opacity);
+    pointer-events: none;
+  }
+
   &--disabled {
     border-color: var(--nutui-gray-4);
     opacity: 0.7;
@@ -36,7 +41,7 @@
     }
   }
 
-  &:active:not(.outline-button--disabled) {
+  &:active:not(.outline-button--disabled):not(.outline-button--loading) {
     opacity: 1;
     background: var(--nutui-brand-1);
     transform: scale(0.98);
@@ -49,5 +54,32 @@
     color: var(--nutui-brand-6);
     line-height: 1;
     white-space: nowrap;
+  }
+
+  &__loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    --nutui-loading-icon-size: var(--sw-btn-loading-size);
+    --nutui-loading-icon-color: var(--nutui-brand-6);
+
+    .nut-loading {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+    }
+
+    .nut-loading-icon-box {
+      font-size: 0;
+      line-height: 0;
+    }
+
+    .nut-loading-icon,
+    .nut-icon {
+      color: var(--nutui-brand-6);
+      background-color: currentColor;
+    }
   }
 }

@@ -158,10 +158,9 @@ function TryOnPage() {
         </View>
         <View className="try-on-actions">
           <WearCta
+            loading={saving}
             disabled={
-              saving ||
-              previewStatus === "loading" ||
-              previewStatus === "error"
+              previewStatus === "loading" || previewStatus === "error"
             }
             onWear={handleWearOutfit}
           />
