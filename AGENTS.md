@@ -78,7 +78,8 @@ types/
 
 - 页面 UI **默认使用** `@nutui/nutui-react-taro`，优先复用 NutUI 组件，避免重复造轮子。
 - NutUI 按需加载已由 `vite-plugin-imp` 配置，直接 `import` 即可。
-- 样式文件：`*.scss`，与组件同目录；`px` 会转为小程序 `rpx`（`nut-` 前缀选择器排除转换）。
+- 样式文件：`*.scss`；`px` 会转为小程序 `rpx`（`nut-` 前缀选择器排除转换）。
+- **组件样式收窄（通用，必须遵守）**：凡组件目录（`src/layouts/<Name>/`、`src/components/<Name>/`、`pages/<page>/components/<Name>/`）使用 `index.tsx` + **同目录** `index.scss`；该组件的 BEM/class 写在组件层，由组件 `import "./index.scss"`。**禁止**把组件样式散写到 `pages/<page>/index.scss`、`app.scss` 或其他无关文件（页面编排级布局/空态除外）。参考：[`src/pages/try-on/components/OutfitMeta/`](src/pages/try-on/components/OutfitMeta/)。
 
 #### 自定义按钮
 
@@ -107,7 +108,7 @@ types/
 | 无 UI 的纯计算/格式化                               | `src/utils/`（如 [`outfitSelection.ts`](src/utils/outfitSelection.ts)）                  |
 | 类型、枚举、分页常量                                | `src/data/`（如 [`wardrobe.ts`](src/data/wardrobe.ts)）                                  |
 
-- **页面私有组件**：仅单页使用时放 `src/pages/<page>/components/<ComponentName>/`（大驼峰 + `index.tsx` / `index.scss`）；页面内 `import X from "./components/X"`。组件样式与组件同目录；页面级布局/网格仍留 `index.scss`。
+- **页面私有组件**：仅单页使用时放 `src/pages/<page>/components/<ComponentName>/`（大驼峰 + `index.tsx` / `index.scss`）；页面内 `import X from "./components/X"`。样式遵守上文「组件样式收窄」。
 - **平衡**：为可读性与职责分离而拆；一次任务若新增 >1 个独立 UI 块，优先抽组件。不要为 5–10 行 JSX 单独建目录；不要为「可能复用」提前抽到 `components/`（YAGNI）；不要在小修复中顺带大规模重构无关页面。
 
 ### 样式分层（必须遵守）
@@ -116,7 +117,8 @@ types/
 | ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `src/styles/theme.scss`       | **仅**定义 CSS 变量（`--nutui-*` 覆盖 NutUI 主题、`--sw-*` 应用语义令牌）。不写选择器、不覆写组件类名。                                                   |
 | `src/app.scss`                | 全局样式：在 `@use "./styles/theme.scss"` 之后引入；`page` 基础排版、`.card` / `.chip` 等工具类、NutUI 组件**全局**覆写（如 `.nut-tabs-titles-button`）。 |
-| `src/pages/<page>/index.scss` | 页面局部布局与结构，优先使用 `var(--nutui-*)` / `var(--sw-*)`；避免重复已在 `app.scss` 的全局覆写。                                                       |
+| `src/pages/<page>/index.scss` | **仅**页面编排/布局/空态等，优先使用 `var(--nutui-*)` / `var(--sw-*)`；组件样式一律与组件同目录，勿散落至此。                                           |
+| 组件 `index.scss`             | `layouts/`、`src/components/`、`pages/<page>/components/` 下各组件的 BEM/class，与组件同目录并由组件自行引入。                                           |
 
 - `app.scss` 必须在任何 NutUI 样式之前 `@use` `theme.scss`，保证变量先生效。
 - 新增 NutUI 主题项：变量加在 `theme.scss`；若组件无对应 CSS 变量、需改类名样式，覆写写在 `app.scss`。
@@ -171,6 +173,7 @@ types/
 - 不要把仅本页使用的组件 premature 抽到 `src/components/`。
 - 不要在未要求时执行 `git commit` / `git push`。
 - 不要在 `theme.scss` 中写全局选择器或 NutUI 类名覆写；应放在 `app.scss`。
+- 不要把组件样式散写到页面 `index.scss` 或 `app.scss`；应写在组件同目录 `index.scss`（见「组件样式收窄」）。
 - 不要用 NutUI `Button` 实现高度定制的页面 CTA；应使用 `View` + `Text`（见「自定义按钮」）。
 - 不要在云函数中用 `https.get` 直接请求外部 JSON API；应使用 `fetch`（见「云函数」）。
 

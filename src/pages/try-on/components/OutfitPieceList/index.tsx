@@ -1,6 +1,7 @@
 import { View, Text, ScrollView } from "@tarojs/components";
 import { Image } from "@nutui/nutui-react-taro";
 import type { WardrobeItem } from "@/data/wardrobe";
+import "./index.scss";
 
 export interface OutfitPieceListProps {
   pieces: WardrobeItem[];

@@ -1,0 +1,66 @@
+.outfit-list {
+  width: 100%;
+}
+
+.outfit-list__row {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.outfit-piece {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  // 卡片内容区约可并排 4 格，对齐设计图比例；超出可横滑
+  width: 68px;
+
+  &__image-wrap {
+    position: relative;
+    width: 100%;
+    height: 0;
+    padding-bottom: 100%;
+    border-radius: var(--nutui-radius-4);
+    overflow: hidden;
+    background: var(--nutui-gray-2);
+  }
+
+  &__image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  &__image-wrap .nut-image,
+  &__image.nut-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  &__image-wrap .nut-img {
+    width: 100%;
+    height: 100%;
+  }
+
+  &__name {
+    display: block;
+    width: 100%;
+    font-family: var(--sw-font-body);
+    font-size: var(--nutui-font-size-2);
+    font-weight: 500;
+    color: var(--nutui-gray-5);
+    line-height: 1.3;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}

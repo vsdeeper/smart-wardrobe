@@ -3,6 +3,7 @@ import { Image, Loading } from "@nutui/nutui-react-taro";
 import type { TryOnPreviewStatus } from "@/data/tryOn";
 import type { WeatherCardViewModel } from "@/data/weather";
 import type { WeatherLoadStatus } from "@/services/weather";
+import "./index.scss";
 
 export interface OutfitHeroProps {
   heroImageUrl: string | null;

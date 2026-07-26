@@ -1,5 +1,6 @@
 import { View } from "@tarojs/components";
 import SolidButton from "@/components/SolidButton";
+import "./index.scss";
 
 export interface WearCtaProps {
   disabled?: boolean;
