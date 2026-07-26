@@ -8,9 +8,13 @@ import { useUserProfile } from "@/hooks/useUserProfile";
 import "./index.scss";
 
 const MINE_PROFILE_ROUTE = "pages/mine-profile/index";
+const NAVBAR_CONTENT_HEIGHT = 44;
 
 function AppNavbar() {
   const { profile, avatarUrl, onAvatarLoadError } = useUserProfile();
+  const { statusBarHeight = 0 } = Taro.getWindowInfo();
+  const barHeight = statusBarHeight + NAVBAR_CONTENT_HEIGHT;
+
   const handleBrandClick = () => {
     const pages = Taro.getCurrentPages();
     const currentRoute = pages[pages.length - 1]?.route;
@@ -21,8 +25,15 @@ function AppNavbar() {
 
   return (
     <NavBar
-      safeAreaInsetTop
+      fixed
+      zIndex={100}
       className="app-navbar"
+      style={{
+        paddingTop: `${statusBarHeight}px`,
+        height: `${barHeight}px`,
+        boxSizing: "border-box",
+        ["--sw-navbar-inset-top" as string]: `${statusBarHeight}px`,
+      }}
       left={
         <View className="navbar-brand" onClick={handleBrandClick}>
           <DefaultAvatar

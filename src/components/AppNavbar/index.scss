@@ -1,11 +1,14 @@
 .app-navbar {
-  background: transparent;
-  padding: 0 var(--nutui-spacing-7);
+  background: var(--nutui-gray-3);
+  margin-bottom: 0;
+  padding-left: var(--nutui-spacing-7);
+  padding-right: var(--nutui-spacing-7);
   box-shadow: var(--sw-shadow-card);
 
-  .nut-navbar {
-    background: transparent;
-    box-shadow: none;
+  // NutUI left/right 为 absolute + top:0，会盖住 padding-top，需同步下移
+  .nut-navbar-left,
+  .nut-navbar-right {
+    top: var(--sw-navbar-inset-top, 0px);
   }
 }
 

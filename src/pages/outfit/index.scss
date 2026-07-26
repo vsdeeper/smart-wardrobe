@@ -83,8 +83,9 @@
 
 // ========== 搭配页滚动区（为底部浮层留白） ==========
 .main-scroll--outfit {
-  padding: 0 var(--nutui-spacing-7)
-    calc(var(--sw-outfit-panel-height, 298px) + var(--sw-bottom-inset));
+  padding-bottom: calc(
+    var(--sw-outfit-panel-height, 298px) + var(--sw-bottom-inset)
+  );
   box-sizing: border-box;
   transition: padding-bottom 0.28s ease;
 
