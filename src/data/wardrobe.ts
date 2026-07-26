@@ -14,8 +14,6 @@ export interface WardrobeItem {
   imageFileId: string
   imageUrl?: string
   tags?: string[]
-  /** 保暖等级 1–5，识别阶段写入 */
-  warmthLevel?: number
   createdAt: number
   updatedAt?: number
   outfitRecommendation?: string
@@ -29,8 +27,6 @@ export interface RecognizedPreviewItem {
   tags: string[]
   imageFileId: string
   imageUrl?: string
-  /** 保暖等级 1–5，识别阶段写入 */
-  warmthLevel?: number
 }
 
 export const WARDROBE_PAGE_SIZE = 20

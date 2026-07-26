@@ -30,14 +30,13 @@ function isError(
 function toCloudWardrobe(byType: WardrobeItemsByType) {
   const result: Record<
     string,
-    { id: string; name: string; tags: string[]; warmthLevel?: number }[]
+    { id: string; name: string; tags: string[] }[]
   > = {};
   for (const [typeName, items] of Object.entries(byType)) {
     result[typeName] = items.map((item) => ({
       id: item._id,
       name: item.name,
       tags: item.tags ?? [],
-      warmthLevel: item.warmthLevel,
     }));
   }
   return result;

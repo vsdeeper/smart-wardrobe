@@ -43,7 +43,6 @@ export function useTryOnWear({
         description: recommendation?.description ?? "",
         coverFileId: heroCoverFileId,
         pieceIds: selectedPieces.map((p) => p._id),
-        matchScore: recommendation?.matchScore,
         weatherSnapshot: weatherSnapshot ?? undefined,
       });
 

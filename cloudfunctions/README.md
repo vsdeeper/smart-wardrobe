@@ -268,7 +268,7 @@ wx.cloud
   .catch(console.error);
 ```
 
-预期返回 `{ items: [{ name, typeName, tags, warmthLevel? }], sourceFileId }`。失败时返回 `{ error, message }`。展示图须再调 `generate-wardrobe-display`（见第 8 节）。
+预期返回 `{ items: [{ name, typeName, tags }], sourceFileId }`。失败时返回 `{ error, message }`。展示图须再调 `generate-wardrobe-display`（见第 8 节）。
 
 ### 故障排查
 
@@ -330,7 +330,7 @@ wx.cloud
   .catch(console.error);
 ```
 
-预期返回 `{ previews: [{ name, typeName, tags, imageFileId, warmthLevel? }], failed?: [...] }`；成功后云函数会删除原图 `fileID`。`previews.length === 0` 时返回 `{ error: 'GENERATE_FAILED', message, failed }`。
+预期返回 `{ previews: [{ name, typeName, tags, imageFileId }], failed?: [...] }`；成功后云函数会删除原图 `fileID`。`previews.length === 0` 时返回 `{ error: 'GENERATE_FAILED', message, failed }`。
 
 ### 故障排查
 

@@ -55,7 +55,6 @@ function summarizeWardrobe(wardrobeByType) {
       id: String(item.id ?? item._id ?? ''),
       name: String(item.name ?? ''),
       tags: Array.isArray(item.tags) ? item.tags : [],
-      warmthLevel: item.warmthLevel,
     })).filter((item) => item.id)
   }
   return result

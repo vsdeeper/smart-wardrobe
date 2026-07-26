@@ -5,12 +5,10 @@ function buildRecommendSystemPrompt() {
 1. slots 只包含本次会一起穿着的单品，不要求覆盖衣橱全部类别（通常 2–5 件）
 2. 每个 slot 的 selectedId 必须来自对应 typeName 下的衣橱 id
 3. alternatives 为同类别其他候选 id（0–3 个），不得重复 selectedId
-4. matchScore 为 0–100 整数
-5. outfitName 为 4–8 字中文意境短名，体现天气/场景与材质或廓形（如「晴日亚麻层叠」）；禁止「今日推荐」「清爽搭配」等空泛名
-6. tips 为不超过 6 个风格标签：label 为无 emoji 的短词且不超过 4 个字（如「清爽」「自然」「舒适」）；icon 可填空字符串或占位，UI 主要展示 label；禁止天气预警类文案（如「高紫外线」「注意防晒」）
-7. description 为「AI 搭配建议」正文：一句约 20–40 字，说明材质、色彩或体感为何适合当前天气/场景（如「亚麻材质透气亲肤，浅色系在阳光下更显轻盈。」）；须与 slots 实际选品一致，勿描述未选入 slots 的单品，勿带「AI 搭配建议：」前缀，勿罗列单品清单
-8. 考虑温度与 warmthLevel（1 极薄 → 5 极厚）匹配
-9. 只返回 JSON，无其他文字
+4. outfitName 为 4–8 字中文意境短名，体现天气/场景与材质或廓形（如「晴日亚麻层叠」）；禁止「今日推荐」「清爽搭配」等空泛名
+5. tips 为不超过 6 个风格标签：label 为无 emoji 的短词且不超过 4 个字（如「清爽」「自然」「舒适」）；icon 可填空字符串或占位，UI 主要展示 label；禁止天气预警类文案（如「高紫外线」「注意防晒」）
+6. description 为「AI 搭配建议」正文：一句约 20–40 字，说明材质、色彩或体感为何适合当前天气/场景（如「亚麻材质透气亲肤，浅色系在阳光下更显轻盈。」）；须与 slots 实际选品一致，勿描述未选入 slots 的单品，勿带「AI 搭配建议：」前缀，勿罗列单品清单
+7. 只返回 JSON，无其他文字
 
 搭配常识（请自主判断，勿为凑齐类别而混搭互斥单品）：
 - 连衣裙/连体类：通常单穿，不与上装、下装同时出现
@@ -22,7 +20,6 @@ function buildRecommendSystemPrompt() {
 {
   "outfitName": "晴日亚麻层叠",
   "description": "亚麻材质透气亲肤，浅色系在阳光下更显轻盈。",
-  "matchScore": 95,
   "slots": [
     { "typeName": "上装", "selectedId": "id", "alternatives": ["id2"] }
   ],
@@ -41,7 +38,7 @@ function buildRecommendUserPrompt(payload) {
     .map(([typeName, items]) => {
       const lines = (items || []).map(
         (item) =>
-          `  - id:${item.id} name:${item.name} tags:${JSON.stringify(item.tags || [])} warmth:${item.warmthLevel ?? '未知'}`,
+          `  - id:${item.id} name:${item.name} tags:${JSON.stringify(item.tags || [])}`,
       )
       return `${typeName}:\n${lines.join('\n')}`
     })
@@ -64,10 +61,6 @@ function parseRecommendResult(content) {
 
   const outfitName = String(parsed.outfitName ?? '').trim()
   const description = String(parsed.description ?? '').trim()
-  const matchScore = Math.min(
-    100,
-    Math.max(0, parseInt(String(parsed.matchScore ?? 90), 10) || 90),
-  )
 
   const slots = Array.isArray(parsed.slots)
     ? parsed.slots.map((slot, index) => ({
@@ -105,7 +98,7 @@ function parseRecommendResult(content) {
     throw new Error('风格标签不能超过 4 个字')
   }
 
-  return { outfitName, description, matchScore, slots, tips }
+  return { outfitName, description, slots, tips }
 }
 
 function buildSlotFromItems(typeName, items) {
@@ -190,7 +183,6 @@ function buildFallbackRecommendation(wardrobeByType, season, weather) {
   return {
     outfitName,
     description,
-    matchScore: 85,
     slots,
     tips,
   }

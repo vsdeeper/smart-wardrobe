@@ -61,9 +61,6 @@ async function saveRecognizedItem(openid, fileID, recognized) {
     updatedAt: now,
     outfitRecommendation: '',
   }
-  if (recognized.warmthLevel !== undefined) {
-    itemData.warmthLevel = recognized.warmthLevel
-  }
 
   const itemRes = await db.collection('wardrobe_items').add({ data: itemData })
 
@@ -77,9 +74,6 @@ async function saveRecognizedItem(openid, fileID, recognized) {
     createdAt: Date.now(),
     updatedAt: Date.now(),
     outfitRecommendation: '',
-  }
-  if (recognized.warmthLevel !== undefined) {
-    savedItem.warmthLevel = recognized.warmthLevel
   }
 
   return {

@@ -10,7 +10,6 @@ export interface SaveVisualDiaryInput {
   coverFileId?: string;
   coverUrl?: string;
   pieceIds: string[];
-  matchScore?: number;
   weatherSnapshot?: WeatherSnapshot;
 }
 
@@ -35,8 +34,6 @@ function normalizeEntry(raw: Record<string, unknown>): VisualDiaryEntry {
       typeof raw.coverFileId === "string" ? raw.coverFileId : undefined,
     coverUrl: typeof raw.coverUrl === "string" ? raw.coverUrl : undefined,
     pieceIds: Array.isArray(raw.pieceIds) ? raw.pieceIds.map(String) : [],
-    matchScore:
-      typeof raw.matchScore === "number" ? raw.matchScore : undefined,
     weatherSnapshot:
       raw.weatherSnapshot &&
       typeof raw.weatherSnapshot === "object"
@@ -80,7 +77,6 @@ export async function saveVisualDiaryEntry(
     title: input.title.trim(),
     description: input.description.trim(),
     pieceIds: input.pieceIds,
-    matchScore: input.matchScore ?? null,
     weatherSnapshot: input.weatherSnapshot ?? null,
     createdAt: now,
   };

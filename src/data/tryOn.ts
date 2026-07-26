@@ -16,7 +16,6 @@ export interface OutfitSlot {
 export interface TryOnRecommendation {
   outfitName: string;
   description: string;
-  matchScore: number;
   slots: OutfitSlot[];
   tips: TryOnTip[];
 }
@@ -40,7 +39,6 @@ export interface VisualDiaryEntry {
   coverFileId?: string;
   coverUrl?: string;
   pieceIds: string[];
-  matchScore?: number;
   weatherSnapshot?: WeatherSnapshot;
   createdAt: number;
 }
@@ -50,7 +48,6 @@ export type TryOnDraftMode = "edit" | "saved";
 export interface TryOnDraft {
   mode: TryOnDraftMode;
   description?: string;
-  matchScore?: number;
   tips?: TryOnTip[];
   selectedPieces?: WardrobeItem[];
   baselinePieceIds?: string[];

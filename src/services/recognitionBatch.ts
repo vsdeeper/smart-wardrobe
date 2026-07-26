@@ -35,9 +35,6 @@ function normalizePreviewItem(raw: Record<string, unknown>): RecognizedPreviewIt
   if (typeof raw.imageUrl === "string") {
     item.imageUrl = raw.imageUrl;
   }
-  if (typeof raw.warmthLevel === "number") {
-    item.warmthLevel = raw.warmthLevel;
-  }
   return item;
 }
 
@@ -370,13 +367,12 @@ export async function updateRecognitionBatchItems(
   await db.collection(COLLECTION).doc(batchId).update({
     data: {
       items: items.map(
-        ({ tempId, name, typeName, tags, imageFileId, warmthLevel }) => ({
+        ({ tempId, name, typeName, tags, imageFileId }) => ({
           tempId,
           name,
           typeName,
           tags,
           imageFileId,
-          ...(warmthLevel !== undefined && { warmthLevel }),
         }),
       ),
       itemCount: items.length,

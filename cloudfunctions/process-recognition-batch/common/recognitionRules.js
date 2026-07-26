@@ -103,10 +103,6 @@ function buildSystemPrompt() {
 - 正例：${formatPromptExample(positiveB)}
 - 反例：name ${negative.name}，tags ${JSON.stringify(negative.tags)}（${negative.reason}）
 
-【保暖等级 warmthLevel】
-- 整数 1–5：1 极薄（背心/吊带）→ 5 极厚（羽绒服/厚大衣）
-- 根据面料厚度与季节属性综合判断
-
 只返回 JSON，不要其他文字。格式：
 {
   "items": [
@@ -114,7 +110,6 @@ function buildSystemPrompt() {
       "typeName": "从上述列表选择一项",
       "name": "款式结构描述，不含颜色季节风格",
       "tags": ["颜色", "季节", "风格或材质"],
-      "warmthLevel": 3,
       "audienceGender": "unisex"
     }
   ]
@@ -122,7 +117,7 @@ function buildSystemPrompt() {
 }
 
 const USER_PROMPT =
-  `请识别照片中所有可见衣物单品，严格按 system 规则返回 JSON 的 items 数组。typeName 不得超出给定列表；每件 name 只描述款式结构，颜色/季节/风格/材质只写在 tags，且 tags 不得与 name 重复；每个 tag 不超过${RECOGNITION_LIMITS.maxTagLength}个字。每件同时返回 warmthLevel（1–5 保暖等级）与 audienceGender。`
+  `请识别照片中所有可见衣物单品，严格按 system 规则返回 JSON 的 items 数组。typeName 不得超出给定列表；每件 name 只描述款式结构，颜色/季节/风格/材质只写在 tags，且 tags 不得与 name 重复；每个 tag 不超过${RECOGNITION_LIMITS.maxTagLength}个字。每件同时返回 audienceGender。`
 
 function normalizeAudienceGender(raw) {
   const value = String(raw ?? '').trim()
@@ -143,24 +138,12 @@ function parseRecognitionResult(parsed) {
     throw new Error('AI 返回缺少必要字段')
   }
 
-  let warmthLevel
-  if (parsed.warmthLevel !== undefined && parsed.warmthLevel !== null) {
-    const level = parseInt(String(parsed.warmthLevel), 10)
-    if (!Number.isNaN(level)) {
-      warmthLevel = Math.min(5, Math.max(1, level))
-    }
-  }
-
-  const result = {
+  return {
     typeName,
     name,
     tags,
     audienceGender: normalizeAudienceGender(parsed.audienceGender),
   }
-  if (warmthLevel !== undefined) {
-    result.warmthLevel = warmthLevel
-  }
-  return result
 }
 
 function parseRecognitionItems(parsed) {

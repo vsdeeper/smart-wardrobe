@@ -26,32 +26,6 @@
     pointer-events: none;
   }
 
-  &__badge {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    z-index: 2;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 12px;
-    border-radius: var(--sw-radius-pill);
-    background: rgba(255, 255, 255, 0.5);
-  }
-
-  &__badge-icon {
-    font-size: 16px;
-    color: var(--nutui-brand-6);
-    line-height: 1;
-  }
-
-  &__badge-text {
-    font-family: var(--sw-font-heading);
-    font-size: var(--nutui-font-size-3);
-    font-weight: 500;
-    color: var(--nutui-brand-6);
-  }
-
   &__content {
     position: absolute;
     left: 20px;

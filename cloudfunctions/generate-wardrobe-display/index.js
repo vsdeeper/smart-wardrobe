@@ -31,19 +31,7 @@ function normalizeItemInput(raw) {
 
   if (!typeName || !name) return null
 
-  let warmthLevel
-  if (raw.warmthLevel !== undefined && raw.warmthLevel !== null) {
-    const level = parseInt(String(raw.warmthLevel), 10)
-    if (!Number.isNaN(level)) {
-      warmthLevel = Math.min(5, Math.max(1, level))
-    }
-  }
-
-  const result = { typeName, name, tags }
-  if (warmthLevel !== undefined) {
-    result.warmthLevel = warmthLevel
-  }
-  return result
+  return { typeName, name, tags }
 }
 
 function normalizeItemsInput(items) {
@@ -106,7 +94,6 @@ function buildPreviewFromItem(item, imageFileId) {
     typeName: item.typeName,
     tags: item.tags,
     imageFileId,
-    ...(item.warmthLevel !== undefined && { warmthLevel: item.warmthLevel }),
   }
 }
 

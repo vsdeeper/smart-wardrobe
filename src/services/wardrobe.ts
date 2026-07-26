@@ -26,7 +26,6 @@ interface RecognizeItemPayload {
   name: string;
   typeName: string;
   tags: string[];
-  warmthLevel?: number;
 }
 
 interface RecognizeItemsCloudResult {
@@ -39,7 +38,6 @@ interface GeneratePreviewItemPayload {
   typeName: string;
   tags: string[];
   imageFileId: string;
-  warmthLevel?: number;
 }
 
 interface GenerateDisplayCloudResult {
@@ -98,9 +96,6 @@ function normalizeWardrobeItem(raw: Record<string, unknown>): WardrobeItem {
   }
   if (typeof raw.outfitRecommendation === "string") {
     item.outfitRecommendation = raw.outfitRecommendation;
-  }
-  if (typeof raw.warmthLevel === "number") {
-    item.warmthLevel = raw.warmthLevel;
   }
 
   return item;
@@ -309,9 +304,6 @@ export async function uploadAndRecognize(
     typeName: item.typeName,
     tags: item.tags,
     imageFileId: item.imageFileId,
-    ...(typeof item.warmthLevel === "number" && {
-      warmthLevel: item.warmthLevel,
-    }),
   }));
 
   return resolvePreviewImageUrls(previews);
@@ -370,12 +362,11 @@ export async function saveWardrobeItems(
   const { result } = await Taro.cloud.callFunction({
     name: "save-wardrobe-items",
     data: {
-      items: items.map(({ name, typeName, tags, imageFileId, warmthLevel }) => ({
+      items: items.map(({ name, typeName, tags, imageFileId }) => ({
         name,
         typeName,
         tags,
         imageFileId,
-        ...(warmthLevel !== undefined && { warmthLevel }),
       })),
     },
   });

@@ -9,7 +9,6 @@ export interface DiaryDetailHeroProps {
 
 export default function DiaryDetailHero({ entry }: DiaryDetailHeroProps) {
   const heroSrc = entry.coverUrl || entry.coverFileId;
-  const matchScore = entry.matchScore ?? 90;
 
   return (
     <View className="diary-detail-hero">
@@ -21,12 +20,6 @@ export default function DiaryDetailHero({ entry }: DiaryDetailHeroProps) {
         />
       ) : null}
       <View className="diary-detail-hero__gradient" aria-hidden />
-      <View className="diary-detail-hero__badge">
-        <Text className="diary-detail-hero__badge-icon">★</Text>
-        <Text className="diary-detail-hero__badge-text">
-          匹配度 {matchScore}%
-        </Text>
-      </View>
       <View className="diary-detail-hero__content">
         <Text className="diary-detail-hero__title">{entry.title}</Text>
         <Text className="diary-detail-hero__desc">{entry.description}</Text>

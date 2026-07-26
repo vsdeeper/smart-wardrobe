@@ -22,7 +22,6 @@ function recognitionItemToDisplayItem(
     imageFileId: preview.imageFileId,
     imageUrl: preview.imageUrl,
     tags: preview.tags,
-    warmthLevel: preview.warmthLevel,
     createdAt: Date.now(),
   };
 }

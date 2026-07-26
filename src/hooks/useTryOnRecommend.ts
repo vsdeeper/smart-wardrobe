@@ -182,7 +182,6 @@ export function useTryOnRecommend() {
         setRecommendation({
           outfitName: "我的搭配",
           description: "",
-          matchScore: 90,
           slots: [],
           tips: [],
         });

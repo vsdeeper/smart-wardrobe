@@ -141,7 +141,6 @@ function buildPreviewFromItem(item, imageFileId) {
     typeName: item.typeName,
     tags: item.tags,
     imageFileId,
-    ...(item.warmthLevel !== undefined && { warmthLevel: item.warmthLevel }),
   }
 }
 
