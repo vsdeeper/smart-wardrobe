@@ -1,4 +1,4 @@
-import { View, Text } from "@tarojs/components";
+import { View, Text, ScrollView } from "@tarojs/components";
 import "./index.scss";
 
 export interface OutfitMetaProps {
@@ -17,9 +17,14 @@ export default function OutfitMeta({
       <View className="outfit-meta__title-row">
         <Text className="outfit-meta__title">{title}</Text>
         {styleTags ? (
-          <View className="outfit-meta__tags">
+          <ScrollView
+            className="outfit-meta__tags"
+            scrollX
+            showScrollbar={false}
+            enhanced
+          >
             <Text className="outfit-meta__tags-text">{styleTags}</Text>
-          </View>
+          </ScrollView>
         ) : null}
       </View>
       {suggestion ? (

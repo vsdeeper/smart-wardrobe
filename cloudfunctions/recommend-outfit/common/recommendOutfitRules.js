@@ -87,12 +87,22 @@ function parseRecommendResult(content) {
           icon: String(tip.icon ?? '✨').trim(),
           label: String(tip.label ?? '').trim(),
         }))
-        .filter((t) => t.label && t.label.length <= 4)
-        .slice(0, 6)
+        .filter((t) => t.label)
     : []
 
   if (!outfitName || slots.length === 0) {
     throw new Error('AI 返回缺少必要字段')
+  }
+
+  if ([...outfitName].length > 8) {
+    throw new Error('试穿名称不能超过 8 个字')
+  }
+
+  if (tips.length > 6) {
+    throw new Error('风格标签不能超过 6 个')
+  }
+  if (tips.some((t) => [...t.label].length > 4)) {
+    throw new Error('风格标签不能超过 4 个字')
   }
 
   return { outfitName, description, matchScore, slots, tips }
