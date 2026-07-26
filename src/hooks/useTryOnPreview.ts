@@ -92,7 +92,7 @@ export function useTryOnPreview({
     try {
       const profile = await fetchUserProfile();
       if (!isGenderSet(profile.gender) || !isMetricsSet(profile)) {
-        setPreviewErrorMessage("请先设置性别与身高体重");
+        setPreviewErrorMessage("试穿前请先完善性别、身高和体重");
         applyHero(null, null, false);
         return;
       }
@@ -123,7 +123,7 @@ export function useTryOnPreview({
       let coverUrl = result.coverUrl ?? null;
 
       if (!coverFileId) {
-        throw new Error("试穿图生成未返回图片");
+        throw new Error("试穿图没能生成，请稍后重试");
       }
 
       if (!coverUrl || isEphemeralExternalImageUrl(coverUrl)) {
@@ -131,7 +131,7 @@ export function useTryOnPreview({
       }
 
       if (!coverUrl) {
-        throw new Error("试穿图生成未返回图片");
+        throw new Error("试穿图没能生成，请稍后重试");
       }
 
       applyHero(coverUrl, coverFileId, false);

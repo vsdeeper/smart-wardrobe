@@ -16,7 +16,7 @@ export function useVisualDiaryDetail() {
 
   const loadDetail = useCallback(async () => {
     if (!entryId) {
-      setError("缺少记录 ID");
+      setError("暂时打不开这条穿搭记录，请返回重试");
       setLoading(false);
       return;
     }
@@ -31,7 +31,7 @@ export function useVisualDiaryDetail() {
       setPieces(wardrobePieces);
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : "加载失败，请稍后重试";
+        err instanceof Error ? err.message : "穿搭记录加载失败，请稍后重试";
       setError(message);
       setEntry(null);
       setPieces([]);

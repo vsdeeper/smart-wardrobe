@@ -5,8 +5,8 @@ import {
 } from "@/data/profile";
 
 export const METRIC_INVALID_TOAST: Record<ProfileMetric, string> = {
-  height: "请输入有效身高",
-  weight: "请输入有效体重",
+  height: "请输入合理的身高",
+  weight: "请输入合理的体重",
 };
 
 export function parseMetricValue(raw: string): number | null {

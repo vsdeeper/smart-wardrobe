@@ -267,7 +267,7 @@ export async function uploadAndRecognize(
 
   const items = recognizeData.items ?? [];
   if (items.length === 0) {
-    throw new Error("未识别到衣物单品");
+    throw new Error("没认出衣物，请换张更清晰的照片试试");
   }
 
   onPhase?.("generating");
@@ -295,7 +295,7 @@ export async function uploadAndRecognize(
   if (rawPreviews.length === 0) {
     await deleteCloudFiles([sourceFileId]);
     const partialMsg = generateData.failed?.[0]?.message;
-    throw new Error(partialMsg || "未能生成展示图");
+    throw new Error(partialMsg || "展示图没能生成，请稍后重试");
   }
 
   const previews: RecognizedPreviewItem[] = rawPreviews.map((item) => ({
@@ -338,7 +338,8 @@ export async function uploadAndRecognizeBatch(
       });
       succeeded.push(...results);
     } catch (err) {
-      const message = err instanceof Error ? err.message : "识别失败";
+      const message =
+        err instanceof Error ? err.message : "这次没识别出来，请换张图试试";
       failed.push({ index: current, message });
     }
   }
@@ -442,7 +443,7 @@ export async function fetchWardrobeItemById(id: string): Promise<WardrobeItem> {
   const raw = res.data as Record<string, unknown> | undefined;
 
   if (!raw || !raw._id) {
-    throw new Error("衣物不存在或已被删除");
+    throw new Error("这件衣物已经不在衣橱里了");
   }
 
   const item = normalizeWardrobeItem(raw);
@@ -467,10 +468,10 @@ export async function updateWardrobeItem(
   const trimmedTypeName = input.typeName.trim();
 
   if (!trimmedName) {
-    throw new Error("名称不能为空");
+    throw new Error("请填写名称");
   }
   if (!trimmedTypeName) {
-    throw new Error("类别不能为空");
+    throw new Error("请选择类别");
   }
 
   const db = Taro.cloud.database();

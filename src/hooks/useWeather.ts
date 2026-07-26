@@ -37,7 +37,7 @@ export function useWeather() {
       }
 
       const message =
-        err instanceof Error ? err.message : "获取天气失败，请稍后重试";
+        err instanceof Error ? err.message : "天气信息暂时获取不到，请稍后重试";
       setViewModel(null);
       setStatus("error");
       setErrorMessage(message);
@@ -53,7 +53,10 @@ export function useWeather() {
         await refresh(true);
       }
     } catch {
-      Taro.showToast({ title: "无法打开设置", icon: "none" });
+      Taro.showToast({
+        title: "打不开系统设置，请手动开启定位",
+        icon: "none",
+      });
     }
   }, [refresh]);
 

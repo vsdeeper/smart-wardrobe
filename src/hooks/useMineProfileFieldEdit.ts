@@ -24,7 +24,10 @@ export function useMineProfileFieldEdit() {
   useLoad((options) => {
     const rawField = options.field;
     if (!isProfileEditableField(rawField)) {
-      Taro.showToast({ title: "无效字段", icon: "none" });
+      Taro.showToast({
+        title: "暂时打不开这个设置项，请返回重试",
+        icon: "none",
+      });
       Taro.navigateBack();
       return;
     }

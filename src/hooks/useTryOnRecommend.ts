@@ -72,7 +72,7 @@ export function useTryOnRecommend() {
 
         if (!isMetricsSet(profile)) {
           setStatus("error");
-          setErrorMessage("请先在个人资料中设置身高体重");
+          setErrorMessage("推荐前请先完善身高和体重");
           setRecommendation(null);
           setSelectedPieces([]);
           return;
@@ -119,7 +119,7 @@ export function useTryOnRecommend() {
         setStatus("success");
       } catch (err) {
         const message =
-          err instanceof Error ? err.message : "推荐失败，请稍后重试";
+          err instanceof Error ? err.message : "没能生成推荐，请稍后重试";
         setErrorMessage(message);
         setStatus("error");
       } finally {
@@ -167,7 +167,7 @@ export function useTryOnRecommend() {
 
     if (!isMetricsSet(profile)) {
       setStatus("error");
-      setErrorMessage("请先在个人资料中设置身高体重");
+      setErrorMessage("推荐前请先完善身高和体重");
       setRecommendation(null);
       setSelectedPieces([]);
       setFromCache(false);

@@ -52,7 +52,7 @@ export function useMineProfileEdit() {
           Taro.showToast({ title: "头像已更新", icon: "success" });
         }
       } catch {
-        Taro.showToast({ title: "头像上传失败", icon: "none" });
+        Taro.showToast({ title: "头像没能更新，请稍后重试", icon: "none" });
       } finally {
         Taro.hideLoading();
       }
@@ -112,7 +112,7 @@ export function useMineProfileEdit() {
 
       const code = e.detail.code;
       if (!code) {
-        Taro.showToast({ title: "未获取授权码", icon: "none" });
+        Taro.showToast({ title: "没能完成授权，请重试", icon: "none" });
         return;
       }
 
@@ -124,7 +124,7 @@ export function useMineProfileEdit() {
           Taro.showToast({ title: "手机号已绑定", icon: "success" });
         }
       } catch {
-        Taro.showToast({ title: "获取手机号失败", icon: "none" });
+        Taro.showToast({ title: "没能绑定手机号，请稍后重试", icon: "none" });
       } finally {
         Taro.hideLoading();
       }

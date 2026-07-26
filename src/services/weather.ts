@@ -11,7 +11,7 @@ export type WeatherLoadStatus =
 export class LocationDeniedError extends Error {
   name = "LocationDeniedError";
 
-  constructor(message = "无法获取位置信息") {
+  constructor(message = "需要定位才能查看天气") {
     super(message);
   }
 }
@@ -83,7 +83,7 @@ async function getCurrentLocation(): Promise<{ latitude: number; longitude: numb
     if (isLocationDenied(err)) {
       throw new LocationDeniedError();
     }
-    throw new LocationDeniedError("定位失败，请检查系统定位是否开启");
+    throw new LocationDeniedError("定位没成功，请检查是否已开启定位");
   }
 }
 

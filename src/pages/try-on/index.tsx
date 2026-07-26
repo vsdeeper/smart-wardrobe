@@ -126,7 +126,7 @@ function TryOnPage() {
     if (recommendStatus === "error") {
       return (
         <View className="try-on-empty">
-          <Text className="try-on-empty__title">推荐失败</Text>
+          <Text className="try-on-empty__title">这次没推荐成功</Text>
           <Text className="try-on-empty__desc">{errorMessage}</Text>
           <View className="try-on-empty__cta" onClick={refreshRecommend}>
             <Text className="try-on-empty__cta-text">重试</Text>

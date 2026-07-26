@@ -144,7 +144,7 @@ export async function fetchVisualDiaryEntryById(
   const raw = res.data as Record<string, unknown> | undefined;
 
   if (!raw || !raw._id) {
-    throw new Error("穿搭记录不存在或已被删除");
+    throw new Error("这条穿搭记录已经不在了");
   }
 
   return resolveCoverUrl(normalizeEntry(raw));

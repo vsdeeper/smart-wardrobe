@@ -131,7 +131,7 @@ function AiRecognitionPage() {
                 <View className="ai-recognition-page__empty">
                   <Text className="ai-recognition-page__empty-text">
                     {readonly
-                      ? "暂无识别单品"
+                      ? "这次没有认出单品"
                       : "已全部删除，请返回或确认放弃"}
                   </Text>
                 </View>

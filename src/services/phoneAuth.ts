@@ -16,7 +16,7 @@ export async function fetchPhoneNumberByCode(code: string): Promise<string> {
     throw new Error(data.error);
   }
   if (!data.phoneNumber) {
-    throw new Error("未获取到手机号");
+    throw new Error("没能获取到手机号，请重试");
   }
 
   return data.phoneNumber;

@@ -78,7 +78,10 @@ export function useRecognitionBatches(
           setBatches([]);
           setTotalCount(0);
           setHasMore(false);
-          Taro.showToast({ title: "识别记录加载失败", icon: "none" });
+          Taro.showToast({
+            title: "识别记录加载失败，请稍后重试",
+            icon: "none",
+          });
         }
       } finally {
         if (!silent) {
@@ -111,7 +114,7 @@ export function useRecognitionBatches(
       if (staleIds.length > 0) {
         await Promise.all(
           staleIds.map((id) =>
-            markRecognitionBatchFailed(id, "识别超时"),
+            markRecognitionBatchFailed(id, "识别时间有点长，请稍后再试"),
           ),
         );
       }

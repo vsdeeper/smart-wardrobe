@@ -51,7 +51,10 @@ export function useAiRecognitionList() {
       typeof options?.batchId === "string" ? options.batchId.trim() : "";
 
     if (!batchId) {
-      Taro.showToast({ title: "缺少识别记录", icon: "none" });
+      Taro.showToast({
+        title: "暂时打不开识别结果，请返回重试",
+        icon: "none",
+      });
       afterToastNavigate(() => Taro.navigateBack());
       return;
     }
@@ -63,7 +66,7 @@ export function useAiRecognitionList() {
         const title =
           batch.status === "processing"
             ? "识别中，请稍候"
-            : batch.errorMessage || "识别失败";
+            : batch.errorMessage || "这次没识别出来，请换张图试试";
         Taro.showToast({ title, icon: "none" });
         afterToastNavigate(() => Taro.navigateBack());
         return;
@@ -83,7 +86,8 @@ export function useAiRecognitionList() {
       setItems(withUrls);
       setInitialized(true);
     } catch (err) {
-      const message = err instanceof Error ? err.message : "加载失败";
+      const message =
+        err instanceof Error ? err.message : "识别结果加载失败，请稍后重试";
       Taro.showToast({ title: message, icon: "none" });
       afterToastNavigate(() => Taro.navigateBack());
     }
@@ -151,7 +155,8 @@ export function useAiRecognitionList() {
             clearRecognitionSession();
             Taro.navigateBack();
           } catch (err) {
-            const message = err instanceof Error ? err.message : "操作失败";
+            const message =
+              err instanceof Error ? err.message : "操作没能完成，请稍后重试";
             Taro.showToast({ title: message, icon: "none" });
           } finally {
             setSubmitting(false);
@@ -178,7 +183,7 @@ export function useAiRecognitionList() {
 
       if (failed.length > 0) {
         Taro.showToast({
-          title: `成功 ${saved.length} 件，失败 ${failed.length} 件`,
+          title: `已加入 ${saved.length} 件，还有 ${failed.length} 件没成功`,
           icon: "none",
         });
       } else {
@@ -190,7 +195,8 @@ export function useAiRecognitionList() {
 
       Taro.navigateBack();
     } catch (err) {
-      const message = err instanceof Error ? err.message : "入库失败";
+      const message =
+        err instanceof Error ? err.message : "没能加入衣橱，请稍后重试";
       Taro.showToast({ title: message, icon: "none" });
     } finally {
       setSubmitting(false);

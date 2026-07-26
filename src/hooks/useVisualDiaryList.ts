@@ -39,7 +39,8 @@ export function useVisualDiaryList() {
       setEntries((prev) => (reset ? nextEntries : [...prev, ...nextEntries]));
       setHasMore(nextEntries.length >= VISUAL_DIARY_PAGE_SIZE);
     } catch (err) {
-      const message = err instanceof Error ? err.message : "加载失败";
+      const message =
+        err instanceof Error ? err.message : "穿搭日记加载失败，请稍后重试";
       Taro.showToast({ title: message, icon: "none" });
     } finally {
       loadingRef.current = false;
@@ -88,7 +89,8 @@ export function useVisualDiaryList() {
         });
         Taro.showToast({ title: "已删除", icon: "success" });
       } catch (err) {
-        const message = err instanceof Error ? err.message : "删除失败";
+        const message =
+          err instanceof Error ? err.message : "删除失败，请稍后重试";
         Taro.showToast({ title: message, icon: "none" });
       } finally {
         setDeleting(false);

@@ -249,7 +249,7 @@ export async function fetchRecognitionBatchById(
   const raw = res.data as Record<string, unknown> | undefined;
 
   if (!raw || !raw._id) {
-    throw new Error("识别记录不存在或已被删除");
+    throw new Error("这条识别记录已经不在了");
   }
 
   return resolveBatchCover(normalizeBatch(raw));
@@ -275,7 +275,9 @@ function triggerProcessRecognitionBatch(
         void markRecognitionBatchFailed(
           batchId,
           normalizeRecognitionErrorMessage(
-            result.message || result.error || "识别失败",
+            result.message ||
+              result.error ||
+              "这次没识别出来，请换张图试试",
           ),
         );
       }
@@ -283,7 +285,9 @@ function triggerProcessRecognitionBatch(
     .catch((err) => {
       console.warn("[recognition-batch] process trigger failed", err);
       const message =
-        err instanceof Error ? err.message : "识别服务调用失败";
+        err instanceof Error
+          ? err.message
+          : "识别服务暂时不可用，请稍后重试";
       void markRecognitionBatchFailed(
         batchId,
         normalizeRecognitionErrorMessage(message),
@@ -350,7 +354,7 @@ export async function markRecognitionBatchFailed(
     await db.collection(COLLECTION).doc(batchId).update({
       data: {
         status: "failed",
-        errorMessage: errorMessage || "识别失败",
+        errorMessage: errorMessage || "这次没识别出来，请换张图试试",
         updatedAt: Date.now(),
       },
     });

@@ -78,7 +78,7 @@ export function useWardrobeEdit() {
       if (isRecognitionMode) {
         const original = recognitionOriginalRef.current;
         if (!original) {
-          throw new Error("识别数据已失效");
+          throw new Error("识别结果已过期，请重新识别");
         }
 
         updateRecognitionSessionItem({
@@ -103,7 +103,8 @@ export function useWardrobeEdit() {
       Taro.showToast({ title: "已保存", icon: "success" });
       afterToastNavigate(() => Taro.navigateBack());
     } catch (err) {
-      const message = err instanceof Error ? err.message : "保存失败";
+      const message =
+        err instanceof Error ? err.message : "保存失败，请稍后重试";
       Taro.showToast({ title: message, icon: "none" });
     } finally {
       setSaving(false);
@@ -125,7 +126,10 @@ export function useWardrobeEdit() {
 
     if (source === "recognition") {
       if (!tempId) {
-        Taro.showToast({ title: "缺少识别项 ID", icon: "none" });
+        Taro.showToast({
+          title: "暂时打不开识别结果，请返回重试",
+          icon: "none",
+        });
         Taro.navigateBack();
         return;
       }
@@ -138,7 +142,10 @@ export function useWardrobeEdit() {
 
       const preview = getRecognitionSessionItem(tempId);
       if (!preview) {
-        Taro.showToast({ title: "识别数据已失效", icon: "none" });
+        Taro.showToast({
+          title: "识别结果已过期，请重新识别",
+          icon: "none",
+        });
         Taro.navigateBack();
         return;
       }
@@ -154,7 +161,8 @@ export function useWardrobeEdit() {
           setClothingTypes(types);
           setItem(recognitionItemToDisplayItem(preview));
         } catch (err) {
-          const message = err instanceof Error ? err.message : "加载失败";
+          const message =
+            err instanceof Error ? err.message : "编辑信息加载失败，请稍后重试";
           setError(message);
           Taro.showToast({ title: message, icon: "none" });
         } finally {
@@ -165,7 +173,7 @@ export function useWardrobeEdit() {
     }
 
     if (!id) {
-      Taro.showToast({ title: "缺少衣物 ID", icon: "none" });
+      Taro.showToast({ title: "暂时打不开编辑页，请返回重试", icon: "none" });
       Taro.navigateBack();
       return;
     }
@@ -187,7 +195,8 @@ export function useWardrobeEdit() {
         setItem(data);
         setClothingTypes(types);
       } catch (err) {
-        const message = err instanceof Error ? err.message : "加载失败";
+        const message =
+          err instanceof Error ? err.message : "编辑信息加载失败，请稍后重试";
         setError(message);
         Taro.showToast({ title: message, icon: "none" });
       } finally {

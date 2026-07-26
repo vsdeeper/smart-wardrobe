@@ -52,7 +52,7 @@ export function useWardrobeUpload({
       if (toast) {
         Taro.showToast({ title: toast, icon: "none", duration: 3000 });
       } else {
-        const message = err instanceof Error ? err.message : "上传失败";
+        const message = err instanceof Error ? err.message : "上传失败，请稍后重试";
         Taro.showToast({ title: message, icon: "none" });
       }
     } finally {

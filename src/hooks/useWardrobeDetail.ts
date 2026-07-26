@@ -15,7 +15,7 @@ export function useWardrobeDetail() {
   useLoad((options) => {
     const id = options.id;
     if (!id) {
-      Taro.showToast({ title: "缺少衣物 ID", icon: "none" });
+      Taro.showToast({ title: "暂时打不开这件衣物，请返回重试", icon: "none" });
       Taro.navigateBack();
       return;
     }
@@ -33,7 +33,8 @@ export function useWardrobeDetail() {
         const data = await fetchWardrobeItemById(id);
         setItem(data);
       } catch (err) {
-        const message = err instanceof Error ? err.message : "加载失败";
+        const message =
+          err instanceof Error ? err.message : "衣物详情加载失败，请稍后重试";
         setError(message);
         Taro.showToast({ title: message, icon: "none" });
       } finally {

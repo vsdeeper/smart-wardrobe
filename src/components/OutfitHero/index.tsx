@@ -82,9 +82,9 @@ export default function OutfitHero({
       )}
       {isError && (
         <View className="outfit-hero__error">
-          <Text className="outfit-hero__error-title">试穿图生成失败</Text>
+          <Text className="outfit-hero__error-title">试穿图没能生成</Text>
           <Text className="outfit-hero__error-desc">
-            {previewErrorMessage || "请稍后重试"}
+            {previewErrorMessage || "请稍后再试一次"}
           </Text>
           {onRetryPreview ? (
             <View

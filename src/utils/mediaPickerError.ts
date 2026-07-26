@@ -42,14 +42,14 @@ export function getMediaPickerErrorToast(err: unknown): string | null {
     lower.includes("scope is not declared") ||
     errMsg.includes("112")
   ) {
-    return "小程序未配置相册隐私声明，请在公众平台完善隐私保护指引";
+    return "暂时无法选择图片，请稍后重试";
   }
 
   if (
     lower.includes("privacy permission is not authorized") ||
     errMsg.includes("104")
   ) {
-    return "需要同意隐私协议后才能选择图片";
+    return "请先同意隐私协议后再选择图片";
   }
 
   if (lower.includes("privacy")) {
