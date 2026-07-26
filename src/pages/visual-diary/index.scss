@@ -7,6 +7,7 @@
 
   &__navbar {
     flex-shrink: 0;
+    margin-bottom: 0;
   }
 
   &__back {
@@ -72,14 +73,6 @@
     color: var(--sw-color-on-primary);
   }
 
-  &__state {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 200px;
-  }
-
   &__empty {
     display: flex;
     flex-direction: column;
@@ -101,12 +94,6 @@
     font-size: var(--nutui-font-size-3);
     color: var(--nutui-gray-5);
     line-height: var(--nutui-line-height-base);
-  }
-
-  &__footer-loading {
-    display: flex;
-    justify-content: center;
-    padding: var(--nutui-spacing-5) 0;
   }
 }
 

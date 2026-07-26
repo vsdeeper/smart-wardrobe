@@ -7,6 +7,7 @@
 
   &__navbar {
     flex-shrink: 0;
+    margin-bottom: 0;
   }
 
   &__back {
@@ -59,11 +60,5 @@
     color: var(--nutui-gray-5);
     text-align: center;
     line-height: var(--nutui-line-height-base);
-  }
-
-  &__more {
-    display: flex;
-    justify-content: center;
-    padding: var(--nutui-spacing-6) 0;
   }
 }

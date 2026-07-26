@@ -1,9 +1,11 @@
 import { useCallback, useRef } from "react";
 import { View, Text, ScrollView } from "@tarojs/components";
 import Taro from "@tarojs/taro";
-import { Loading, NavBar, Swipe } from "@nutui/nutui-react-taro";
+import { NavBar, Swipe } from "@nutui/nutui-react-taro";
+import MediaListCard from "@/components/MediaListCard";
+import PageLoading from "@/components/PageLoading";
 import { useVisualDiaryList } from "@/hooks/useVisualDiaryList";
-import DiaryItemCard from "./components/DiaryItemCard";
+import { formatDateTime } from "@/utils/formatDateTime";
 import "./index.scss";
 
 function VisualDiaryPage() {
@@ -84,9 +86,7 @@ function VisualDiaryPage() {
       </NavBar>
 
       {initialLoading ? (
-        <View className="visual-diary-page__state">
-          <Loading type="circular" />
-        </View>
+        <PageLoading />
       ) : (
         <ScrollView
           className="visual-diary-page__scroll"
@@ -129,7 +129,14 @@ function VisualDiaryPage() {
                     </View>
                   }
                 >
-                  <DiaryItemCard entry={entry} />
+                  <MediaListCard
+                    imageSrc={
+                      entry.coverUrl || entry.coverFileId || undefined
+                    }
+                    title={entry.title}
+                    time={formatDateTime(entry.createdAt)}
+                    description={entry.description}
+                  />
                 </Swipe>
               );
             })}
@@ -146,9 +153,7 @@ function VisualDiaryPage() {
             )}
 
             {listLoading && entries.length > 0 && (
-              <View className="visual-diary-page__footer-loading">
-                <Loading type="circular" />
-              </View>
+              <PageLoading text="加载更多..." />
             )}
           </View>
         </ScrollView>

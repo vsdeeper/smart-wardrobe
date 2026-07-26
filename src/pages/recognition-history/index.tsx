@@ -1,7 +1,8 @@
 import { useCallback } from "react";
 import { View, Text, ScrollView } from "@tarojs/components";
 import Taro from "@tarojs/taro";
-import { Loading, NavBar } from "@nutui/nutui-react-taro";
+import { NavBar } from "@nutui/nutui-react-taro";
+import PageLoading from "@/components/PageLoading";
 import RecognitionBatchCard from "@/components/RecognitionBatchCard";
 import {
   canOpenRecognitionBatch,
@@ -69,9 +70,7 @@ function RecognitionHistoryPage() {
       </NavBar>
 
       {loading && batches.length === 0 ? (
-        <View className="recognition-history-page__state">
-          <Loading type="circular" />
-        </View>
+        <PageLoading />
       ) : batches.length === 0 ? (
         <View className="recognition-history-page__state">
           <Text className="recognition-history-page__empty-title">
@@ -99,11 +98,7 @@ function RecognitionHistoryPage() {
               />
             ))}
           </View>
-          {listLoading ? (
-            <View className="recognition-history-page__more">
-              <Loading type="circular" />
-            </View>
-          ) : null}
+          {listLoading ? <PageLoading text="加载更多..." /> : null}
         </ScrollView>
       )}
     </View>
