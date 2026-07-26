@@ -14,7 +14,22 @@
   &__outfit {
     display: flex;
     flex-direction: column;
-    gap: var(--nutui-spacing-2);
+    gap: var(--nutui-spacing-3);
     margin-top: var(--nutui-spacing-2);
+  }
+
+  &__outfit-box--placeholder {
+    .wardrobe-edit-form__outfit-text {
+      color: var(--nutui-gray-4);
+    }
+  }
+
+  &__outfit-text {
+    font-family: var(--sw-font-body);
+    font-size: var(--nutui-font-size-3);
+    color: var(--nutui-gray-7);
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-word;
   }
 }

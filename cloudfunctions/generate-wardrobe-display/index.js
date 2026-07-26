@@ -28,10 +28,11 @@ function normalizeItemInput(raw) {
   const tags = Array.isArray(raw.tags)
     ? raw.tags.map((tag) => String(tag ?? '').trim()).filter(Boolean)
     : []
+  const stylingAdvice = String(raw.stylingAdvice ?? '').trim()
 
   if (!typeName || !name) return null
 
-  return { typeName, name, tags }
+  return { typeName, name, tags, stylingAdvice }
 }
 
 function normalizeItemsInput(items) {
@@ -94,6 +95,7 @@ function buildPreviewFromItem(item, imageFileId) {
     typeName: item.typeName,
     tags: item.tags,
     imageFileId,
+    stylingAdvice: item.stylingAdvice || '',
   }
 }
 

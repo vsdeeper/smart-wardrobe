@@ -35,6 +35,9 @@ function normalizePreviewItem(raw: Record<string, unknown>): RecognizedPreviewIt
   if (typeof raw.imageUrl === "string") {
     item.imageUrl = raw.imageUrl;
   }
+  if (typeof raw.stylingAdvice === "string") {
+    item.stylingAdvice = raw.stylingAdvice;
+  }
   return item;
 }
 

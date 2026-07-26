@@ -50,6 +50,8 @@ async function saveRecognizedItem(openid, fileID, recognized) {
   const { type, isNewType } = await upsertClothingType(openid, recognized.typeName)
   const now = db.serverDate()
 
+  const stylingAdvice = String(recognized.stylingAdvice ?? '').trim()
+
   const itemData = {
     _openid: openid,
     name: recognized.name,
@@ -59,7 +61,7 @@ async function saveRecognizedItem(openid, fileID, recognized) {
     tags: recognized.tags,
     createdAt: now,
     updatedAt: now,
-    outfitRecommendation: '',
+    stylingAdvice,
   }
 
   const itemRes = await db.collection('wardrobe_items').add({ data: itemData })
@@ -73,7 +75,7 @@ async function saveRecognizedItem(openid, fileID, recognized) {
     tags: recognized.tags,
     createdAt: Date.now(),
     updatedAt: Date.now(),
-    outfitRecommendation: '',
+    stylingAdvice,
   }
 
   return {

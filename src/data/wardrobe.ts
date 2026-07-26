@@ -16,7 +16,7 @@ export interface WardrobeItem {
   tags?: string[]
   createdAt: number
   updatedAt?: number
-  outfitRecommendation?: string
+  stylingAdvice?: string
 }
 
 /** AI 识别预览项（确认入库前，无 _id） */
@@ -27,6 +27,7 @@ export interface RecognizedPreviewItem {
   tags: string[]
   imageFileId: string
   imageUrl?: string
+  stylingAdvice?: string
 }
 
 export const WARDROBE_PAGE_SIZE = 20

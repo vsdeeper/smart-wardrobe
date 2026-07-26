@@ -26,6 +26,7 @@ interface RecognizeItemPayload {
   name: string;
   typeName: string;
   tags: string[];
+  stylingAdvice?: string;
 }
 
 interface RecognizeItemsCloudResult {
@@ -38,6 +39,7 @@ interface GeneratePreviewItemPayload {
   typeName: string;
   tags: string[];
   imageFileId: string;
+  stylingAdvice?: string;
 }
 
 interface GenerateDisplayCloudResult {
@@ -94,8 +96,8 @@ function normalizeWardrobeItem(raw: Record<string, unknown>): WardrobeItem {
   if (raw.updatedAt != null) {
     item.updatedAt = normalizeCreatedAt(raw.updatedAt);
   }
-  if (typeof raw.outfitRecommendation === "string") {
-    item.outfitRecommendation = raw.outfitRecommendation;
+  if (typeof raw.stylingAdvice === "string") {
+    item.stylingAdvice = raw.stylingAdvice;
   }
 
   return item;
@@ -304,6 +306,7 @@ export async function uploadAndRecognize(
     typeName: item.typeName,
     tags: item.tags,
     imageFileId: item.imageFileId,
+    stylingAdvice: item.stylingAdvice,
   }));
 
   return resolvePreviewImageUrls(previews);
@@ -363,11 +366,12 @@ export async function saveWardrobeItems(
   const { result } = await Taro.cloud.callFunction({
     name: "save-wardrobe-items",
     data: {
-      items: items.map(({ name, typeName, tags, imageFileId }) => ({
+      items: items.map(({ name, typeName, tags, imageFileId, stylingAdvice }) => ({
         name,
         typeName,
         tags,
         imageFileId,
+        stylingAdvice,
       })),
     },
   });
@@ -456,7 +460,6 @@ export interface UpdateWardrobeItemInput {
   name: string;
   typeName: string;
   tags: string[];
-  outfitRecommendation?: string;
   previousTypeId: string;
 }
 
@@ -507,10 +510,6 @@ export async function updateWardrobeItem(
     tags: input.tags,
     updatedAt: now,
   };
-
-  if (input.outfitRecommendation !== undefined) {
-    updateData.outfitRecommendation = input.outfitRecommendation;
-  }
 
   await db.collection("wardrobe_items").doc(input._id).update({ data: updateData });
 

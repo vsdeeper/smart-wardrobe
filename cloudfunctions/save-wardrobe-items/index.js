@@ -13,10 +13,11 @@ function normalizeItemInput(raw) {
   const tags = Array.isArray(raw.tags)
     ? raw.tags.map((tag) => String(tag ?? '').trim()).filter(Boolean)
     : []
+  const stylingAdvice = String(raw.stylingAdvice ?? '').trim()
 
   if (!name || !typeName || !imageFileId) return null
 
-  return { name, typeName, imageFileId, tags }
+  return { name, typeName, imageFileId, tags, stylingAdvice }
 }
 
 exports.main = async (event) => {

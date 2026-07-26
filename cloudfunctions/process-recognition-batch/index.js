@@ -141,6 +141,7 @@ function buildPreviewFromItem(item, imageFileId) {
     typeName: item.typeName,
     tags: item.tags,
     imageFileId,
+    stylingAdvice: item.stylingAdvice || '',
   }
 }
 

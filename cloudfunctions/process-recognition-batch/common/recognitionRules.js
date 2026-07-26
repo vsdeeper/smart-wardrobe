@@ -32,12 +32,14 @@ const PROMPT_EXAMPLES = {
       name: '圆领短袖T恤',
       tags: ['白色', '夏季', '休闲'],
       audienceGender: 'unisex',
+      stylingAdvice: '白色棉质休闲款，适合日常通勤与周末出行，可搭牛仔裤或短裤。',
     },
     {
       typeName: '连衣裙',
       name: '改良立领旗袍',
       tags: ['红色', '四季', '新中式'],
       audienceGender: 'female',
+      stylingAdvice: '红色新中式气质款，适合宴请与节日场合，可配盘扣包或细跟鞋。',
     },
   ],
   negative: {
@@ -54,7 +56,7 @@ function formatMergeExamples() {
 }
 
 function formatPromptExample(item) {
-  return `typeName ${item.typeName}，name ${item.name}，tags ${JSON.stringify(item.tags)}，audienceGender ${item.audienceGender}`
+  return `typeName ${item.typeName}，name ${item.name}，tags ${JSON.stringify(item.tags)}，audienceGender ${item.audienceGender}，stylingAdvice ${item.stylingAdvice}`
 }
 
 function buildSystemPrompt() {
@@ -98,6 +100,11 @@ function buildSystemPrompt() {
 - 仅当款式有明显性别特征时标 male 或 female（如文胸、吊带裙、男士西裤、领带等）
 - 不确定时标 unisex，勿过度标注
 
+【穿搭建议 stylingAdvice】
+- 每件须返回 stylingAdvice，中文成句
+- 内容须涵盖：衣物本身特性（风格、颜色、材质等）+ 穿着场景建议 + 搭配建议
+- 建议不超过 60 个字；可综合 tags 信息，避免与 name 机械重复堆砌
+
 【name 与 tags 互斥】
 - 正例：${formatPromptExample(positiveA)}
 - 正例：${formatPromptExample(positiveB)}
@@ -110,14 +117,15 @@ function buildSystemPrompt() {
       "typeName": "从上述列表选择一项",
       "name": "款式结构描述，不含颜色季节风格",
       "tags": ["颜色", "季节", "风格或材质"],
-      "audienceGender": "unisex"
+      "audienceGender": "unisex",
+      "stylingAdvice": "特性+场景+搭配建议，建议不超过60字"
     }
   ]
 }`
 }
 
 const USER_PROMPT =
-  `请识别照片中所有可见衣物单品，严格按 system 规则返回 JSON 的 items 数组。typeName 不得超出给定列表；每件 name 只描述款式结构，颜色/季节/风格/材质只写在 tags，且 tags 不得与 name 重复；每个 tag 不超过${RECOGNITION_LIMITS.maxTagLength}个字。每件同时返回 audienceGender。`
+  `请识别照片中所有可见衣物单品，严格按 system 规则返回 JSON 的 items 数组。typeName 不得超出给定列表；每件 name 只描述款式结构，颜色/季节/风格/材质只写在 tags，且 tags 不得与 name 重复；每个 tag 不超过${RECOGNITION_LIMITS.maxTagLength}个字。每件同时返回 audienceGender 与 stylingAdvice（特性+场景+搭配建议，建议不超过60字）。`
 
 function normalizeAudienceGender(raw) {
   const value = String(raw ?? '').trim()
@@ -133,6 +141,7 @@ function parseRecognitionResult(parsed) {
   const tags = Array.isArray(parsed.tags)
     ? parsed.tags.map((tag) => String(tag ?? '').trim()).filter(Boolean)
     : []
+  const stylingAdvice = String(parsed.stylingAdvice ?? '').trim()
 
   if (!typeName || !name) {
     throw new Error('AI 返回缺少必要字段')
@@ -143,6 +152,7 @@ function parseRecognitionResult(parsed) {
     name,
     tags,
     audienceGender: normalizeAudienceGender(parsed.audienceGender),
+    stylingAdvice,
   }
 }
 

@@ -14,7 +14,6 @@ import {
   Dialog,
   Input,
   Tag,
-  TextArea,
 } from "@nutui/nutui-react-taro";
 import type { ClothingType } from "@/data/wardrobe";
 import "./index.scss";
@@ -56,7 +55,7 @@ function FormDialogFooter({
   );
 }
 
-const OUTFIT_PLACEHOLDER = "暂无搭配推荐，将在 AI 识别阶段生成";
+const STYLING_ADVICE_PLACEHOLDER = "暂无穿搭建议，将在 AI 识别阶段生成";
 const MAX_NAME_LENGTH = 30;
 const MAX_TAGS = 8;
 const NEW_CATEGORY_OPTION = "新建类别";
@@ -65,24 +64,20 @@ export interface WardrobeEditFormProps {
   name: string;
   typeName: string;
   tags: string[];
-  outfitRecommendation: string;
+  stylingAdvice: string;
   clothingTypes: ClothingType[];
-  hideOutfitRecommendation?: boolean;
   onNameChange: (value: string) => void;
   onTypeNameChange: (value: string) => void;
   onTagsChange: (tags: string[]) => void;
-  onOutfitRecommendationChange: (value: string) => void;
 }
 
 interface WardrobeEditFormContextValue {
   name: string;
   typeName: string;
   tags: string[];
-  outfitRecommendation: string;
-  hideOutfitRecommendation: boolean;
+  stylingAdvice: string;
   tagAddDisabled: boolean;
   onNameChange: (value: string) => void;
-  onOutfitRecommendationChange: (value: string) => void;
   openTypeSheet: () => void;
   openTagDialog: () => void;
   handleRemoveTag: (tag: string) => void;
@@ -128,13 +123,11 @@ export function WardrobeEditFormProvider({
   name,
   typeName,
   tags,
-  outfitRecommendation,
+  stylingAdvice,
   clothingTypes,
-  hideOutfitRecommendation = false,
   onNameChange,
   onTypeNameChange,
   onTagsChange,
-  onOutfitRecommendationChange,
   children,
 }: WardrobeEditFormProps & { children: ReactNode }) {
   const [typeSheetVisible, setTypeSheetVisible] = useState(false);
@@ -234,11 +227,9 @@ export function WardrobeEditFormProvider({
       name,
       typeName,
       tags,
-      outfitRecommendation,
-      hideOutfitRecommendation,
+      stylingAdvice,
       tagAddDisabled,
       onNameChange,
-      onOutfitRecommendationChange,
       openTypeSheet,
       openTagDialog,
       handleRemoveTag,
@@ -261,11 +252,9 @@ export function WardrobeEditFormProvider({
       name,
       typeName,
       tags,
-      outfitRecommendation,
-      hideOutfitRecommendation,
+      stylingAdvice,
       tagAddDisabled,
       onNameChange,
-      onOutfitRecommendationChange,
       openTypeSheet,
       openTagDialog,
       handleRemoveTag,
@@ -296,15 +285,16 @@ export function WardrobeEditFormFields() {
     name,
     typeName,
     tags,
-    outfitRecommendation,
-    hideOutfitRecommendation,
+    stylingAdvice,
     tagAddDisabled,
     onNameChange,
-    onOutfitRecommendationChange,
     openTypeSheet,
     openTagDialog,
     handleRemoveTag,
   } = useWardrobeEditFormContext();
+
+  const adviceText = stylingAdvice.trim() || STYLING_ADVICE_PLACEHOLDER;
+  const isAdvicePlaceholder = !stylingAdvice.trim();
 
   return (
     <View className="wardrobe-edit-form">
@@ -372,19 +362,20 @@ export function WardrobeEditFormFields() {
         </View>
       </FormRow>
 
-      {!hideOutfitRecommendation && (
-        <View className="wardrobe-edit-form__outfit">
-          <Text className="sw-form-label">搭配推荐</Text>
-          <View className="sw-field-box">
-            <TextArea
-              value={outfitRecommendation}
-              placeholder={OUTFIT_PLACEHOLDER}
-              autoSize
-              onChange={onOutfitRecommendationChange}
-            />
-          </View>
+      <View className="wardrobe-edit-form__outfit">
+        <Text className="sw-form-label">穿搭建议</Text>
+        <View
+          className={[
+            "wardrobe-edit-form__outfit-box",
+            isAdvicePlaceholder &&
+              "wardrobe-edit-form__outfit-box--placeholder",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+        >
+          <Text className="wardrobe-edit-form__outfit-text">{adviceText}</Text>
         </View>
-      )}
+      </View>
     </View>
   );
 }

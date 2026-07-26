@@ -20,17 +20,15 @@ function WardrobeEditPage() {
     name,
     typeName,
     tags,
-    outfitRecommendation,
+    stylingAdvice,
     loading,
     saving,
     error,
     setName,
     setTypeName,
     setTags,
-    setOutfitRecommendation,
     handleCancel,
     handleSave,
-    isRecognitionMode,
   } = useWardrobeEdit();
 
   const ready = !loading && !!item;
@@ -83,13 +81,11 @@ function WardrobeEditPage() {
       name={name}
       typeName={typeName}
       tags={tags}
-      outfitRecommendation={outfitRecommendation}
+      stylingAdvice={stylingAdvice}
       clothingTypes={clothingTypes}
-      hideOutfitRecommendation={isRecognitionMode}
       onNameChange={setName}
       onTypeNameChange={setTypeName}
       onTagsChange={setTags}
-      onOutfitRecommendationChange={setOutfitRecommendation}
     >
       {main}
     </WardrobeEditFormProvider>

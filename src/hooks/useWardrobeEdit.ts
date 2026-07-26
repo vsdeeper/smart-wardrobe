@@ -23,6 +23,7 @@ function recognitionItemToDisplayItem(
     imageFileId: preview.imageFileId,
     imageUrl: preview.imageUrl,
     tags: preview.tags,
+    stylingAdvice: preview.stylingAdvice,
     createdAt: Date.now(),
   };
 }
@@ -33,7 +34,7 @@ export function useWardrobeEdit() {
   const [name, setName] = useState("");
   const [typeName, setTypeName] = useState("");
   const [tags, setTags] = useState<string[]>([]);
-  const [outfitRecommendation, setOutfitRecommendation] = useState("");
+  const [stylingAdvice, setStylingAdvice] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -46,7 +47,7 @@ export function useWardrobeEdit() {
     setName(item.name);
     setTypeName(item.typeName);
     setTags(item.tags ?? []);
-    setOutfitRecommendation(item.outfitRecommendation ?? "");
+    setStylingAdvice(item.stylingAdvice ?? "");
   }, [item]);
 
   const handleCancel = useCallback(() => {
@@ -86,6 +87,7 @@ export function useWardrobeEdit() {
           name: trimmedName,
           typeName: trimmedTypeName,
           tags,
+          stylingAdvice: original.stylingAdvice,
         });
         Taro.showToast({ title: "已保存", icon: "success" });
         afterToastNavigate(() => Taro.navigateBack());
@@ -97,7 +99,6 @@ export function useWardrobeEdit() {
         name: trimmedName,
         typeName: trimmedTypeName,
         tags,
-        outfitRecommendation: outfitRecommendation.trim(),
         previousTypeId: item.typeId,
       });
       Taro.showToast({ title: "已保存", icon: "success" });
@@ -109,15 +110,7 @@ export function useWardrobeEdit() {
     } finally {
       setSaving(false);
     }
-  }, [
-    saving,
-    item,
-    name,
-    typeName,
-    tags,
-    outfitRecommendation,
-    isRecognitionMode,
-  ]);
+  }, [saving, item, name, typeName, tags, isRecognitionMode]);
 
   useLoad((options) => {
     const source = options.source;
@@ -211,7 +204,7 @@ export function useWardrobeEdit() {
     name,
     typeName,
     tags,
-    outfitRecommendation,
+    stylingAdvice,
     loading,
     saving,
     error,
@@ -219,7 +212,6 @@ export function useWardrobeEdit() {
     setName,
     setTypeName,
     setTags,
-    setOutfitRecommendation,
     handleCancel,
     handleSave,
   };

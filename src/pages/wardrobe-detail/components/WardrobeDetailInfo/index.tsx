@@ -4,7 +4,7 @@ import type { WardrobeItem } from "@/data/wardrobe";
 import { formatDateTime, formatUpdatedAt } from "@/utils/formatDateTime";
 import "./index.scss";
 
-const OUTFIT_PLACEHOLDER = "暂无搭配推荐，将在 AI 识别阶段生成";
+const STYLING_ADVICE_PLACEHOLDER = "暂无穿搭建议，将在 AI 识别阶段生成";
 
 export interface WardrobeDetailInfoProps {
   item: WardrobeItem;
@@ -27,8 +27,8 @@ function InfoRow({
 
 export default function WardrobeDetailInfo({ item }: WardrobeDetailInfoProps) {
   const tags = item.tags ?? [];
-  const outfitText = item.outfitRecommendation?.trim() || OUTFIT_PLACEHOLDER;
-  const isOutfitPlaceholder = !item.outfitRecommendation?.trim();
+  const adviceText = item.stylingAdvice?.trim() || STYLING_ADVICE_PLACEHOLDER;
+  const isAdvicePlaceholder = !item.stylingAdvice?.trim();
 
   return (
     <View className="wardrobe-detail-info">
@@ -73,18 +73,18 @@ export default function WardrobeDetailInfo({ item }: WardrobeDetailInfoProps) {
       </InfoRow>
 
       <View className="wardrobe-detail-info__outfit">
-        <Text className="wardrobe-detail-info__label">搭配推荐</Text>
+        <Text className="wardrobe-detail-info__label">穿搭建议</Text>
         <View
           className={[
             "wardrobe-detail-info__outfit-box",
-            isOutfitPlaceholder &&
+            isAdvicePlaceholder &&
               "wardrobe-detail-info__outfit-box--placeholder",
           ]
             .filter(Boolean)
             .join(" ")}
         >
           <Text className="wardrobe-detail-info__outfit-text">
-            {outfitText}
+            {adviceText}
           </Text>
         </View>
       </View>
