@@ -1,6 +1,7 @@
 import { View, Text } from "@tarojs/components";
 import { Cell, Input as NutInput, Loading } from "@nutui/nutui-react-taro";
 import AppNavbar from "@/components/AppNavbar";
+import PageLoading from "@/components/PageLoading";
 import { GENDER_OPTIONS } from "@/data/profile";
 import { useMineProfileFieldEdit } from "@/hooks/useMineProfileFieldEdit";
 import Main from "@/layouts/Main";
@@ -107,9 +108,7 @@ function MineProfileFieldPage() {
       <Main.Scroll>
         <View className="mine-profile-field-page">
           {loading || !field ? (
-            <View className="mine-profile-field-page__state">
-              <Loading type="circular" />
-            </View>
+            <PageLoading />
           ) : (
             renderFieldInput()
           )}

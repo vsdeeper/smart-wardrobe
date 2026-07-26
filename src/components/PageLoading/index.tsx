@@ -16,7 +16,7 @@ function PageLoading({ text = "加载中...", className }: PageLoadingProps) {
       className={["page-loading", className].filter(Boolean).join(" ")}
     >
       <Loading type="circular" />
-      <Text className="page-loading__text">{text}</Text>
+      {text ? <Text className="page-loading__text">{text}</Text> : null}
     </View>
   );
 }

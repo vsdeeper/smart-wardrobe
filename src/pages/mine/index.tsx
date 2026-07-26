@@ -2,9 +2,10 @@ import { useCallback, useState } from "react";
 import { View, Text } from "@tarojs/components";
 import Taro from "@tarojs/taro";
 import { ArrowRight, Edit } from "@nutui/icons-react-taro";
-import { Image, Loading } from "@nutui/nutui-react-taro";
+import { Image } from "@nutui/nutui-react-taro";
 import DefaultAvatar from "@/components/DefaultAvatar";
 import MediaListCard from "@/components/MediaListCard";
+import PageLoading from "@/components/PageLoading";
 import RecognitionBatchCard from "@/components/RecognitionBatchCard";
 import {
   canOpenRecognitionBatch,
@@ -200,9 +201,7 @@ function MinePage() {
               </View>
             </View>
             {recognitionLoading ? (
-              <View className="mine-diary-loading">
-                <Loading type="circular" />
-              </View>
+              <PageLoading text="" />
             ) : batches.length === 0 ? (
               <View className="mine-diary-empty">
                 <Text className="mine-diary-empty__title">还没有识别记录</Text>
@@ -247,11 +246,8 @@ function MinePage() {
               </View>
             </View>
             {diaryLoading ? (
-              <View className="mine-diary-loading">
-                <Loading type="circular" />
-              </View>
-            ) : entries.length === 0 ? (
-              <View className="mine-diary-empty">
+              <PageLoading text="" />
+            ) : entries.length === 0 ? (              <View className="mine-diary-empty">
                 <Text className="mine-diary-empty__title">还没有穿搭记录</Text>
                 <Text className="mine-diary-empty__desc">
                   试穿后点击「就穿这一身」，记录将出现在这里

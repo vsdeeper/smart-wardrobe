@@ -1,8 +1,9 @@
 import { View, Text, Button, Input } from "@tarojs/components";
 import { ArrowRight } from "@nutui/icons-react-taro";
-import { Cell, Loading } from "@nutui/nutui-react-taro";
+import { Cell } from "@nutui/nutui-react-taro";
 import AppNavbar from "@/components/AppNavbar";
 import DefaultAvatar from "@/components/DefaultAvatar";
+import PageLoading from "@/components/PageLoading";
 import {
   formatHeightLabel,
   formatWeightLabel,
@@ -44,9 +45,7 @@ function MineProfilePage() {
       <Main.Scroll>
         <View className="mine-profile-page">
           {loading ? (
-            <View className="mine-profile-page__state">
-              <Loading type="circular" />
-            </View>
+            <PageLoading />
           ) : (
             <Cell.Group className="mine-profile-page__group">
               <View className="mine-profile-cell-wrap mine-profile-cell-wrap--overlay">

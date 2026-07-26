@@ -1,10 +1,10 @@
 import { View, Text } from "@tarojs/components";
-import { Loading } from "@nutui/nutui-react-taro";
 import AppNavbar from "@/components/AppNavbar";
 import OutfitCard from "@/components/OutfitCard";
 import OutfitHero from "@/components/OutfitHero";
 import OutfitMeta from "@/components/OutfitMeta";
 import OutfitPieceList from "@/components/OutfitPieceList";
+import PageLoading from "@/components/PageLoading";
 import {
   buildWeatherCardView,
   formatLocationLabel,
@@ -45,11 +45,7 @@ function VisualDiaryDetailPage() {
       header={<AppNavbar showBack title="穿搭详情" />}
     >
       <Main.Scroll>
-        {loading && (
-          <View className="visual-diary-detail-page__state">
-            <Loading type="circular" />
-          </View>
-        )}
+        {loading && <PageLoading />}
 
         {!loading && error && (
           <View className="visual-diary-detail-page__state">

@@ -1,11 +1,4 @@
 .mine-profile-page {
-  &__state {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 200px;
-  }
-
   &__group {
     border-radius: var(--sw-radius-card);
     overflow: hidden;

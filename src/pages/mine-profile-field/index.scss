@@ -3,13 +3,6 @@
 }
 
 .mine-profile-field-page {
-  &__state {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 200px;
-  }
-
   &__hint {
     margin-top: var(--nutui-spacing-3);
     font-size: var(--nutui-font-size-2);
