@@ -1,4 +1,5 @@
 import Taro from "@tarojs/taro";
+import { CLOUD_TEMP_URL_MAX_AGE_S } from "@/config/cloud";
 import { isGenderSet } from "@/data/profile";
 import type {
   ClothingType,
@@ -173,6 +174,17 @@ export async function fetchWardrobeItems(
   return resolveImageUrls(items);
 }
 
+/**
+ * 构造 getTempFileURL 的 fileList，显式指定有效期而非依赖平台默认值。
+ * 微信支持 { fileID, maxAge } 对象形式，但 Taro 类型只声明了 string[]，故此处收敛断言。
+ */
+function toTempUrlFileList(fileIds: string[]): string[] {
+  return fileIds.map((fileID) => ({
+    fileID,
+    maxAge: CLOUD_TEMP_URL_MAX_AGE_S,
+  })) as unknown as string[];
+}
+
 /** 批量解析云存储 fileID 为临时 HTTPS URL */
 export async function resolveImageUrls(
   items: WardrobeItem[],
@@ -184,7 +196,9 @@ export async function resolveImageUrls(
   ];
   if (fileIds.length === 0) return items;
 
-  const res = await Taro.cloud.getTempFileURL({ fileList: fileIds });
+  const res = await Taro.cloud.getTempFileURL({
+    fileList: toTempUrlFileList(fileIds),
+  });
   const urlMap = new Map<string, string>();
   for (const file of res.fileList) {
     if (file.status === 0 && file.fileID) {
@@ -205,7 +219,9 @@ export async function resolveCloudFileUrl(
   const id = fileId.trim();
   if (!id) return null;
 
-  const res = await Taro.cloud.getTempFileURL({ fileList: [id] });
+  const res = await Taro.cloud.getTempFileURL({
+    fileList: toTempUrlFileList([id]),
+  });
   const file = res.fileList[0];
   if (file?.status === 0 && file.tempFileURL) {
     return file.tempFileURL;

@@ -7,12 +7,14 @@ export interface WardrobeItemCardProps {
   item: WardrobeItem;
   onClick?: (item: WardrobeItem) => void;
   onLongPress?: (item: WardrobeItem) => void;
+  onImageError?: (item: WardrobeItem) => void;
 }
 
 export default function WardrobeItemCard({
   item,
   onClick,
   onLongPress,
+  onImageError,
 }: WardrobeItemCardProps) {
   return (
     <View
@@ -27,6 +29,7 @@ export default function WardrobeItemCard({
             src={item.imageUrl || item.imageFileId}
             mode="aspectFill"
             radius="0"
+            onError={() => onImageError?.(item)}
           />
         </View>
         <View className="wardrobe-card__body">

@@ -1,4 +1,5 @@
 import Taro from "@tarojs/taro";
+import { CLOUD_TEMP_URL_TTL_MS } from "@/config/cloud";
 import { DEFAULT_USER_PROFILE, type UserProfile } from "@/data/profile";
 import { fetchUserProfile } from "@/services/profile";
 import { resolveAvatarUrl } from "@/services/profileAvatar";
@@ -19,7 +20,6 @@ export interface InitialProfileState {
 }
 
 const CACHE_KEY = "sw_user_profile_cache";
-const AVATAR_URL_TTL_MS = 30 * 60 * 1000;
 
 let memoryCache: ProfileCacheEntry | null | undefined;
 let inflightPromise: Promise<ProfileCacheEntry | null> | null = null;
@@ -62,7 +62,7 @@ function isAvatarUrlCacheValid(
   if (entry.profile.avatarFileId !== fileId || !entry.avatarUrl) {
     return false;
   }
-  return Date.now() - entry.cachedAt < AVATAR_URL_TTL_MS;
+  return Date.now() - entry.cachedAt < CLOUD_TEMP_URL_TTL_MS;
 }
 
 async function resolveAvatarUrlWithCache(

@@ -40,6 +40,7 @@ function WardrobePage() {
     closeActionSheet,
     handleItemLongPress,
     handleItemClick,
+    handleItemImageError,
     handleActionSelect,
   } = useWardrobeList({ uploadFlowRef });
 
@@ -88,6 +89,7 @@ function WardrobePage() {
                 item={item}
                 onClick={handleItemClick}
                 onLongPress={handleItemLongPress}
+                onImageError={handleItemImageError}
               />
             ))}
           </View>

@@ -6,19 +6,42 @@ import {
   deleteWardrobeItem,
   fetchClothingTypes,
   fetchWardrobeItems,
+  resolveCloudFileUrl,
 } from "@/services/wardrobe";
+import {
+  getInitialWardrobeState,
+  readWardrobeCache,
+  removeItemFromWardrobeCache,
+  updateWardrobeCacheItemUrl,
+  writeWardrobeCache,
+} from "@/services/wardrobeCache";
 
 interface UseWardrobeListOptions {
   uploadFlowRef: React.MutableRefObject<boolean>;
 }
 
+function isSameTypes(a: ClothingType[], b: ClothingType[]): boolean {
+  if (a.length !== b.length) return false;
+  return a.every((type, idx) => {
+    const next = b[idx];
+    return (
+      type._id === next._id &&
+      type.name === next.name &&
+      type.itemCount === next.itemCount
+    );
+  });
+}
+
 export function useWardrobeList({ uploadFlowRef }: UseWardrobeListOptions) {
-  const [clothingTypes, setClothingTypes] = useState<ClothingType[]>([]);
-  const [items, setItems] = useState<WardrobeItem[]>([]);
+  const [initial] = useState(getInitialWardrobeState);
+  const [clothingTypes, setClothingTypes] = useState<ClothingType[]>(
+    initial.clothingTypes,
+  );
+  const [items, setItems] = useState<WardrobeItem[]>(initial.items);
   const [activeTab, setActiveTab] = useState(0);
-  const [hasMore, setHasMore] = useState(true);
+  const [hasMore, setHasMore] = useState(initial.hasMore);
   const [listLoading, setListLoading] = useState(false);
-  const [initialLoading, setInitialLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(!initial.hasCache);
   const [actionSheetVisible, setActionSheetVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState<WardrobeItem | null>(null);
   const [deleting, setDeleting] = useState(false);
@@ -26,6 +49,12 @@ export function useWardrobeList({ uploadFlowRef }: UseWardrobeListOptions) {
   const loadingRef = useRef(false);
   const itemsRef = useRef<WardrobeItem[]>([]);
   itemsRef.current = items;
+  /** 最近一次拉取到的类型列表，供写缓存时取用（setState 后同轮读不到新值） */
+  const typesRef = useRef<ClothingType[]>(initial.clothingTypes);
+  /** 已尝试重解析过的 imageFileId，避免坏链反复触发 onError 造成循环请求 */
+  const imageRetriedRef = useRef<Set<string>>(new Set());
+  /** 请求序号：静默刷新期间切换分类会并发两次请求，只允许最新一次落地 */
+  const requestSeqRef = useRef(0);
 
   const activeTypeId = useMemo(() => {
     if (activeTab === 0) return null;
@@ -42,23 +71,35 @@ export function useWardrobeList({ uploadFlowRef }: UseWardrobeListOptions) {
 
   const loadTypes = useCallback(async () => {
     const types = await fetchClothingTypes();
-    setClothingTypes(types);
+    typesRef.current = types;
+    setClothingTypes((prev) => (isSameTypes(prev, types) ? prev : types));
     return types;
   }, []);
 
   const loadItems = useCallback(
-    async (options: { reset?: boolean; typeId?: string | null } = {}) => {
+    async (
+      options: {
+        reset?: boolean;
+        typeId?: string | null;
+        /** 静默刷新：不改动 loading 状态，页面保持展示已有数据 */
+        silent?: boolean;
+      } = {},
+    ) => {
       if (loadingRef.current) return;
       loadingRef.current = true;
 
+      const seq = ++requestSeqRef.current;
       const reset = options.reset ?? false;
+      const silent = options.silent ?? false;
       const typeId =
         options.typeId !== undefined ? options.typeId : activeTypeId;
 
-      if (reset) {
-        setInitialLoading(true);
-      } else {
-        setListLoading(true);
+      if (!silent) {
+        if (reset) {
+          setInitialLoading(true);
+        } else {
+          setListLoading(true);
+        }
       }
 
       try {
@@ -69,32 +110,53 @@ export function useWardrobeList({ uploadFlowRef }: UseWardrobeListOptions) {
           limit: WARDROBE_PAGE_SIZE,
         });
 
+        if (seq !== requestSeqRef.current) return;
+
         setItems((prev) => (reset ? nextItems : [...prev, ...nextItems]));
         setHasMore(nextItems.length >= WARDROBE_PAGE_SIZE);
+
+        if (reset && typeId === null) {
+          writeWardrobeCache({
+            clothingTypes: typesRef.current,
+            items: nextItems,
+            cachedAt: Date.now(),
+          });
+        }
       } catch (err) {
-        const message =
-          err instanceof Error ? err.message : "衣橱加载失败，请稍后重试";
-        Taro.showToast({ title: message, icon: "none" });
+        if (seq !== requestSeqRef.current) return;
+        if (!silent || itemsRef.current.length === 0) {
+          const message =
+            err instanceof Error ? err.message : "衣橱加载失败，请稍后重试";
+          Taro.showToast({ title: message, icon: "none" });
+        }
       } finally {
-        loadingRef.current = false;
-        setListLoading(false);
-        setInitialLoading(false);
+        if (seq === requestSeqRef.current) {
+          loadingRef.current = false;
+          setListLoading(false);
+          setInitialLoading(false);
+        }
       }
     },
     [activeTypeId],
   );
 
-  const refreshWardrobe = useCallback(async () => {
-    try {
-      await loadTypes();
-      await loadItems({ reset: true });
-    } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "衣橱加载失败，请稍后重试";
-      Taro.showToast({ title: message, icon: "none" });
-      setInitialLoading(false);
-    }
-  }, [loadItems, loadTypes]);
+  const refreshWardrobe = useCallback(
+    async (options: { silent?: boolean } = {}) => {
+      const silent = options.silent ?? false;
+      try {
+        await loadTypes();
+        await loadItems({ reset: true, silent });
+      } catch (err) {
+        if (!silent || itemsRef.current.length === 0) {
+          const message =
+            err instanceof Error ? err.message : "衣橱加载失败，请稍后重试";
+          Taro.showToast({ title: message, icon: "none" });
+        }
+        setInitialLoading(false);
+      }
+    },
+    [loadItems, loadTypes],
+  );
 
   useDidShow(() => {
     if (process.env.TARO_ENV !== "weapp") {
@@ -102,7 +164,8 @@ export function useWardrobeList({ uploadFlowRef }: UseWardrobeListOptions) {
       return;
     }
     if (uploadFlowRef.current) return;
-    refreshWardrobe();
+    // 有缓存说明页面已渲染出上次的数据（含空衣橱），此时刷新对用户无感
+    refreshWardrobe({ silent: readWardrobeCache() !== null });
   });
 
   const handleTypeChange = useCallback(
@@ -141,6 +204,28 @@ export function useWardrobeList({ uploadFlowRef }: UseWardrobeListOptions) {
     });
   }, []);
 
+  /** 临时链接失效时的兜底：单图重解析，不依赖 TTL 估算 */
+  const handleItemImageError = useCallback(async (item: WardrobeItem) => {
+    const fileId = item.imageFileId;
+    if (!fileId || imageRetriedRef.current.has(fileId)) return;
+    // 列表请求进行中时，整批 URL 马上会被刷新覆盖，无需逐图重解析
+    if (loadingRef.current) return;
+    imageRetriedRef.current.add(fileId);
+
+    try {
+      const url = await resolveCloudFileUrl(fileId);
+      if (!url) return;
+      setItems((prev) =>
+        prev.map((i) =>
+          i.imageFileId === fileId ? { ...i, imageUrl: url } : i,
+        ),
+      );
+      updateWardrobeCacheItemUrl(item._id, url);
+    } catch {
+      // 兜底失败不打扰用户，等下次进入页面刷新
+    }
+  }, []);
+
   const handleDeleteItem = useCallback(
     async (item: WardrobeItem) => {
       if (deleting) return;
@@ -170,6 +255,7 @@ export function useWardrobeList({ uploadFlowRef }: UseWardrobeListOptions) {
               : type,
           ),
         );
+        removeItemFromWardrobeCache(item._id, item.typeId);
         Taro.showToast({ title: "已删除", icon: "success" });
       } catch (err) {
         const message =
@@ -225,6 +311,7 @@ export function useWardrobeList({ uploadFlowRef }: UseWardrobeListOptions) {
     closeActionSheet,
     handleItemLongPress,
     handleItemClick,
+    handleItemImageError,
     handleActionSelect,
   };
 }
