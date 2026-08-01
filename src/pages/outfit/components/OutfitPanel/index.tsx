@@ -44,7 +44,7 @@ export default function OutfitPanel({
             </Text>
           </View>
           <SolidButton disabled={!canSave} onClick={onSave}>
-            {canSave ? "保存搭配" : "请选单品"}
+            {canSave ? "我要试穿" : "请选单品"}
           </SolidButton>
         </View>
 
