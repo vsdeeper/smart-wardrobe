@@ -2,6 +2,7 @@ import Taro from "@tarojs/taro";
 import { VISUAL_DIARY_PAGE_SIZE } from "@/data/tryOn";
 import type { TryOnTip, VisualDiaryEntry } from "@/data/tryOn";
 import type { WeatherSnapshot } from "@/data/weather";
+import { resolveTempFileUrls } from "@/services/cloudFile";
 import { isEphemeralExternalImageUrl } from "@/utils/imageUrl";
 
 export interface SaveVisualDiaryInput {
@@ -63,29 +64,31 @@ function normalizeEntry(raw: Record<string, unknown>): VisualDiaryEntry {
   };
 }
 
-async function resolveCoverUrl(
-  entry: VisualDiaryEntry,
-): Promise<VisualDiaryEntry> {
-  if (entry.coverFileId) {
-    const res = await Taro.cloud.getTempFileURL({
-      fileList: [entry.coverFileId],
-    });
-    const file = res.fileList[0];
-    if (file?.status === 0 && file.tempFileURL) {
-      return { ...entry, coverUrl: file.tempFileURL };
-    }
-    return { ...entry, coverUrl: undefined };
-  }
-  if (entry.coverUrl && isEphemeralExternalImageUrl(entry.coverUrl)) {
-    return { ...entry, coverUrl: undefined };
-  }
-  return entry;
-}
-
 async function resolveCoverUrls(
   entries: VisualDiaryEntry[],
 ): Promise<VisualDiaryEntry[]> {
-  return Promise.all(entries.map(resolveCoverUrl));
+  const urlMap = await resolveTempFileUrls(
+    entries
+      .map((entry) => entry.coverFileId)
+      .filter((id): id is string => Boolean(id)),
+  );
+
+  return entries.map((entry) => {
+    if (entry.coverFileId) {
+      return { ...entry, coverUrl: urlMap.get(entry.coverFileId) };
+    }
+    if (entry.coverUrl && isEphemeralExternalImageUrl(entry.coverUrl)) {
+      return { ...entry, coverUrl: undefined };
+    }
+    return entry;
+  });
+}
+
+async function resolveCoverUrl(
+  entry: VisualDiaryEntry,
+): Promise<VisualDiaryEntry> {
+  const [resolved] = await resolveCoverUrls([entry]);
+  return resolved ?? entry;
 }
 
 export async function saveVisualDiaryEntry(

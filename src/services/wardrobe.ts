@@ -1,5 +1,4 @@
 import Taro from "@tarojs/taro";
-import { CLOUD_TEMP_URL_MAX_AGE_S } from "@/config/cloud";
 import { isGenderSet } from "@/data/profile";
 import type {
   ClothingType,
@@ -7,6 +6,7 @@ import type {
   WardrobeItem,
 } from "@/data/wardrobe";
 import { WARDROBE_PAGE_SIZE } from "@/data/wardrobe";
+import { attachImageUrls } from "@/services/cloudFile";
 import { fetchUserProfile } from "@/services/profile";
 import { readProfileCache } from "@/services/profileCache";
 import { createTempId } from "@/utils/recognition";
@@ -15,6 +15,8 @@ export interface FetchWardrobeItemsOptions {
   typeId?: string | null;
   skip: number;
   limit?: number;
+  /** 已知的 fileId -> 临时链接，命中则复用，避免图片重新加载 */
+  knownUrls?: Map<string, string>;
 }
 
 interface RecognizeClothingError {
@@ -122,7 +124,7 @@ export async function fetchWardrobeItemsGroupedByType(): Promise<{
   const items = (res.data as Record<string, unknown>[]).map(
     normalizeWardrobeItem,
   );
-  const withUrls = await resolveImageUrls(items);
+  const withUrls = await attachImageUrls(items);
   const byType: WardrobeItemsByType = {};
 
   for (const item of withUrls) {
@@ -171,87 +173,7 @@ export async function fetchWardrobeItems(
   const items = (res.data as Record<string, unknown>[]).map(
     normalizeWardrobeItem,
   );
-  return resolveImageUrls(items);
-}
-
-/**
- * 构造 getTempFileURL 的 fileList，显式指定有效期而非依赖平台默认值。
- * 微信支持 { fileID, maxAge } 对象形式，但 Taro 类型只声明了 string[]，故此处收敛断言。
- */
-function toTempUrlFileList(fileIds: string[]): string[] {
-  return fileIds.map((fileID) => ({
-    fileID,
-    maxAge: CLOUD_TEMP_URL_MAX_AGE_S,
-  })) as unknown as string[];
-}
-
-/** 批量解析云存储 fileID 为临时 HTTPS URL */
-export async function resolveImageUrls(
-  items: WardrobeItem[],
-): Promise<WardrobeItem[]> {
-  if (items.length === 0) return items;
-
-  const fileIds = [
-    ...new Set(items.map((item) => item.imageFileId).filter(Boolean)),
-  ];
-  if (fileIds.length === 0) return items;
-
-  const res = await Taro.cloud.getTempFileURL({
-    fileList: toTempUrlFileList(fileIds),
-  });
-  const urlMap = new Map<string, string>();
-  for (const file of res.fileList) {
-    if (file.status === 0 && file.fileID) {
-      urlMap.set(file.fileID, file.tempFileURL);
-    }
-  }
-
-  return items.map((item) => ({
-    ...item,
-    imageUrl: urlMap.get(item.imageFileId) ?? item.imageUrl,
-  }));
-}
-
-/** 单个云存储 fileID 解析为临时 HTTPS URL */
-export async function resolveCloudFileUrl(
-  fileId: string,
-): Promise<string | null> {
-  const id = fileId.trim();
-  if (!id) return null;
-
-  const res = await Taro.cloud.getTempFileURL({
-    fileList: toTempUrlFileList([id]),
-  });
-  const file = res.fileList[0];
-  if (file?.status === 0 && file.tempFileURL) {
-    return file.tempFileURL;
-  }
-  return null;
-}
-
-/** 为预览项批量解析图片临时 URL */
-export async function resolvePreviewImageUrls(
-  items: RecognizedPreviewItem[],
-): Promise<RecognizedPreviewItem[]> {
-  if (items.length === 0) return items;
-
-  const fileIds = [
-    ...new Set(items.map((item) => item.imageFileId).filter(Boolean)),
-  ];
-  if (fileIds.length === 0) return items;
-
-  const res = await Taro.cloud.getTempFileURL({ fileList: fileIds });
-  const urlMap = new Map<string, string>();
-  for (const file of res.fileList) {
-    if (file.status === 0 && file.fileID) {
-      urlMap.set(file.fileID, file.tempFileURL);
-    }
-  }
-
-  return items.map((item) => ({
-    ...item,
-    imageUrl: urlMap.get(item.imageFileId) ?? item.imageUrl,
-  }));
+  return attachImageUrls(items, options.knownUrls);
 }
 
 /** 上传图片并调用 AI 识别（预览模式，不入库） */
@@ -325,7 +247,7 @@ export async function uploadAndRecognize(
     stylingAdvice: item.stylingAdvice,
   }));
 
-  return resolvePreviewImageUrls(previews);
+  return attachImageUrls(previews);
 }
 
 export interface BatchRecognizeProgress {
@@ -400,7 +322,7 @@ export async function saveWardrobeItems(
   const saved = (data.saved ?? []).map((raw) =>
     normalizeWardrobeItem(raw as Record<string, unknown>),
   );
-  const withUrls = await resolveImageUrls(saved);
+  const withUrls = await attachImageUrls(saved);
 
   return {
     saved: withUrls,
@@ -453,7 +375,7 @@ export async function fetchWardrobeItemsByIds(
     .map((id) => itemMap.get(id))
     .filter((item): item is WardrobeItem => item != null);
 
-  return resolveImageUrls(ordered);
+  return attachImageUrls(ordered);
 }
 
 /** 按 id 查询单件衣橱单品 */
@@ -467,7 +389,7 @@ export async function fetchWardrobeItemById(id: string): Promise<WardrobeItem> {
   }
 
   const item = normalizeWardrobeItem(raw);
-  const [withUrl] = await resolveImageUrls([item]);
+  const [withUrl] = await attachImageUrls([item]);
   return withUrl ?? item;
 }
 

@@ -13,10 +13,8 @@ import {
   fetchRecognitionBatchById,
   updateRecognitionBatchItems,
 } from "@/services/recognitionBatch";
-import {
-  resolvePreviewImageUrls,
-  saveWardrobeItems,
-} from "@/services/wardrobe";
+import { attachImageUrls } from "@/services/cloudFile";
+import { saveWardrobeItems } from "@/services/wardrobe";
 import { afterToastNavigate } from "@/utils/afterToastNavigate";
 
 export function useAiRecognitionList() {
@@ -73,7 +71,7 @@ export function useAiRecognitionList() {
       }
 
       const rawItems = batch.items ?? [];
-      const withUrls = await resolvePreviewImageUrls(rawItems);
+      const withUrls = await attachImageUrls(rawItems);
 
       batchIdRef.current = batchId;
       allFileIdsRef.current = withUrls.map((item) => item.imageFileId);

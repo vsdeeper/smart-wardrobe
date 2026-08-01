@@ -1,5 +1,5 @@
 import Taro from "@tarojs/taro";
-import { resolveCloudFileUrl } from "@/services/wardrobe";
+import { resolveCloudFileUrl } from "@/services/cloudFile";
 
 export async function uploadAvatar(filePath: string): Promise<string> {
   const ext = filePath.includes(".")

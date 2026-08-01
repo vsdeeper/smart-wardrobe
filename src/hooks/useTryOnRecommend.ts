@@ -4,6 +4,7 @@ import type { TryOnRecommendation, TryOnRecommendStatus } from "@/data/tryOn";
 import type { WeatherSnapshot } from "@/data/weather";
 import type { WardrobeItem } from "@/data/wardrobe";
 import { isGenderSet, isMetricsSet } from "@/data/profile";
+import { attachImageUrls } from "@/services/cloudFile";
 import {
   recommendOutfit,
   resolveSelectedPieces,
@@ -17,10 +18,7 @@ import {
   writeTryOnCache,
 } from "@/services/tryOnCache";
 import { consumeTryOnDraft } from "@/services/tryOnDraft";
-import {
-  fetchWardrobeItemsGroupedByType,
-  resolveImageUrls,
-} from "@/services/wardrobe";
+import { fetchWardrobeItemsGroupedByType } from "@/services/wardrobe";
 import { getCurrentSeason } from "@/utils/season";
 
 export interface SavedReturnMeta {
@@ -139,7 +137,7 @@ export function useTryOnRecommend() {
     if (!cache) {
       return false;
     }
-    const pieces = await resolveImageUrls(cache.selectedPieces);
+    const pieces = await attachImageUrls(cache.selectedPieces);
     allItemsRef.current = pieces;
     setRecommendation(cache.recommendation);
     setSelectedPieces(pieces);
@@ -176,7 +174,7 @@ export function useTryOnRecommend() {
     }
 
     if (draft?.mode === "saved" && draft.selectedPieces) {
-      const pieces = await resolveImageUrls(draft.selectedPieces);
+      const pieces = await attachImageUrls(draft.selectedPieces);
       const cache = readTryOnCache();
       if (cache) {
         setRecommendation(cache.recommendation);

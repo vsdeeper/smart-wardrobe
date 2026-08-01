@@ -1,12 +1,13 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 import Taro, { useDidShow } from "@tarojs/taro";
+import { CLOUD_TEMP_URL_TTL_MS } from "@/config/cloud";
 import type { ClothingType, WardrobeItem } from "@/data/wardrobe";
 import { WARDROBE_PAGE_SIZE } from "@/data/wardrobe";
+import { collectImageUrls, resolveCloudFileUrl } from "@/services/cloudFile";
 import {
   deleteWardrobeItem,
   fetchClothingTypes,
   fetchWardrobeItems,
-  resolveCloudFileUrl,
 } from "@/services/wardrobe";
 import {
   getInitialWardrobeState,
@@ -55,6 +56,8 @@ export function useWardrobeList({ uploadFlowRef }: UseWardrobeListOptions) {
   const imageRetriedRef = useRef<Set<string>>(new Set());
   /** 请求序号：静默刷新期间切换分类会并发两次请求，只允许最新一次落地 */
   const requestSeqRef = useRef(0);
+  /** 当前列表内图片临时链接的解析时刻，0 表示无可复用链接 */
+  const imageUrlsAtRef = useRef(initial.imageUrlsAt);
 
   const activeTypeId = useMemo(() => {
     if (activeTab === 0) return null;
@@ -104,13 +107,22 @@ export function useWardrobeList({ uploadFlowRef }: UseWardrobeListOptions) {
 
       try {
         const skip = reset ? 0 : itemsRef.current.length;
+        // 复用未过期的旧链接：临时链接每次签名不同，换新会让 <image> 重新加载而闪一下
+        const canReuseUrls =
+          Date.now() - imageUrlsAtRef.current < CLOUD_TEMP_URL_TTL_MS;
         const nextItems = await fetchWardrobeItems({
           typeId,
           skip: reset ? 0 : skip,
           limit: WARDROBE_PAGE_SIZE,
+          knownUrls: canReuseUrls
+            ? collectImageUrls(itemsRef.current)
+            : undefined,
         });
 
         if (seq !== requestSeqRef.current) return;
+
+        // 复用时沿用旧时间戳，否则会误以为链接还能再活一个完整 TTL
+        if (!canReuseUrls) imageUrlsAtRef.current = Date.now();
 
         setItems((prev) => (reset ? nextItems : [...prev, ...nextItems]));
         setHasMore(nextItems.length >= WARDROBE_PAGE_SIZE);
@@ -119,7 +131,7 @@ export function useWardrobeList({ uploadFlowRef }: UseWardrobeListOptions) {
           writeWardrobeCache({
             clothingTypes: typesRef.current,
             items: nextItems,
-            cachedAt: Date.now(),
+            imageUrlsAt: imageUrlsAtRef.current,
           });
         }
       } catch (err) {

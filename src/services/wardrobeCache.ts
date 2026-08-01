@@ -7,7 +7,8 @@ import { WARDROBE_PAGE_SIZE } from "@/data/wardrobe";
 export interface WardrobeCacheEntry {
   clothingTypes: ClothingType[];
   items: WardrobeItem[];
-  cachedAt: number;
+  /** items 内图片临时链接的解析时刻，用于判断链接是否仍有效 */
+  imageUrlsAt: number;
 }
 
 export interface InitialWardrobeState {
@@ -15,6 +16,8 @@ export interface InitialWardrobeState {
   items: WardrobeItem[];
   hasMore: boolean;
   hasCache: boolean;
+  /** 链接仍有效时为解析时刻，已过期时为 0 */
+  imageUrlsAt: number;
 }
 
 const CACHE_KEY = "sw_wardrobe_list_cache";
@@ -47,7 +50,7 @@ function isValidEntry(raw: unknown): raw is WardrobeCacheEntry {
   if (!raw || typeof raw !== "object") return false;
   const entry = raw as WardrobeCacheEntry;
   return (
-    typeof entry.cachedAt === "number" &&
+    typeof entry.imageUrlsAt === "number" &&
     Array.isArray(entry.items) &&
     entry.items.every(isValidItem) &&
     Array.isArray(entry.clothingTypes) &&
@@ -57,7 +60,7 @@ function isValidEntry(raw: unknown): raw is WardrobeCacheEntry {
 
 /** 缓存内的图片临时链接是否仍在有效期内 */
 function isImageUrlFresh(entry: WardrobeCacheEntry): boolean {
-  return Date.now() - entry.cachedAt < CLOUD_TEMP_URL_TTL_MS;
+  return Date.now() - entry.imageUrlsAt < CLOUD_TEMP_URL_TTL_MS;
 }
 
 function stripImageUrls(items: WardrobeItem[]): WardrobeItem[] {
@@ -109,14 +112,17 @@ export function getInitialWardrobeState(): InitialWardrobeState {
       items: [],
       hasMore: true,
       hasCache: false,
+      imageUrlsAt: 0,
     };
   }
 
+  const fresh = isImageUrlFresh(cached);
   return {
     clothingTypes: cached.clothingTypes,
-    items: isImageUrlFresh(cached) ? cached.items : stripImageUrls(cached.items),
+    items: fresh ? cached.items : stripImageUrls(cached.items),
     hasMore: cached.items.length >= WARDROBE_PAGE_SIZE,
     hasCache: true,
+    imageUrlsAt: fresh ? cached.imageUrlsAt : 0,
   };
 }
 
@@ -142,7 +148,7 @@ export function removeItemFromWardrobeCache(
   });
 }
 
-/** 图片加载失败重解析后回填缓存（不刷新 cachedAt，仍以原始拉取时间计算有效期） */
+/** 图片加载失败重解析后回填缓存（不刷新 imageUrlsAt，仍以原始解析时间计算有效期） */
 export function updateWardrobeCacheItemUrl(
   itemId: string,
   imageUrl: string,

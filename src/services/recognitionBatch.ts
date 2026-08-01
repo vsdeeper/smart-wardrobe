@@ -8,9 +8,9 @@ import {
   type RecognitionConfirmStatus,
 } from "@/data/recognition";
 import { isGenderSet } from "@/data/profile";
+import { resolveCloudFileUrl } from "@/services/cloudFile";
 import { fetchUserProfile } from "@/services/profile";
 import { readProfileCache } from "@/services/profileCache";
-import { resolveCloudFileUrl } from "@/services/wardrobe";
 import { normalizeRecognitionErrorMessage } from "@/utils/recognition";
 
 const COLLECTION = "recognition_batches";
