@@ -1,0 +1,33 @@
+.mine-profile-field-page {
+  &__hint {
+    margin-top: var(--nutui-spacing-3);
+    font-size: var(--nutui-font-size-2);
+    color: var(--nutui-gray-5);
+  }
+
+  &__group {
+    border-radius: var(--sw-radius-card);
+    overflow: hidden;
+  }
+}
+
+.mine-profile-field-page .nut-cell-group-wrap {
+  margin: 0;
+}
+
+.mine-profile-field-gender-cell {
+  &--selected .mine-profile-field-gender-cell__label {
+    color: var(--nutui-brand-6);
+    font-weight: var(--nutui-font-weight-bold);
+  }
+
+  &__label {
+    font-size: var(--nutui-font-size-3);
+    color: var(--nutui-gray-7);
+  }
+
+  &__check {
+    font-size: var(--nutui-font-size-3);
+    color: var(--nutui-brand-6);
+  }
+}

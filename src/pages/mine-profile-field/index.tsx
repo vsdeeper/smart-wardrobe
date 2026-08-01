@@ -1,12 +1,11 @@
-import { View, Text } from "@tarojs/components";
-import { Cell, Input as NutInput } from "@nutui/nutui-react-taro";
+import { View } from "@tarojs/components";
 import AppNavbar from "@/components/AppNavbar";
 import OutlineButton from "@/components/OutlineButton";
 import PageLoading from "@/components/PageLoading";
 import SolidButton from "@/components/SolidButton";
-import { GENDER_OPTIONS } from "@/data/profile";
 import { useMineProfileFieldEdit } from "@/hooks/useMineProfileFieldEdit";
 import Main from "@/layouts/Main";
+import FieldInput from "./components/FieldInput";
 import "./index.scss";
 
 function MineProfileFieldPage() {
@@ -24,75 +23,6 @@ function MineProfileFieldPage() {
     handleSave,
   } = useMineProfileFieldEdit();
 
-  const renderFieldInput = () => {
-    if (!field || !fieldMeta) return null;
-
-    if (field === "gender") {
-      return (
-        <Cell.Group className="mine-profile-field-page__group">
-          {GENDER_OPTIONS.map((option) => {
-            const selected = genderDraft === option.value;
-            return (
-              <Cell
-                key={option.value}
-                className={
-                  selected
-                    ? "mine-profile-field-gender-cell mine-profile-field-gender-cell--selected"
-                    : "mine-profile-field-gender-cell"
-                }
-                title={
-                  <Text className="mine-profile-field-gender-cell__label">
-                    {option.label}
-                  </Text>
-                }
-                extra={
-                  selected ? (
-                    <Text className="mine-profile-field-gender-cell__check">
-                      ✓
-                    </Text>
-                  ) : undefined
-                }
-                onClick={() => setGenderDraft(option.value)}
-              />
-            );
-          })}
-        </Cell.Group>
-      );
-    }
-
-    if (field === "height" || field === "weight") {
-      return (
-        <View>
-          <View className="sw-field-input">
-            <NutInput
-              value={textDraft}
-              type="digit"
-              placeholder={fieldMeta.placeholder}
-              disabled={updating}
-              onChange={setTextDraft}
-            />
-          </View>
-          {fieldMeta.hint ? (
-            <Text className="mine-profile-field-page__hint">
-              {fieldMeta.hint}
-            </Text>
-          ) : null}
-        </View>
-      );
-    }
-
-    return (
-      <View className="sw-field-input">
-        <NutInput
-          value={textDraft}
-          placeholder={fieldMeta.placeholder}
-          disabled={updating}
-          onChange={setTextDraft}
-        />
-      </View>
-    );
-  };
-
   return (
     <Main
       showTabbar={false}
@@ -109,10 +39,18 @@ function MineProfileFieldPage() {
     >
       <Main.Scroll>
         <View className="mine-profile-field-page">
-          {loading || !field ? (
+          {loading || !field || !fieldMeta ? (
             <PageLoading />
           ) : (
-            renderFieldInput()
+            <FieldInput
+              field={field}
+              fieldMeta={fieldMeta}
+              updating={updating}
+              textDraft={textDraft}
+              setTextDraft={setTextDraft}
+              genderDraft={genderDraft}
+              setGenderDraft={setGenderDraft}
+            />
           )}
         </View>
       </Main.Scroll>
