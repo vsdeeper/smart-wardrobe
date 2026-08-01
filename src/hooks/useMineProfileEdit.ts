@@ -2,10 +2,8 @@ import { useCallback, useEffect, useState } from "react";
 import Taro from "@tarojs/taro";
 import type { ProfileEditableField } from "@/data/profile";
 import { useUserProfile } from "@/hooks/useUserProfile";
-import { fetchPhoneNumberByCode } from "@/services/phoneAuth";
 import { uploadAvatar } from "@/services/profileAvatar";
 import { openProfileFieldEdit } from "@/utils/openProfileFieldEdit";
-import { getPhoneAuthErrorToast } from "@/utils/phoneAuthError";
 
 function isWeapp(): boolean {
   return Taro.getEnv() === Taro.ENV_TYPE.WEAPP;
@@ -92,46 +90,6 @@ export function useMineProfileEdit() {
     [profile.nickname, updateProfile, updating],
   );
 
-  const handleGetPhoneNumber = useCallback(
-    async (e: {
-      detail: { errMsg?: string; code?: string };
-    }) => {
-      if (!isWeapp()) {
-        Taro.showToast({ title: "请在微信小程序中使用", icon: "none" });
-        return;
-      }
-      if (updating) return;
-
-      if (e.detail.errMsg !== "getPhoneNumber:ok") {
-        const toast = getPhoneAuthErrorToast(e.detail.errMsg);
-        if (toast) {
-          Taro.showToast({ title: toast, icon: "none", duration: 3000 });
-        }
-        return;
-      }
-
-      const code = e.detail.code;
-      if (!code) {
-        Taro.showToast({ title: "没能完成授权，请重试", icon: "none" });
-        return;
-      }
-
-      Taro.showLoading({ title: "获取中…" });
-      try {
-        const phoneNumber = await fetchPhoneNumberByCode(code);
-        const ok = await updateProfile({ phoneNumber });
-        if (ok) {
-          Taro.showToast({ title: "手机号已绑定", icon: "success" });
-        }
-      } catch {
-        Taro.showToast({ title: "没能绑定手机号，请稍后重试", icon: "none" });
-      } finally {
-        Taro.hideLoading();
-      }
-    },
-    [updateProfile, updating],
-  );
-
   return {
     profile,
     avatarUrl,
@@ -143,7 +101,6 @@ export function useMineProfileEdit() {
     nicknameDraft,
     handleNicknameInput,
     handleNicknameBlur,
-    handleGetPhoneNumber,
     onAvatarLoadError,
   };
 }

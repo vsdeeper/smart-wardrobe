@@ -33,8 +33,6 @@ function normalizeProfile(raw: Record<string, unknown>): UserProfile {
         : undefined,
     nickname: typeof raw.nickname === "string" ? raw.nickname : undefined,
     gender: normalizeGender(raw.gender),
-    phoneNumber:
-      typeof raw.phoneNumber === "string" ? raw.phoneNumber : undefined,
     updatedAt:
       typeof raw.updatedAt === "number"
         ? raw.updatedAt
@@ -60,7 +58,6 @@ export async function saveUserProfile(
     styleTags: profile.styleTags,
     avatarFileId: profile.avatarFileId ?? "",
     nickname: profile.nickname?.trim() ?? "",
-    phoneNumber: profile.phoneNumber ?? "",
     updatedAt: now,
   };
 

@@ -8,7 +8,6 @@ import {
   formatHeightLabel,
   formatWeightLabel,
   getGenderLabel,
-  maskPhoneNumber,
 } from "@/data/profile";
 import { useMineProfileEdit } from "@/hooks/useMineProfileEdit";
 import Main from "@/layouts/Main";
@@ -25,15 +24,10 @@ function MineProfilePage() {
     nicknameDraft,
     handleNicknameInput,
     handleNicknameBlur,
-    handleGetPhoneNumber,
     onAvatarLoadError,
   } = useMineProfileEdit();
 
   const cellArrow = <ArrowRight color="var(--nutui-gray-5)" size={14} />;
-
-  const phoneLabel = profile.phoneNumber
-    ? maskPhoneNumber(profile.phoneNumber)
-    : "点击授权";
 
   const occupationLabel = profile.occupation?.trim() || "未设置";
 
@@ -144,27 +138,6 @@ function MineProfilePage() {
                 align="center"
                 onClick={() => openFieldEdit("occupation")}
               />
-
-              <View className="mine-profile-cell-wrap mine-profile-cell-wrap--overlay">
-                <Cell
-                  title="手机号"
-                  extra={
-                    <View className="mine-profile-cell__extra">
-                      <Text className="mine-profile-cell__value">
-                        {phoneLabel}
-                      </Text>
-                      {cellArrow}
-                    </View>
-                  }
-                  align="center"
-                />
-                <Button
-                  className="mine-profile-cell__overlay-btn"
-                  openType="getPhoneNumber"
-                  disabled={updating}
-                  onGetPhoneNumber={handleGetPhoneNumber}
-                />
-              </View>
             </Cell.Group>
           )}
         </View>

@@ -493,13 +493,3 @@ LLM 失败时回退规则推荐 `buildFallbackRecommendation`。
 可用 preset：`female-slim`、`female-standard`、`female-curvy`、`male-slim`、`male-standard`、`male-curvy`、`neutral`（1 变体）。Prompt 定义见 [`common/modelTemplatePrompts.js`](common/modelTemplatePrompts.js)。当前运行时仅使用 `*-standard-*`。
 
 4. 本地预览后可将选定图提交 git；启用试穿前须按上文上传云存储并填写 fileID。
-
-### get-phone-number
-
-右键 `cloudfunctions/get-phone-number` → **上传并部署：云端安装依赖**。
-
-[`config.json`](cloudfunctions/get-phone-number/config.json) 已声明 OpenAPI 权限 `phonenumber.getPhoneNumber`，用于解密小程序 `getPhoneNumber` 返回的 `code`。
-
-入参：`{ code }`（来自 `Button openType="getPhoneNumber"` 的 `e.detail.code`）。
-
-成功时返回 `{ phoneNumber }`；失败时返回 `{ error }`。

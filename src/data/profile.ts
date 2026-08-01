@@ -15,7 +15,6 @@ export interface UserProfile {
   avatarFileId?: string;
   nickname?: string;
   gender?: Gender;
-  phoneNumber?: string;
   updatedAt?: number;
 }
 
@@ -106,11 +105,6 @@ export function formatHeightLabel(heightCm?: number): string {
 export function formatWeightLabel(weightKg?: number): string {
   if (typeof weightKg !== "number") return "请设置";
   return `${weightKg} kg`;
-}
-
-export function maskPhoneNumber(phone?: string): string {
-  if (!phone || phone.length < 7) return "点击授权";
-  return `${phone.slice(0, 3)}****${phone.slice(-4)}`;
 }
 
 export function getUserDisplayName(
