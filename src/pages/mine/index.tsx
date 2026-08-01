@@ -13,14 +13,8 @@ import {
   type RecognitionBatch,
 } from "@/data/recognition";
 import { MINE_DIARY_PREVIEW_LIMIT } from "@/data/tryOn";
-import {
-  formatHeightLabel,
-  formatWeightLabel,
-  getUserDisplayName,
-  isMetricsSet,
-} from "@/data/profile";
+import { getUserDisplayName, isMetricsSet } from "@/data/profile";
 import { useMainTabNavigation } from "@/hooks/useMainTabNavigation";
-import { useMineStatsActions } from "@/hooks/useMineStatsActions";
 import { useRecognitionBatches } from "@/hooks/useRecognitionBatches";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { useVisualDiary } from "@/hooks/useVisualDiary";
@@ -36,13 +30,7 @@ type DiaryLayout = "grid" | "list";
 function MinePage() {
   const { activeTab, onTabChange } = useMainTabNavigation(3);
   const [diaryLayout, setDiaryLayout] = useState<DiaryLayout>("grid");
-  const {
-    profile,
-    avatarUrl,
-    itemCount,
-    loading: profileLoading,
-    onAvatarLoadError,
-  } = useUserProfile();
+  const { profile, avatarUrl, onAvatarLoadError } = useUserProfile();
   const {
     entries,
     totalCount,
@@ -57,8 +45,6 @@ function MinePage() {
   } = useRecognitionBatches({
     previewLimit: MINE_RECOGNITION_PREVIEW_LIMIT,
   });
-  const { handleStatClick } = useMineStatsActions();
-
   const handleOpenProfile = () => {
     Taro.navigateTo({ url: "/pages/mine-profile/index" });
   };
@@ -101,33 +87,6 @@ function MinePage() {
   const diaryToggleIcon =
     diaryLayout === "list" ? "icon-list" : "icon-category";
 
-  const stats = [
-    {
-      key: "height",
-      label: "身高",
-      value: formatHeightLabel(profile.heightCm),
-      iconClass: "icon-height",
-    },
-    {
-      key: "weight",
-      label: "体重",
-      value: formatWeightLabel(profile.weightKg),
-      iconClass: "icon-weight",
-    },
-    {
-      key: "items",
-      label: "单品",
-      value: String(itemCount),
-      iconClass: "icon-wardrobe",
-    },
-    {
-      key: "outfits",
-      label: "搭配",
-      value: String(totalCount),
-      iconClass: "icon-like",
-    },
-  ];
-
   const showDiaryViewAll = totalCount > MINE_DIARY_PREVIEW_LIMIT;
   const showRecognitionViewAll =
     recognitionTotal > MINE_RECOGNITION_PREVIEW_LIMIT;
@@ -161,28 +120,6 @@ function MinePage() {
                 ? `${profile.occupation} · ${profile.heightCm}cm / ${profile.weightKg}kg`
                 : "完善个人画像，获得更精准的 AI 穿搭推荐。"}
             </Text>
-          </View>
-
-          <View className="mine-stats" style={{ display: "none" }}>
-            {stats.map((stat) => (
-              <View
-                key={stat.key}
-                className="mine-stat card"
-                onClick={() => handleStatClick(stat.key)}
-              >
-                <Text
-                  className={`iconfont ${stat.iconClass} mine-stat__icon`}
-                />
-                <Text className="mine-stat__label">{stat.label}</Text>
-                <Text className="mine-stat__value">
-                  {(profileLoading &&
-                    (stat.key === "height" || stat.key === "weight")) ||
-                  (diaryLoading && stat.key === "outfits")
-                    ? "…"
-                    : stat.value}
-                </Text>
-              </View>
-            ))}
           </View>
 
           <View className="mine-section mine-section--diary">

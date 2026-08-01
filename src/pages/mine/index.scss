@@ -96,52 +96,6 @@
   padding: 0 var(--nutui-spacing-8);
 }
 
-// ========== 数据卡片 2×2 ==========
-.mine-stats {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: var(--nutui-spacing-5);
-  margin-bottom: var(--nutui-spacing-10);
-}
-
-.mine-stat {
-  padding: var(--nutui-spacing-8);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  box-shadow: 0 10px 40px rgba(176, 196, 222, 0.15);
-
-  &:active {
-    opacity: 0.85;
-  }
-
-  &__icon {
-    font-size: 24px;
-    color: var(--nutui-brand-6);
-    margin-bottom: var(--nutui-spacing-3);
-    line-height: 1;
-  }
-
-  &__label {
-    font-family: var(--sw-font-body);
-    font-size: var(--nutui-font-size-2);
-    font-weight: 500;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    color: var(--nutui-secondary-1);
-    margin-bottom: var(--nutui-spacing-2);
-  }
-
-  &__value {
-    font-family: var(--sw-font-heading);
-    font-size: var(--nutui-font-size-6);
-    font-weight: 500;
-    color: var(--nutui-gray-7);
-    line-height: 1.4;
-  }
-}
-
 // ========== 区块标题 ==========
 .mine-section {
   margin-bottom: var(--nutui-spacing-10);
