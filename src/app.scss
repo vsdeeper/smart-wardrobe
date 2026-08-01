@@ -243,8 +243,9 @@ page .nut-avatar .avatar-img {
   padding: 12px var(--nutui-spacing-5)
     calc(12px + var(--sw-safe-area-bottom, 0px));
   background: var(--nutui-gray-1);
-  border-top: 1px solid var(--sw-color-progress-track);
   box-sizing: border-box;
+  box-shadow: var(--sw-shadow-tabbar);
+  border-radius: 20px 20px 0 0;
 
   // 底栏并排时均分宽度（组件默认不用 flex:1，避免纵向堆叠高度被压扁）
   .solid-button,
