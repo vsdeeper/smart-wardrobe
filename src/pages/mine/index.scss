@@ -53,32 +53,23 @@
   margin-bottom: var(--nutui-spacing-8);
 
   &__ring {
-    width: 128px;
-    height: 128px;
-    padding: 4px;
-    border-radius: 50%;
-    background: linear-gradient(
-      135deg,
-      var(--nutui-brand-6) 0%,
-      var(--nutui-brand-5) 100%
-    );
-    box-sizing: border-box;
+    width: 100px;
+    height: 100px;
 
     .default-avatar--lg {
-      border: none;
       padding: 0;
     }
   }
 
   &__edit {
     position: absolute;
-    right: 0;
-    bottom: 0;
-    width: 40px;
-    height: 40px;
+    right: -10px;
+    bottom: 5px;
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
     background: var(--nutui-brand-6);
-    border: 2px solid var(--sw-color-on-primary);
+    border: 2px solid #fff;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -88,7 +79,7 @@
 
 .mine-header__name {
   font-family: var(--sw-font-heading);
-  font-size: var(--nutui-font-size-10);
+  font-size: var(--nutui-font-size-8);
   font-weight: var(--nutui-font-weight-bold);
   color: var(--nutui-gray-7);
   line-height: 1.2;
@@ -98,7 +89,7 @@
 
 .mine-header__bio {
   font-family: var(--sw-font-body);
-  font-size: var(--nutui-font-size-4);
+  font-size: var(--nutui-font-size-3);
   line-height: var(--nutui-line-height-base);
   color: var(--nutui-secondary-1);
   max-width: 320px;
@@ -155,10 +146,6 @@
 .mine-section {
   margin-bottom: var(--nutui-spacing-10);
 
-  &--diary {
-    margin-bottom: 0;
-  }
-
   &__head {
     display: flex;
     align-items: center;
@@ -192,6 +179,10 @@
     align-items: center;
     gap: var(--nutui-spacing-3);
   }
+
+  &--recognition {
+    margin-bottom: 0;
+  }
 }
 
 .mine-recognition-list {
@@ -208,8 +199,8 @@
   padding: 4px;
 
   &__icon {
-    font-size: 22px;
-    color: var(--nutui-gray-7);
+    font-size: 20px;
+    color: var(--nutui-brand-6);
     line-height: 1;
   }
 }

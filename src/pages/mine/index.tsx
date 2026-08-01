@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import { View, Text } from "@tarojs/components";
 import Taro from "@tarojs/taro";
-import { ArrowRight, Edit } from "@nutui/icons-react-taro";
+import { ArrowRight, Setting } from "@nutui/icons-react-taro";
 import { Image } from "@nutui/nutui-react-taro";
 import DefaultAvatar from "@/components/DefaultAvatar";
 import MediaListCard from "@/components/MediaListCard";
@@ -141,7 +141,7 @@ function MinePage() {
       <Main.Scroll>
         <View className="mine">
           <View className="mine-header">
-            <View className="mine-avatar" onClick={handleOpenProfile}>
+            <View className="mine-avatar">
               <View className="mine-avatar__ring">
                 <DefaultAvatar
                   size="lg"
@@ -149,8 +149,8 @@ function MinePage() {
                   onLoadError={onAvatarLoadError}
                 />
               </View>
-              <View className="mine-avatar__edit">
-                <Edit color="var(--sw-color-on-primary)" size={18} />
+              <View className="mine-avatar__edit" onClick={handleOpenProfile}>
+                <Setting color="var(--sw-color-on-primary)" size={18} />
               </View>
             </View>
             <Text className="mine-header__name">
@@ -163,7 +163,7 @@ function MinePage() {
             </Text>
           </View>
 
-          <View className="mine-stats">
+          <View className="mine-stats" style={{ display: "none" }}>
             {stats.map((stat) => (
               <View
                 key={stat.key}
@@ -185,43 +185,6 @@ function MinePage() {
             ))}
           </View>
 
-          <View className="mine-section mine-section--recognition">
-            <View className="mine-section__head">
-              <Text className="mine-section__title">衣物识别</Text>
-              <View className="mine-section__head-actions">
-                {showRecognitionViewAll ? (
-                  <View
-                    className="mine-section__action"
-                    onClick={handleOpenRecognitionHistory}
-                  >
-                    <Text className="mine-section__action-text">查看全部</Text>
-                    <ArrowRight color={ICON_PRIMARY} size={14} />
-                  </View>
-                ) : null}
-              </View>
-            </View>
-            {recognitionLoading ? (
-              <PageLoading text="" />
-            ) : batches.length === 0 ? (
-              <View className="mine-diary-empty">
-                <Text className="mine-diary-empty__title">还没有识别记录</Text>
-                <Text className="mine-diary-empty__desc">
-                  在衣橱上传衣物照片后，识别进度与历史会出现在这里
-                </Text>
-              </View>
-            ) : (
-              <View className="mine-recognition-list">
-                {batches.map((batch) => (
-                  <RecognitionBatchCard
-                    key={batch._id}
-                    batch={batch}
-                    onClick={handleOpenRecognitionBatch}
-                  />
-                ))}
-              </View>
-            )}
-          </View>
-
           <View className="mine-section mine-section--diary">
             <View className="mine-section__head">
               <Text className="mine-section__title">视觉日记</Text>
@@ -231,7 +194,7 @@ function MinePage() {
                     className="mine-section__action"
                     onClick={handleOpenDiaryList}
                   >
-                    <Text className="mine-section__action-text">查看全部</Text>
+                    <Text className="mine-section__action-text">更多</Text>
                     <ArrowRight color={ICON_PRIMARY} size={14} />
                   </View>
                 ) : null}
@@ -247,7 +210,8 @@ function MinePage() {
             </View>
             {diaryLoading ? (
               <PageLoading text="" />
-            ) : entries.length === 0 ? (              <View className="mine-diary-empty">
+            ) : entries.length === 0 ? (
+              <View className="mine-diary-empty">
                 <Text className="mine-diary-empty__title">还没有穿搭记录</Text>
                 <Text className="mine-diary-empty__desc">
                   试穿后点击「就穿这一身」，记录将出现在这里
@@ -280,6 +244,43 @@ function MinePage() {
                     time={formatDateTime(entry.createdAt)}
                     description={entry.description}
                     onClick={() => handleOpenDiaryDetail(entry._id)}
+                  />
+                ))}
+              </View>
+            )}
+          </View>
+
+          <View className="mine-section mine-section--recognition">
+            <View className="mine-section__head">
+              <Text className="mine-section__title">衣物识别</Text>
+              <View className="mine-section__head-actions">
+                {showRecognitionViewAll ? (
+                  <View
+                    className="mine-section__action"
+                    onClick={handleOpenRecognitionHistory}
+                  >
+                    <Text className="mine-section__action-text">更多</Text>
+                    <ArrowRight color={ICON_PRIMARY} size={14} />
+                  </View>
+                ) : null}
+              </View>
+            </View>
+            {recognitionLoading ? (
+              <PageLoading text="" />
+            ) : batches.length === 0 ? (
+              <View className="mine-diary-empty">
+                <Text className="mine-diary-empty__title">还没有识别记录</Text>
+                <Text className="mine-diary-empty__desc">
+                  在衣橱上传衣物照片后，识别进度与历史会出现在这里
+                </Text>
+              </View>
+            ) : (
+              <View className="mine-recognition-list">
+                {batches.map((batch) => (
+                  <RecognitionBatchCard
+                    key={batch._id}
+                    batch={batch}
+                    onClick={handleOpenRecognitionBatch}
                   />
                 ))}
               </View>
