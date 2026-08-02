@@ -1,0 +1,19 @@
+.try-on-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+  margin-top: 4px;
+  padding-bottom: 8px;
+  box-sizing: border-box;
+
+  &__ai-hint {
+    display: block;
+    margin-top: 4px;
+    font-family: var(--sw-font-body);
+    font-size: var(--nutui-font-size-1);
+    color: var(--nutui-gray-5);
+    line-height: 1.4;
+    text-align: center;
+  }
+}

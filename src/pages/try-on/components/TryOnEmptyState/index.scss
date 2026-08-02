@@ -1,0 +1,47 @@
+.try-on-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--nutui-spacing-5);
+  min-height: 200px;
+  padding: var(--nutui-spacing-10) var(--nutui-spacing-5);
+  text-align: center;
+
+  &--gender {
+    gap: var(--nutui-spacing-7);
+  }
+
+  &__title {
+    font-family: var(--sw-font-heading);
+    font-size: var(--nutui-font-size-5);
+    font-weight: var(--nutui-font-weight-bold);
+    color: var(--nutui-gray-7);
+  }
+
+  &__desc {
+    font-family: var(--sw-font-body);
+    font-size: var(--nutui-font-size-3);
+    color: var(--nutui-gray-5);
+  }
+
+  &__cta {
+    margin-top: var(--nutui-spacing-3);
+    padding: 12px 28px;
+    border-radius: var(--sw-radius-pill);
+    background: var(--nutui-brand-6);
+    box-shadow: var(--sw-shadow-fab);
+
+    &:active {
+      opacity: 0.92;
+      transform: scale(0.98);
+    }
+  }
+
+  &__cta-text {
+    font-family: var(--sw-font-heading);
+    font-size: var(--nutui-font-size-4);
+    font-weight: 500;
+    color: var(--sw-color-on-primary);
+  }
+}

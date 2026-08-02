@@ -1,5 +1,5 @@
 // ============================================================
-// 试穿页面 — 编排 / 空态 / 布局
+// 试穿页面 — 编排 / 布局
 // ============================================================
 
 @keyframes nut-loading-rotation {
@@ -12,77 +12,7 @@
   }
 }
 
-// ========== 空态 ==========
-.try-on-empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: var(--nutui-spacing-5);
-  min-height: 200px;
-  padding: var(--nutui-spacing-10) var(--nutui-spacing-5);
-  text-align: center;
-
-  &--gender {
-    gap: var(--nutui-spacing-7);
-  }
-
-  &__desc {
-    font-family: var(--sw-font-body);
-    font-size: var(--nutui-font-size-3);
-    color: var(--nutui-gray-5);
-  }
-}
-
-.try-on-empty__title {
-  font-family: var(--sw-font-heading);
-  font-size: var(--nutui-font-size-5);
-  font-weight: var(--nutui-font-weight-bold);
-  color: var(--nutui-gray-7);
-}
-
-.try-on-empty__cta {
-  margin-top: var(--nutui-spacing-3);
-  padding: 12px 28px;
-  border-radius: var(--sw-radius-pill);
-  background: var(--nutui-brand-6);
-  box-shadow: var(--sw-shadow-fab);
-
-  &:active {
-    opacity: 0.92;
-    transform: scale(0.98);
-  }
-}
-
-.try-on-empty__cta-text {
-  font-family: var(--sw-font-heading);
-  font-size: var(--nutui-font-size-4);
-  font-weight: 500;
-  color: var(--sw-color-on-primary);
-}
-
 // ========== 试穿页滚动区（底部留白，避免按钮阴影被 TabBar 区域裁切） ==========
 .main-scroll--try-on {
   padding-bottom: calc(75px + var(--sw-safe-area-bottom, 0px));
-}
-
-// ========== 主操作按钮容器 ==========
-.try-on-actions {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 12px;
-  margin-top: 4px;
-  padding-bottom: 8px;
-  box-sizing: border-box;
-
-  &__ai-hint {
-    display: block;
-    margin-top: 4px;
-    font-family: var(--sw-font-body);
-    font-size: var(--nutui-font-size-1);
-    color: var(--nutui-gray-5);
-    line-height: 1.4;
-    text-align: center;
-  }
 }
