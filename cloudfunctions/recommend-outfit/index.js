@@ -55,6 +55,7 @@ function summarizeWardrobe(wardrobeByType) {
       id: String(item.id ?? item._id ?? ''),
       name: String(item.name ?? ''),
       tags: Array.isArray(item.tags) ? item.tags : [],
+      stylingAdvice: typeof item.stylingAdvice === 'string' ? item.stylingAdvice : '',
     })).filter((item) => item.id)
   }
   return result

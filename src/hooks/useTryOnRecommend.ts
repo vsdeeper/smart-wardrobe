@@ -39,9 +39,9 @@ export function useTryOnRecommend() {
   const allItemsRef = useRef<WardrobeItem[]>([]);
 
   const applyRecommendation = useCallback(
-    (rec: TryOnRecommendation, items: WardrobeItem[]) => {
+    (rec: TryOnRecommendation, pieces: WardrobeItem[]) => {
       setRecommendation(rec);
-      setSelectedPieces(resolveSelectedPieces(rec, items));
+      setSelectedPieces(pieces);
     },
     [],
   );
@@ -108,10 +108,11 @@ export function useTryOnRecommend() {
         });
 
         const pieces = resolveSelectedPieces(rec, items);
-        applyRecommendation(rec, items);
+        const piecesWithUrls = await attachImageUrls(pieces);
+        applyRecommendation(rec, piecesWithUrls);
         writeTryOnCache({
           recommendation: rec,
-          selectedPieces: pieces,
+          selectedPieces: piecesWithUrls,
           weatherSnapshot: weather,
         });
         setStatus("success");

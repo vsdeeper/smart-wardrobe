@@ -109,7 +109,10 @@ function normalizeWardrobeItem(raw: Record<string, unknown>): WardrobeItem {
 
 export type WardrobeItemsByType = Record<string, WardrobeItem[]>;
 
-/** 拉取全部衣橱单品并按 typeName 分组，供 AI 推荐使用 */
+/**
+ * 拉取衣橱单品并按 typeName 分组，供 AI 推荐分析使用。
+ * 仅供 AI 分析，不解析图片临时链接；如需展示图片，请对最终选中的单品单独调用 attachImageUrls。
+ */
 export async function fetchWardrobeItemsGroupedByType(): Promise<{
   items: WardrobeItem[];
   byType: WardrobeItemsByType;
@@ -125,16 +128,15 @@ export async function fetchWardrobeItemsGroupedByType(): Promise<{
   const items = (res.data as Record<string, unknown>[]).map(
     normalizeWardrobeItem,
   );
-  const withUrls = await attachImageUrls(items);
   const byType: WardrobeItemsByType = {};
 
-  for (const item of withUrls) {
+  for (const item of items) {
     const key = item.typeName || "其他";
     if (!byType[key]) byType[key] = [];
     byType[key].push(item);
   }
 
-  return { items: withUrls, byType };
+  return { items, byType };
 }
 
 function normalizeClothingType(raw: Record<string, unknown>): ClothingType {
