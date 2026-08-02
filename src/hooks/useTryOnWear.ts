@@ -3,14 +3,24 @@ import Taro from "@tarojs/taro";
 import type { TryOnRecommendation } from "@/data/tryOn";
 import type { WeatherSnapshot } from "@/data/weather";
 import type { WardrobeItem } from "@/data/wardrobe";
+import {
+  getInitialTryOnCache,
+  writeTryOnCache,
+} from "@/services/tryOnCache";
 import { saveVisualDiaryEntry } from "@/services/visualDiary";
-import { afterToastNavigate } from "@/utils/afterToastNavigate";
 
 interface UseTryOnWearOptions {
   recommendation: TryOnRecommendation | null;
   selectedPieces: WardrobeItem[];
   heroCoverFileId: string | null;
   weatherSnapshot: WeatherSnapshot | null;
+}
+
+function getOutfitKey(
+  selectedPieces: WardrobeItem[],
+  heroCoverFileId: string | null,
+): string {
+  return `${heroCoverFileId ?? ""}:${selectedPieces.map((piece) => piece._id).join(",")}`;
 }
 
 export function useTryOnWear({
@@ -20,10 +30,23 @@ export function useTryOnWear({
   weatherSnapshot,
 }: UseTryOnWearOptions) {
   const [saving, setSaving] = useState(false);
+  const outfitKey = getOutfitKey(selectedPieces, heroCoverFileId);
+  const [confirmedOutfitKey, setConfirmedOutfitKey] = useState(() => {
+    const cache = getInitialTryOnCache();
+    return cache?.wearConfirmed
+      ? getOutfitKey(
+          cache.selectedPieces,
+          cache.heroCoverFileId ?? null,
+        )
+      : null;
+  });
   const savingRef = useRef(false);
+  const wearConfirmed =
+    confirmedOutfitKey === outfitKey &&
+    getInitialTryOnCache()?.wearConfirmed === true;
 
   const handleWearOutfit = useCallback(async () => {
-    if (savingRef.current) return;
+    if (savingRef.current || wearConfirmed) return;
 
     if (selectedPieces.length === 0) {
       Taro.showToast({ title: "请先选择单品", icon: "none" });
@@ -48,10 +71,24 @@ export function useTryOnWear({
         weatherSnapshot: weatherSnapshot ?? undefined,
       });
 
+      const cache = getInitialTryOnCache();
+      writeTryOnCache(
+        {
+          recommendation: recommendation ?? {
+            outfitName: "今日搭配",
+            description: "",
+            slots: [],
+            tips: [],
+          },
+          selectedPieces,
+          heroCoverFileId,
+          weatherSnapshot: weatherSnapshot ?? undefined,
+          wearConfirmed: true,
+        },
+        { clearHero: cache?.heroCoverFileId !== heroCoverFileId },
+      );
+      setConfirmedOutfitKey(outfitKey);
       Taro.showToast({ title: "已记录到视觉日记", icon: "success" });
-      afterToastNavigate(() => {
-        Taro.redirectTo({ url: "/pages/mine/index" });
-      });
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "保存失败，请稍后重试";
@@ -60,7 +97,14 @@ export function useTryOnWear({
       savingRef.current = false;
       setSaving(false);
     }
-  }, [recommendation, selectedPieces, heroCoverFileId, weatherSnapshot]);
+  }, [
+    recommendation,
+    selectedPieces,
+    heroCoverFileId,
+    weatherSnapshot,
+    outfitKey,
+    wearConfirmed,
+  ]);
 
-  return { saving, handleWearOutfit };
+  return { saving, wearConfirmed, handleWearOutfit };
 }

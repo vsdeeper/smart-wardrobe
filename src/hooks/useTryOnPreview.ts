@@ -164,6 +164,7 @@ export function useTryOnPreview({
           heroCoverFileId: coverFileId,
           heroImageUrl: coverUrl,
           heroImageUrlAt: Date.now(),
+          wearConfirmed: false,
         });
       }
     } catch (err) {

@@ -52,12 +52,20 @@ function TryOnPage() {
     weatherSnapshot,
   });
 
-  const { saving, handleWearOutfit } = useTryOnWear({
+  const { saving, wearConfirmed, handleWearOutfit } = useTryOnWear({
     recommendation,
     selectedPieces,
     heroCoverFileId,
     weatherSnapshot,
   });
+
+  const handleWearCta = useCallback(() => {
+    if (wearConfirmed) {
+      Taro.redirectTo({ url: "/pages/outfit/index" });
+      return;
+    }
+    void handleWearOutfit();
+  }, [wearConfirmed, handleWearOutfit]);
 
   const handleGenderSelect = useCallback(
     async (gender: Gender) => {
@@ -117,7 +125,8 @@ function TryOnPage() {
             weatherViewModel={weatherViewModel}
             onWeatherClick={handleWeatherClick}
             saving={saving}
-            onWearOutfit={handleWearOutfit}
+            wearConfirmed={wearConfirmed}
+            onWearOutfit={handleWearCta}
             onRefreshRecommend={refreshRecommend}
           />
         );

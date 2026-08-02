@@ -75,6 +75,7 @@ export function writeTryOnCache(
     heroImageUrlAt:
       partial.heroImageUrlAt ??
       (keepExistingHero ? existing?.heroImageUrlAt : undefined),
+    wearConfirmed: partial.wearConfirmed ?? existing?.wearConfirmed,
     cachedAt: partial.cachedAt ?? Date.now(),
   };
   try {

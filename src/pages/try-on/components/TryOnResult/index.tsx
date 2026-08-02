@@ -25,6 +25,7 @@ export interface TryOnResultProps {
   weatherViewModel: WeatherCardViewModel | null;
   onWeatherClick: () => void;
   saving: boolean;
+  wearConfirmed: boolean;
   onWearOutfit: () => void;
   onRefreshRecommend: () => void;
 }
@@ -43,6 +44,7 @@ function TryOnResult({
   weatherViewModel,
   onWeatherClick,
   saving,
+  wearConfirmed,
   onWearOutfit,
   onRefreshRecommend,
 }: TryOnResultProps) {
@@ -77,8 +79,12 @@ function TryOnResult({
       </OutfitCard>
       <View className="try-on-actions">
         <WearCta
+          confirmed={wearConfirmed}
           loading={saving}
-          disabled={previewStatus === "loading" || previewStatus === "error"}
+          disabled={
+            !wearConfirmed &&
+            (previewStatus === "loading" || previewStatus === "error")
+          }
           onWear={onWearOutfit}
         />
         {!isManualOutfit ? (

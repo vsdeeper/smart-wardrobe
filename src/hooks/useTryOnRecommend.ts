@@ -118,11 +118,15 @@ export function useTryOnRecommend() {
         const pieces = resolveSelectedPieces(rec, items);
         const piecesWithUrls = await attachImageUrls(pieces);
         applyRecommendation(rec, piecesWithUrls);
-        writeTryOnCache({
-          recommendation: rec,
-          selectedPieces: piecesWithUrls,
-          weatherSnapshot: weather,
-        }, { clearHero: true });
+        writeTryOnCache(
+          {
+            recommendation: rec,
+            selectedPieces: piecesWithUrls,
+            weatherSnapshot: weather,
+            wearConfirmed: false,
+          },
+          { clearHero: true },
+        );
         setStatus("success");
       } catch (err) {
         const message =
