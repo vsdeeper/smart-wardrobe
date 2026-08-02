@@ -6,11 +6,7 @@ import type { WeatherSnapshot } from "@/data/weather";
 import { resolveCloudFileUrl } from "@/services/cloudFile";
 import { fetchUserProfile } from "@/services/profile";
 import { generateTryonImage } from "@/services/tryOnPreview";
-import {
-  getInitialTryOnCache,
-  readTryOnCache,
-  writeTryOnCache,
-} from "@/services/tryOnCache";
+import { getInitialTryOnCache, writeTryOnCache } from "@/services/tryOnCache";
 import type { SavedReturnMeta } from "@/hooks/useTryOnRecommend";
 import { isEphemeralExternalImageUrl } from "@/utils/imageUrl";
 
@@ -33,19 +29,19 @@ export function useTryOnPreview({
 }: UseTryOnPreviewOptions) {
   const [initialCache] = useState(getInitialTryOnCache);
   const [status, setStatus] = useState<TryOnPreviewStatus>(
-    initialCache?.heroImageUrl ? "success" : "idle",
+    initialCache?.heroImageUrl ? "success" : "idle"
   );
   const [heroImageUrl, setHeroImageUrl] = useState<string | null>(
-    initialCache?.heroImageUrl ?? null,
+    initialCache?.heroImageUrl ?? null
   );
   const [heroCoverFileId, setHeroCoverFileId] = useState<string | null>(
-    initialCache?.heroCoverFileId ?? null,
+    initialCache?.heroCoverFileId ?? null
   );
   const [heroFromCache, setHeroFromCache] = useState(
-    !!initialCache?.heroImageUrl,
+    !!initialCache?.heroImageUrl
   );
   const [previewErrorMessage, setPreviewErrorMessage] = useState<string | null>(
-    null,
+    null
   );
   const loadingRef = useRef(false);
   const handledKeyRef = useRef<string | null>(null);
@@ -58,7 +54,7 @@ export function useTryOnPreview({
       setHeroFromCache(cached);
       setStatus(url || fileId ? "success" : "error");
     },
-    [],
+    []
   );
 
   const loadHeroFromCache = useCallback(async () => {
@@ -69,11 +65,7 @@ export function useTryOnPreview({
 
     if (cache.heroImageUrl) {
       setPreviewErrorMessage(null);
-      applyHero(
-        cache.heroImageUrl,
-        cache.heroCoverFileId ?? null,
-        true,
-      );
+      applyHero(cache.heroImageUrl, cache.heroCoverFileId ?? null, true);
       return true;
     }
 
@@ -116,9 +108,7 @@ export function useTryOnPreview({
         return;
       }
 
-      const fileIds = selectedPieces
-        .map((p) => p.imageFileId)
-        .filter(Boolean);
+      const fileIds = selectedPieces.map((p) => p.imageFileId).filter(Boolean);
 
       const result = await generateTryonImage({
         imageFileIds: fileIds,
@@ -128,9 +118,7 @@ export function useTryOnPreview({
         pieceLabels: selectedPieces
           .map((p) => p.name || p.typeName)
           .filter(Boolean),
-        pieceTypeNames: selectedPieces
-          .map((p) => p.typeName)
-          .filter(Boolean),
+        pieceTypeNames: selectedPieces.map((p) => p.typeName).filter(Boolean),
         weatherConditionCode: weatherSnapshot?.conditionCode,
       });
 
@@ -156,8 +144,8 @@ export function useTryOnPreview({
       applyHero(coverUrl, coverFileId, false);
       imageRetriedRef.current.delete(coverFileId);
 
-      const cache = readTryOnCache();
-      if (cache) {
+      const cache = getInitialTryOnCache();
+      if (!savedReturn && cache) {
         writeTryOnCache({
           recommendation: cache.recommendation,
           selectedPieces,
@@ -175,7 +163,7 @@ export function useTryOnPreview({
     } finally {
       loadingRef.current = false;
     }
-  }, [selectedPieces, applyHero, weatherSnapshot?.conditionCode]);
+  }, [selectedPieces, applyHero, weatherSnapshot?.conditionCode, savedReturn]);
 
   const handleHeroImageError = useCallback(async () => {
     const fileId = heroCoverFileId;
@@ -192,8 +180,8 @@ export function useTryOnPreview({
       setPreviewErrorMessage(null);
       setStatus("success");
 
-      const cache = readTryOnCache();
-      if (cache) {
+      const cache = getInitialTryOnCache();
+      if (!savedReturn && cache) {
         writeTryOnCache({
           recommendation: cache.recommendation,
           selectedPieces: cache.selectedPieces,
@@ -205,7 +193,7 @@ export function useTryOnPreview({
     } catch {
       // 兜底失败不打扰用户，手动重试时会重新生成
     }
-  }, [heroCoverFileId]);
+  }, [heroCoverFileId, savedReturn]);
 
   useEffect(() => {
     if (!recommendReady || selectedPieces.length === 0) return;
@@ -223,12 +211,6 @@ export function useTryOnPreview({
 
     const run = async () => {
       if (savedReturn) {
-        if (!savedReturn.piecesChanged) {
-          if (await loadHeroFromCache()) {
-            if (!cancelled) handledKeyRef.current = triggerKey;
-            return;
-          }
-        }
         if (!cancelled) {
           handledKeyRef.current = triggerKey;
           generatePreview();

@@ -32,6 +32,7 @@ function TryOnPage() {
     savedReturn,
     isManualOutfit,
     refreshRecommend,
+    retryRecommend,
     weatherSnapshot,
   } = useTryOnRecommend();
 
@@ -57,6 +58,7 @@ function TryOnPage() {
     selectedPieces,
     heroCoverFileId,
     weatherSnapshot,
+    isManualOutfit,
   });
 
   const handleWearCta = useCallback(() => {
@@ -74,10 +76,10 @@ function TryOnPage() {
       const saved = await applyGenderSetupWithToast(gender);
       setGenderSaving(false);
       if (saved) {
-        refreshRecommend();
+        retryRecommend();
       }
     },
-    [genderSaving, refreshRecommend],
+    [genderSaving, retryRecommend]
   );
 
   const handleGoWardrobe = useCallback(() => {
@@ -88,7 +90,11 @@ function TryOnPage() {
     switch (recommendStatus) {
       case "loading":
       case "idle":
-        return <PageLoading text="AI 正在推荐穿搭…" />;
+        return (
+          <PageLoading
+            text={isManualOutfit ? "AI 正在评价搭配…" : "AI 正在推荐穿搭…"}
+          />
+        );
       case "needsGender":
         return (
           <TryOnEmptyState
@@ -106,7 +112,7 @@ function TryOnPage() {
           <TryOnEmptyState
             variant="error"
             errorMessage={errorMessage}
-            onRetry={refreshRecommend}
+            onRetry={retryRecommend}
           />
         );
       default:

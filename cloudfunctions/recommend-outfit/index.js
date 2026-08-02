@@ -4,6 +4,8 @@ const {
   buildRecommendUserPrompt,
   parseRecommendResult,
   buildFallbackRecommendation,
+  buildSelectionFallbackRecommendation,
+  isSelectionRecommendationValid,
 } = require('./common/recommendOutfitRules')
 
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
@@ -62,7 +64,8 @@ function summarizeWardrobe(wardrobeByType) {
 }
 
 exports.main = async (event) => {
-  const { weather, season, profile, wardrobeByType } = event || {}
+  const { mode = 'recommend', weather, season, profile, wardrobeByType } = event || {}
+  const requestMode = mode === 'selection' ? 'selection' : 'recommend'
 
   try {
     const wxContext = cloud.getWXContext()
@@ -78,6 +81,7 @@ exports.main = async (event) => {
     }
 
     const payload = {
+      mode: requestMode,
       weather: weather || { temperature: 20, humidity: 50, conditionCode: 'sunny', city: '当前位置' },
       season: season || '春',
       profile: profile || { occupation: '', styleTags: [] },
@@ -87,16 +91,29 @@ exports.main = async (event) => {
     let recommendation
     try {
       const content = await callSeedChat(
-        buildRecommendSystemPrompt(),
+        buildRecommendSystemPrompt(requestMode),
         buildRecommendUserPrompt(payload),
       )
       recommendation = parseRecommendResult(content)
+      if (
+        requestMode === 'selection' &&
+        !isSelectionRecommendationValid(recommendation, summarized)
+      ) {
+        throw new Error('AI 返回的单品与用户选择不一致')
+      }
     } catch (llmErr) {
-      recommendation = buildFallbackRecommendation(
-        summarized,
-        payload.season,
-        payload.weather,
-      )
+      recommendation =
+        requestMode === 'selection'
+          ? buildSelectionFallbackRecommendation(
+              summarized,
+              payload.season,
+              payload.weather,
+            )
+          : buildFallbackRecommendation(
+              summarized,
+              payload.season,
+              payload.weather,
+            )
       if (!recommendation) {
         throw llmErr
       }

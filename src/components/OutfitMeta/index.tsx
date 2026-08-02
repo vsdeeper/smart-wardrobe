@@ -6,6 +6,7 @@ export interface OutfitMetaProps {
   styleTags?: string;
   subtitle?: string;
   suggestion?: string;
+  suggestionLabel?: string;
 }
 
 export default function OutfitMeta({
@@ -13,6 +14,7 @@ export default function OutfitMeta({
   styleTags,
   subtitle,
   suggestion,
+  suggestionLabel = "AI 搭配建议",
 }: OutfitMetaProps) {
   return (
     <View className="outfit-meta">
@@ -36,7 +38,7 @@ export default function OutfitMeta({
         <View className="outfit-meta__suggestion">
           <Text className="iconfont icon-stars outfit-meta__suggestion-icon" />
           <Text className="outfit-meta__suggestion-text">
-            AI 搭配建议：{suggestion}
+            {suggestionLabel}：{suggestion}
           </Text>
         </View>
       ) : null}

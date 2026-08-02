@@ -12,6 +12,13 @@ export interface RecommendOutfitInput {
   wardrobeByType: WardrobeItemsByType;
 }
 
+export interface RecommendSelectedOutfitInput {
+  weather: WeatherSnapshot;
+  season: string;
+  profile: UserProfile;
+  selectedPieces: WardrobeItem[];
+}
+
 interface RecommendCloudError {
   error: string;
   message: string;
@@ -22,7 +29,7 @@ interface RecommendCloudSuccess {
 }
 
 function isError(
-  data: RecommendCloudSuccess | RecommendCloudError,
+  data: RecommendCloudSuccess | RecommendCloudError
 ): data is RecommendCloudError {
   return "error" in data && typeof data.error === "string";
 }
@@ -43,16 +50,28 @@ function toCloudWardrobe(byType: WardrobeItemsByType) {
   return result;
 }
 
-export async function recommendOutfit(
-  input: RecommendOutfitInput,
+function groupSelectedPieces(
+  selectedPieces: WardrobeItem[]
+): WardrobeItemsByType {
+  return selectedPieces.reduce<WardrobeItemsByType>((byType, item) => {
+    (byType[item.typeName] ??= []).push(item);
+    return byType;
+  }, {});
+}
+
+async function callRecommendOutfit(
+  input: Omit<RecommendOutfitInput, "wardrobeByType">,
+  wardrobeByType: WardrobeItemsByType,
+  mode: "recommend" | "selection"
 ): Promise<TryOnRecommendation> {
   const { result } = await Taro.cloud.callFunction({
     name: "recommend-outfit",
     data: {
+      mode,
       weather: input.weather,
       season: input.season,
       profile: input.profile,
-      wardrobeByType: toCloudWardrobe(input.wardrobeByType),
+      wardrobeByType: toCloudWardrobe(wardrobeByType),
     },
   });
 
@@ -63,9 +82,25 @@ export async function recommendOutfit(
   return data.recommendation;
 }
 
+export function recommendOutfit(
+  input: RecommendOutfitInput
+): Promise<TryOnRecommendation> {
+  return callRecommendOutfit(input, input.wardrobeByType, "recommend");
+}
+
+export function recommendSelectedOutfit(
+  input: RecommendSelectedOutfitInput
+): Promise<TryOnRecommendation> {
+  return callRecommendOutfit(
+    input,
+    groupSelectedPieces(input.selectedPieces),
+    "selection"
+  );
+}
+
 export function resolveSelectedPieces(
   recommendation: TryOnRecommendation,
-  allItems: WardrobeItem[],
+  allItems: WardrobeItem[]
 ): WardrobeItem[] {
   const map = new Map(allItems.map((item) => [item._id, item]));
   return recommendation.slots

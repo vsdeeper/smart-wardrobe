@@ -6,6 +6,9 @@ import { getDateKey } from "@/utils/season";
 
 const CACHE_KEY = "sw_tryon_daily_cache";
 
+export type TryOnAiCache = TryOnDailyCache &
+  Required<Pick<TryOnDailyCache, "recommendation" | "selectedPieces">>;
+
 function stripStaleImageUrl(item: WardrobeItem): WardrobeItem {
   if (!item.imageUrl || isImageUrlFresh(item.imageUrlAt)) return item;
   const next = { ...item };
@@ -16,16 +19,25 @@ function stripStaleImageUrl(item: WardrobeItem): WardrobeItem {
 
 export function isTryOnCacheValid(dateKey = getDateKey()): boolean {
   const entry = readTryOnCache();
-  return entry !== null && entry.dateKey === dateKey;
+  return (
+    entry !== null &&
+    entry.dateKey === dateKey &&
+    !!entry.recommendation &&
+    Array.isArray(entry.selectedPieces)
+  );
 }
 
 export function readTryOnCache(): TryOnDailyCache | null {
   try {
     const raw = Taro.getStorageSync(CACHE_KEY) as TryOnDailyCache | "";
-    if (!raw || typeof raw !== "object" || !raw.dateKey || !raw.recommendation) {
+    if (!raw || typeof raw !== "object" || !raw.dateKey) {
       return null;
     }
-    if (!Array.isArray(raw.selectedPieces)) {
+    const hasAiCache =
+      !!raw.recommendation && Array.isArray(raw.selectedPieces);
+    const hasManualCache =
+      !!raw.selectedRecommendation && Array.isArray(raw.manualSelectedPieces);
+    if (!hasAiCache && !hasManualCache) {
       return null;
     }
     return raw;
@@ -38,15 +50,23 @@ export function readTryOnCache(): TryOnDailyCache | null {
  * 页面首帧可直接使用的当天缓存。
  * 过期的临时 URL 会被剥离，保留 fileId 供页面静默重解析。
  */
-export function getInitialTryOnCache(): TryOnDailyCache | null {
+export function getInitialTryOnCache(): TryOnAiCache | null {
   const cache = readTryOnCache();
-  if (!cache || cache.dateKey !== getDateKey()) return null;
+  if (
+    !cache ||
+    cache.dateKey !== getDateKey() ||
+    !cache.recommendation ||
+    !Array.isArray(cache.selectedPieces)
+  ) {
+    return null;
+  }
 
   const heroUrlFresh =
     !!cache.heroImageUrl && isImageUrlFresh(cache.heroImageUrlAt);
 
   return {
     ...cache,
+    recommendation: cache.recommendation,
     selectedPieces: cache.selectedPieces.map(stripStaleImageUrl),
     heroImageUrl: heroUrlFresh ? cache.heroImageUrl : undefined,
     heroImageUrlAt: heroUrlFresh ? cache.heroImageUrlAt : undefined,
@@ -54,18 +74,26 @@ export function getInitialTryOnCache(): TryOnDailyCache | null {
 }
 
 export function writeTryOnCache(
-  partial: Omit<TryOnDailyCache, "dateKey" | "cachedAt"> &
+  partial: Partial<Omit<TryOnDailyCache, "dateKey" | "cachedAt">> &
     Partial<Pick<TryOnDailyCache, "dateKey" | "cachedAt">>,
-  options: { clearHero?: boolean } = {},
+  options: { clearHero?: boolean; clearManual?: boolean } = {}
 ): void {
-  const existing = readTryOnCache();
+  const dateKey = partial.dateKey ?? getDateKey();
+  const stored = readTryOnCache();
+  const existing = stored?.dateKey === dateKey ? stored : null;
   const keepExistingHero = !options.clearHero;
+  const keepExistingManual = !options.clearManual;
   const entry: TryOnDailyCache = {
-    dateKey: partial.dateKey ?? getDateKey(),
-    recommendation: partial.recommendation ?? existing?.recommendation!,
-    selectedPieces: partial.selectedPieces ?? existing?.selectedPieces ?? [],
-    weatherSnapshot:
-      partial.weatherSnapshot ?? existing?.weatherSnapshot,
+    dateKey,
+    recommendation: partial.recommendation ?? existing?.recommendation,
+    selectedPieces: partial.selectedPieces ?? existing?.selectedPieces,
+    selectedRecommendation:
+      partial.selectedRecommendation ??
+      (keepExistingManual ? existing?.selectedRecommendation : undefined),
+    manualSelectedPieces:
+      partial.manualSelectedPieces ??
+      (keepExistingManual ? existing?.manualSelectedPieces : undefined),
+    weatherSnapshot: partial.weatherSnapshot ?? existing?.weatherSnapshot,
     heroCoverFileId:
       partial.heroCoverFileId ??
       (keepExistingHero ? existing?.heroCoverFileId : undefined),

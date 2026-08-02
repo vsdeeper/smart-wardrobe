@@ -7,6 +7,7 @@ import { isGenderSet, isMetricsSet } from "@/data/profile";
 import { attachImageUrls, collectImageUrls } from "@/services/cloudFile";
 import {
   recommendOutfit,
+  recommendSelectedOutfit,
   resolveSelectedPieces,
 } from "@/services/outfitRecommend";
 import { fetchUserProfile } from "@/services/profile";
@@ -15,7 +16,6 @@ import {
   clearTryOnCache,
   getInitialTryOnCache,
   isTryOnCacheValid,
-  readTryOnCache,
   writeTryOnCache,
 } from "@/services/tryOnCache";
 import { consumeTryOnDraft } from "@/services/tryOnDraft";
@@ -29,21 +29,25 @@ export interface SavedReturnMeta {
 export function useTryOnRecommend() {
   const [initialCache] = useState(getInitialTryOnCache);
   const [status, setStatus] = useState<TryOnRecommendStatus>(
-    initialCache ? "success" : "idle",
+    initialCache ? "success" : "idle"
   );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [recommendation, setRecommendation] =
     useState<TryOnRecommendation | null>(initialCache?.recommendation ?? null);
   const [selectedPieces, setSelectedPieces] = useState<WardrobeItem[]>(
-    initialCache?.selectedPieces ?? [],
+    initialCache?.selectedPieces ?? []
   );
   const [fromCache, setFromCache] = useState(initialCache !== null);
   const [savedReturn, setSavedReturn] = useState<SavedReturnMeta | null>(null);
   const [weatherSnapshot, setWeatherSnapshot] =
     useState<WeatherSnapshot | null>(initialCache?.weatherSnapshot ?? null);
   const loadingRef = useRef(false);
+  const manualDraftRef = useRef<{
+    selectedPieces: WardrobeItem[];
+    piecesChanged: boolean;
+  } | null>(null);
   const allItemsRef = useRef<WardrobeItem[]>(
-    initialCache?.selectedPieces ?? [],
+    initialCache?.selectedPieces ?? []
   );
 
   const applyRecommendation = useCallback(
@@ -51,7 +55,7 @@ export function useTryOnRecommend() {
       setRecommendation(rec);
       setSelectedPieces(pieces);
     },
-    [],
+    []
   );
 
   const loadFresh = useCallback(
@@ -125,7 +129,7 @@ export function useTryOnRecommend() {
             weatherSnapshot: weather,
             wearConfirmed: false,
           },
-          { clearHero: true },
+          { clearHero: true, clearManual: true }
         );
         setStatus("success");
       } catch (err) {
@@ -137,7 +141,78 @@ export function useTryOnRecommend() {
         loadingRef.current = false;
       }
     },
-    [applyRecommendation],
+    [applyRecommendation]
+  );
+
+  const loadManual = useCallback(
+    async (piecesFromDraft: WardrobeItem[], piecesChanged: boolean) => {
+      if (loadingRef.current) return;
+      loadingRef.current = true;
+      manualDraftRef.current = {
+        selectedPieces: piecesFromDraft,
+        piecesChanged,
+      };
+      setStatus("loading");
+      setErrorMessage(null);
+      setFromCache(false);
+      setSavedReturn({ piecesChanged });
+
+      try {
+        const profile = await fetchUserProfile();
+        if (!isGenderSet(profile.gender)) {
+          setStatus("needsGender");
+          setRecommendation(null);
+          setSelectedPieces([]);
+          return;
+        }
+        if (!isMetricsSet(profile)) {
+          setStatus("error");
+          setErrorMessage("评价前请先完善身高和体重");
+          setRecommendation(null);
+          setSelectedPieces([]);
+          return;
+        }
+
+        let weather: WeatherSnapshot;
+        try {
+          const weatherResult = await fetchWeather();
+          weather = weatherResult.snapshot;
+        } catch {
+          weather = {
+            city: "当前位置",
+            conditionCode: "sunny",
+            temperature: 22,
+            humidity: 50,
+            aqi: 50,
+          };
+        }
+
+        const pieces = await attachImageUrls(piecesFromDraft);
+        const rec = await recommendSelectedOutfit({
+          weather,
+          season: getCurrentSeason(),
+          profile,
+          selectedPieces: pieces,
+        });
+
+        applyRecommendation(rec, pieces);
+        allItemsRef.current = pieces;
+        setWeatherSnapshot(weather);
+        writeTryOnCache({
+          selectedRecommendation: rec,
+          manualSelectedPieces: pieces,
+        });
+        setStatus("success");
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "没能生成评价，请稍后重试";
+        setErrorMessage(message);
+        setStatus("error");
+      } finally {
+        loadingRef.current = false;
+      }
+    },
+    [applyRecommendation]
   );
 
   const loadFromCache = useCallback(async () => {
@@ -152,7 +227,7 @@ export function useTryOnRecommend() {
     }
     const pieces = await attachImageUrls(
       cache.selectedPieces,
-      collectImageUrls(cache.selectedPieces),
+      collectImageUrls(cache.selectedPieces)
     );
     allItemsRef.current = pieces;
     setRecommendation(cache.recommendation);
@@ -167,68 +242,38 @@ export function useTryOnRecommend() {
 
   const handleShow = useCallback(async () => {
     const draft = consumeTryOnDraft();
-    const profile = await fetchUserProfile();
-
-    if (!isGenderSet(profile.gender)) {
-      setStatus("needsGender");
-      setRecommendation(null);
-      setSelectedPieces([]);
-      setFromCache(false);
-      setSavedReturn(null);
-      setErrorMessage(null);
-      return;
-    }
-
-    if (!isMetricsSet(profile)) {
-      setStatus("error");
-      setErrorMessage("推荐前请先完善身高和体重");
-      setRecommendation(null);
-      setSelectedPieces([]);
-      setFromCache(false);
-      setSavedReturn(null);
-      return;
-    }
 
     if (draft?.mode === "saved" && draft.selectedPieces) {
-      const pieces = await attachImageUrls(draft.selectedPieces);
-      const cache = readTryOnCache();
-      if (cache) {
-        setRecommendation(cache.recommendation);
-        setWeatherSnapshot(cache.weatherSnapshot ?? null);
-      } else {
-        setRecommendation({
-          outfitName: "我的搭配",
-          description: "",
-          slots: [],
-          tips: [],
-        });
-      }
-      setSelectedPieces(pieces);
-      allItemsRef.current = pieces;
-      setFromCache(false);
-      setSavedReturn({
-        piecesChanged: draft.piecesChanged === true,
-      });
-      setStatus("success");
-      setErrorMessage(null);
+      void loadManual(draft.selectedPieces, draft.piecesChanged === true);
       return;
     }
 
+    manualDraftRef.current = null;
     if (isTryOnCacheValid() && (await loadFromCache())) {
       return;
     }
 
     loadFresh(false);
-  }, [loadFresh, loadFromCache]);
+  }, [loadFresh, loadFromCache, loadManual]);
 
   useDidShow(() => {
     void handleShow();
   });
 
   const refreshRecommend = useCallback(() => {
+    manualDraftRef.current = null;
     clearTryOnCache();
     loadFresh(true);
   }, [loadFresh]);
+
+  const retryRecommend = useCallback(() => {
+    const manualDraft = manualDraftRef.current;
+    if (manualDraft) {
+      void loadManual(manualDraft.selectedPieces, manualDraft.piecesChanged);
+      return;
+    }
+    loadFresh(true);
+  }, [loadFresh, loadManual]);
 
   return {
     status,
@@ -240,6 +285,7 @@ export function useTryOnRecommend() {
     isManualOutfit: savedReturn !== null,
     weatherSnapshot,
     refreshRecommend,
+    retryRecommend,
     allItems: allItemsRef.current,
   };
 }

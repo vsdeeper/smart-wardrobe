@@ -1,20 +1,14 @@
 import { useCallback, useMemo, useState } from "react";
 import Taro, { useDidShow } from "@tarojs/taro";
 import type { WardrobeItem } from "@/data/wardrobe";
-import {
-  peekTryOnDraft,
-  setTryOnDraft,
-} from "@/services/tryOnDraft";
-import { readTryOnCache } from "@/services/tryOnCache";
+import { peekTryOnDraft, setTryOnDraft } from "@/services/tryOnDraft";
+import { getInitialTryOnCache } from "@/services/tryOnCache";
 import {
   fetchClothingTypes,
   fetchWardrobeItems,
   fetchWardrobeItemsGroupedByType,
 } from "@/services/wardrobe";
-import {
-  arePieceSelectionsEqual,
-  getPieceIds,
-} from "@/utils/outfitSelection";
+import { arePieceSelectionsEqual, getPieceIds } from "@/utils/outfitSelection";
 
 export function useOutfitPage() {
   const [typeNames, setTypeNames] = useState<string[]>([]);
@@ -72,7 +66,7 @@ export function useOutfitPage() {
       });
       setOutfitByCategory(byCat);
       setBaselinePieceIds(
-        draft.baselinePieceIds ?? getPieceIds(draft.selectedPieces),
+        draft.baselinePieceIds ?? getPieceIds(draft.selectedPieces)
       );
       setFromTryOnEdit(true);
     } else {
@@ -86,12 +80,12 @@ export function useOutfitPage() {
 
   const filteredItems = useMemo(
     () => itemsByType[activeCategory] ?? [],
-    [itemsByType, activeCategory],
+    [itemsByType, activeCategory]
   );
 
   const outfitPieces = useMemo(
     () => typeNames.map((cat) => outfitByCategory[cat]).filter(Boolean),
-    [typeNames, outfitByCategory],
+    [typeNames, outfitByCategory]
   );
 
   const handleToggleItem = useCallback((item: WardrobeItem) => {
@@ -125,7 +119,7 @@ export function useOutfitPage() {
     if (fromTryOnEdit) {
       const piecesChanged = !arePieceSelectionsEqual(
         baselinePieceIds,
-        currentIds,
+        currentIds
       );
       setTryOnDraft({
         mode: "saved",
@@ -136,7 +130,7 @@ export function useOutfitPage() {
       return;
     }
 
-    const cache = readTryOnCache();
+    const cache = getInitialTryOnCache();
     const baselineIds = cache ? getPieceIds(cache.selectedPieces) : [];
     const piecesChanged = !arePieceSelectionsEqual(baselineIds, currentIds);
 
@@ -173,7 +167,7 @@ export function useOutfitPage() {
         setListLoading(false);
       }
     },
-    [typeNames, itemsByType],
+    [typeNames, itemsByType]
   );
 
   return {

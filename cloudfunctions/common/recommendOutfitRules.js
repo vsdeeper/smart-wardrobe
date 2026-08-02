@@ -1,4 +1,13 @@
-function buildRecommendSystemPrompt() {
+function buildRecommendSystemPrompt(mode = 'recommend') {
+  const selectionRule =
+    mode === 'selection'
+      ? `
+指定单品评价模式：
+- 用户已决定穿着所提供的全部单品，你只能评价这套搭配，不得新增、删除、替换或重新选择单品
+- slots 必须逐一包含输入中的每件单品，typeName 与 selectedId 必须原样对应，alternatives 必须为空数组
+- description 是「AI 评价」正文，应客观评价已选单品在色彩、材质、层次与场景上的表现，不得声称替用户推荐了其他单品`
+      : ''
+
   return `你是专业穿搭顾问。根据用户天气、季节、职业与风格偏好，从用户衣橱中组成一套可实际同穿的合理搭配。
 
 规则：
@@ -10,6 +19,7 @@ function buildRecommendSystemPrompt() {
 6. description 为「AI 搭配建议」正文：一句约 20–40 字，说明材质、色彩或体感为何适合当前天气/场景（如「亚麻材质透气亲肤，浅色系在阳光下更显轻盈。」）；须与 slots 实际选品一致，勿描述未选入 slots 的单品，勿带「AI 搭配建议：」前缀，勿罗列单品清单
 7. 若单品带 advice 字段（该单品自身的穿搭建议），组合搭配与撰写 description 时应优先参考，但仍须遵守以上搭配常识与规则，不得为迁就 advice 而破坏整体合理性
 8. 只返回 JSON，无其他文字
+${selectionRule}
 
 搭配常识（请自主判断，勿为凑齐类别而混搭互斥单品）：
 - 连衣裙/连体类：通常单穿，不与上装、下装同时出现
@@ -33,7 +43,7 @@ function buildRecommendSystemPrompt() {
 }
 
 function buildRecommendUserPrompt(payload) {
-  const { weather, season, profile, wardrobeByType } = payload
+  const { weather, season, profile, wardrobeByType, mode = 'recommend' } = payload
 
   const wardrobeText = Object.entries(wardrobeByType || {})
     .map(([typeName, items]) => {
@@ -45,14 +55,19 @@ function buildRecommendUserPrompt(payload) {
     })
     .join('\n\n')
 
+  const instruction =
+    mode === 'selection'
+      ? '请评价用户已选择的这套穿搭。slots 必须包含下方全部单品且不得增删替换，alternatives 均为空数组；重点生成准确的搭配名称、评价正文和风格标签。'
+      : '请推荐今日穿搭。只选会一起穿着的单品写入 slots（通常 2–5 件），勿为凑齐类别而混搭互斥单品（如连衣裙与上装/下装不可同穿）。优先保证主体穿搭合理，再考虑鞋靴与外套。'
+
   return `当前季节：${season}
 天气：${weather.conditionCode} ${weather.temperature}°C 湿度${weather.humidity}% 城市${weather.city}
 用户：身高${profile.heightCm}cm 体重${profile.weightKg}kg 职业「${profile.occupation || '未填写'}」 风格标签 ${JSON.stringify(profile.styleTags || [])}
 
-衣橱单品（按类别）：
+${mode === 'selection' ? '用户已选单品' : '衣橱单品'}（按类别）：
 ${wardrobeText}
 
-请推荐今日穿搭。只选会一起穿着的单品写入 slots（通常 2–5 件），勿为凑齐类别而混搭互斥单品（如连衣裙与上装/下装不可同穿）。优先保证主体穿搭合理，再考虑鞋靴与外套。`
+${instruction}`
 }
 
 function parseRecommendResult(content) {
@@ -189,9 +204,55 @@ function buildFallbackRecommendation(wardrobeByType, season, weather) {
   }
 }
 
+function buildSelectionFallbackRecommendation(wardrobeByType, season, weather) {
+  const slots = Object.entries(wardrobeByType || {}).flatMap(([typeName, items]) =>
+    (items || []).map((item) => ({
+      typeName,
+      selectedId: item.id,
+      alternatives: [],
+    })),
+  )
+  if (slots.length === 0) return null
+
+  const temp = weather?.temperature ?? 20
+  const tips =
+    temp >= 28
+      ? ['清爽', '轻盈', '个性']
+      : temp < 18
+        ? ['层次', '温暖', '个性']
+        : ['自然', '舒适', '个性']
+
+  return {
+    outfitName: `${season}日个性穿搭`,
+    description: '所选单品共同形成鲜明的个人表达，色彩与层次可结合当日场景灵活呈现。',
+    slots,
+    tips: tips.map((label, index) => ({ id: index + 1, icon: '', label })),
+  }
+}
+
+function isSelectionRecommendationValid(recommendation, wardrobeByType) {
+  const expected = Object.entries(wardrobeByType || {}).flatMap(([typeName, items]) =>
+    (items || []).map((item) => `${typeName}:${item.id}`),
+  )
+  const actual = (recommendation?.slots || []).map(
+    (slot) => `${slot.typeName}:${slot.selectedId}`,
+  )
+  return (
+    expected.length > 0 &&
+    expected.length === actual.length &&
+    new Set(expected).size === expected.length &&
+    expected.every((key) => actual.includes(key)) &&
+    recommendation.slots.every(
+      (slot) => Array.isArray(slot.alternatives) && slot.alternatives.length === 0,
+    )
+  )
+}
+
 module.exports = {
   buildRecommendSystemPrompt,
   buildRecommendUserPrompt,
   parseRecommendResult,
   buildFallbackRecommendation,
+  buildSelectionFallbackRecommendation,
+  isSelectionRecommendationValid,
 }

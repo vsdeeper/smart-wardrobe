@@ -3,10 +3,7 @@ import Taro from "@tarojs/taro";
 import type { TryOnRecommendation } from "@/data/tryOn";
 import type { WeatherSnapshot } from "@/data/weather";
 import type { WardrobeItem } from "@/data/wardrobe";
-import {
-  getInitialTryOnCache,
-  writeTryOnCache,
-} from "@/services/tryOnCache";
+import { getInitialTryOnCache, writeTryOnCache } from "@/services/tryOnCache";
 import { saveVisualDiaryEntry } from "@/services/visualDiary";
 
 interface UseTryOnWearOptions {
@@ -14,11 +11,12 @@ interface UseTryOnWearOptions {
   selectedPieces: WardrobeItem[];
   heroCoverFileId: string | null;
   weatherSnapshot: WeatherSnapshot | null;
+  isManualOutfit: boolean;
 }
 
 function getOutfitKey(
   selectedPieces: WardrobeItem[],
-  heroCoverFileId: string | null,
+  heroCoverFileId: string | null
 ): string {
   return `${heroCoverFileId ?? ""}:${selectedPieces.map((piece) => piece._id).join(",")}`;
 }
@@ -28,20 +26,19 @@ export function useTryOnWear({
   selectedPieces,
   heroCoverFileId,
   weatherSnapshot,
+  isManualOutfit,
 }: UseTryOnWearOptions) {
   const [saving, setSaving] = useState(false);
   const outfitKey = getOutfitKey(selectedPieces, heroCoverFileId);
   const [confirmedOutfitKey, setConfirmedOutfitKey] = useState(() => {
     const cache = getInitialTryOnCache();
     return cache?.wearConfirmed
-      ? getOutfitKey(
-          cache.selectedPieces,
-          cache.heroCoverFileId ?? null,
-        )
+      ? getOutfitKey(cache.selectedPieces, cache.heroCoverFileId ?? null)
       : null;
   });
   const savingRef = useRef(false);
   const wearConfirmed =
+    !isManualOutfit &&
     confirmedOutfitKey === outfitKey &&
     getInitialTryOnCache()?.wearConfirmed === true;
 
@@ -71,6 +68,17 @@ export function useTryOnWear({
         weatherSnapshot: weatherSnapshot ?? undefined,
       });
 
+      if (isManualOutfit) {
+        await Taro.showToast({
+          title: "已记录到视觉日记",
+          icon: "success",
+          duration: 1000,
+        });
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        await Taro.redirectTo({ url: "/pages/mine/index" });
+        return;
+      }
+
       const cache = getInitialTryOnCache();
       writeTryOnCache(
         {
@@ -85,7 +93,7 @@ export function useTryOnWear({
           weatherSnapshot: weatherSnapshot ?? undefined,
           wearConfirmed: true,
         },
-        { clearHero: cache?.heroCoverFileId !== heroCoverFileId },
+        { clearHero: cache?.heroCoverFileId !== heroCoverFileId }
       );
       setConfirmedOutfitKey(outfitKey);
       Taro.showToast({ title: "已记录到视觉日记", icon: "success" });
@@ -102,6 +110,7 @@ export function useTryOnWear({
     selectedPieces,
     heroCoverFileId,
     weatherSnapshot,
+    isManualOutfit,
     outfitKey,
     wearConfirmed,
   ]);
