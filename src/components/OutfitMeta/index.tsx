@@ -34,7 +34,7 @@ export default function OutfitMeta({
       ) : null}
       {suggestion ? (
         <View className="outfit-meta__suggestion">
-          <Text className="outfit-meta__suggestion-icon">✦</Text>
+          <Text className="iconfont icon-stars outfit-meta__suggestion-icon" />
           <Text className="outfit-meta__suggestion-text">
             AI 搭配建议：{suggestion}
           </Text>
