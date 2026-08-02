@@ -11,6 +11,7 @@ export interface OutfitHeroProps {
   previewStatus?: TryOnPreviewStatus;
   previewErrorMessage?: string | null;
   onRetryPreview?: () => void;
+  onImageError?: () => void;
   weatherStatus?: WeatherLoadStatus;
   weatherViewModel?: WeatherCardViewModel | null;
   onWeatherClick?: () => void;
@@ -41,11 +42,11 @@ function WeatherChip({
         <Text className="weather-chip__text">开启定位</Text>
       ) : isSuccess ? (
         <>
-          <Text
-            className={`iconfont ${viewModel.icon} weather-chip__icon`}
-          />
+          <Text className={`iconfont ${viewModel.icon} weather-chip__icon`} />
           <Text className="weather-chip__temp">{viewModel.temperature}°C</Text>
-          <Text className="weather-chip__label">{viewModel.conditionLabel}</Text>
+          <Text className="weather-chip__label">
+            {viewModel.conditionLabel}
+          </Text>
         </>
       ) : (
         <Text className="weather-chip__text">点击重试</Text>
@@ -60,6 +61,7 @@ export default function OutfitHero({
   previewStatus,
   previewErrorMessage,
   onRetryPreview,
+  onImageError,
   weatherStatus,
   weatherViewModel,
   onWeatherClick,
@@ -73,11 +75,18 @@ export default function OutfitHero({
   return (
     <View className="outfit-hero">
       {heroSrc ? (
-        <Image className="outfit-hero__image" src={heroSrc} mode="aspectFill" />
+        <Image
+          className="outfit-hero__image"
+          src={heroSrc}
+          mode="aspectFill"
+          onError={onImageError}
+        />
       ) : null}
       {isLoading && (
         <View className="outfit-hero__loading">
-          <Loading type="circular" />
+          <Loading type="circular" direction="vertical">
+            <Text>AI 生成中...</Text>
+          </Loading>
         </View>
       )}
       {isError && (
@@ -87,10 +96,7 @@ export default function OutfitHero({
             {previewErrorMessage || "请稍后再试一次"}
           </Text>
           {onRetryPreview ? (
-            <View
-              className="outfit-hero__error-retry"
-              onClick={onRetryPreview}
-            >
+            <View className="outfit-hero__error-retry" onClick={onRetryPreview}>
               <Text className="outfit-hero__error-retry-text">重试</Text>
             </View>
           ) : null}

@@ -20,6 +20,7 @@ export interface TryOnResultProps {
   previewStatus: TryOnPreviewStatus;
   previewErrorMessage: string | null;
   onRetryPreview: () => void;
+  onHeroImageError: () => void;
   weatherStatus: WeatherLoadStatus;
   weatherViewModel: WeatherCardViewModel | null;
   onWeatherClick: () => void;
@@ -37,6 +38,7 @@ function TryOnResult({
   previewStatus,
   previewErrorMessage,
   onRetryPreview,
+  onHeroImageError,
   weatherStatus,
   weatherViewModel,
   onWeatherClick,
@@ -59,6 +61,7 @@ function TryOnResult({
             previewStatus={previewStatus}
             previewErrorMessage={previewErrorMessage}
             onRetryPreview={onRetryPreview}
+            onImageError={onHeroImageError}
             weatherStatus={weatherStatus}
             weatherViewModel={weatherViewModel}
             onWeatherClick={onWeatherClick}

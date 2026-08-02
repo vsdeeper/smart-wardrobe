@@ -41,6 +41,7 @@ function TryOnPage() {
     heroCoverFileId,
     previewErrorMessage,
     generatePreview,
+    handleHeroImageError,
   } = useTryOnPreview({
     selectedPieces,
     outfitName: recommendation?.outfitName ?? "今日推荐",
@@ -111,6 +112,7 @@ function TryOnPage() {
             previewStatus={previewStatus}
             previewErrorMessage={previewErrorMessage}
             onRetryPreview={generatePreview}
+            onHeroImageError={handleHeroImageError}
             weatherStatus={weatherStatus}
             weatherViewModel={weatherViewModel}
             onWeatherClick={handleWeatherClick}

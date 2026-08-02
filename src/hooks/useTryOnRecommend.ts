@@ -4,7 +4,7 @@ import type { TryOnRecommendation, TryOnRecommendStatus } from "@/data/tryOn";
 import type { WeatherSnapshot } from "@/data/weather";
 import type { WardrobeItem } from "@/data/wardrobe";
 import { isGenderSet, isMetricsSet } from "@/data/profile";
-import { attachImageUrls } from "@/services/cloudFile";
+import { attachImageUrls, collectImageUrls } from "@/services/cloudFile";
 import {
   recommendOutfit,
   resolveSelectedPieces,
@@ -13,6 +13,7 @@ import { fetchUserProfile } from "@/services/profile";
 import { fetchWeather } from "@/services/weather";
 import {
   clearTryOnCache,
+  getInitialTryOnCache,
   isTryOnCacheValid,
   readTryOnCache,
   writeTryOnCache,
@@ -26,17 +27,24 @@ export interface SavedReturnMeta {
 }
 
 export function useTryOnRecommend() {
-  const [status, setStatus] = useState<TryOnRecommendStatus>("idle");
+  const [initialCache] = useState(getInitialTryOnCache);
+  const [status, setStatus] = useState<TryOnRecommendStatus>(
+    initialCache ? "success" : "idle",
+  );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [recommendation, setRecommendation] =
-    useState<TryOnRecommendation | null>(null);
-  const [selectedPieces, setSelectedPieces] = useState<WardrobeItem[]>([]);
-  const [fromCache, setFromCache] = useState(false);
+    useState<TryOnRecommendation | null>(initialCache?.recommendation ?? null);
+  const [selectedPieces, setSelectedPieces] = useState<WardrobeItem[]>(
+    initialCache?.selectedPieces ?? [],
+  );
+  const [fromCache, setFromCache] = useState(initialCache !== null);
   const [savedReturn, setSavedReturn] = useState<SavedReturnMeta | null>(null);
   const [weatherSnapshot, setWeatherSnapshot] =
-    useState<WeatherSnapshot | null>(null);
+    useState<WeatherSnapshot | null>(initialCache?.weatherSnapshot ?? null);
   const loadingRef = useRef(false);
-  const allItemsRef = useRef<WardrobeItem[]>([]);
+  const allItemsRef = useRef<WardrobeItem[]>(
+    initialCache?.selectedPieces ?? [],
+  );
 
   const applyRecommendation = useCallback(
     (rec: TryOnRecommendation, pieces: WardrobeItem[]) => {
@@ -114,7 +122,7 @@ export function useTryOnRecommend() {
           recommendation: rec,
           selectedPieces: piecesWithUrls,
           weatherSnapshot: weather,
-        });
+        }, { clearHero: true });
         setStatus("success");
       } catch (err) {
         const message =
@@ -134,11 +142,14 @@ export function useTryOnRecommend() {
       return false;
     }
 
-    const cache = readTryOnCache();
+    const cache = getInitialTryOnCache();
     if (!cache) {
       return false;
     }
-    const pieces = await attachImageUrls(cache.selectedPieces);
+    const pieces = await attachImageUrls(
+      cache.selectedPieces,
+      collectImageUrls(cache.selectedPieces),
+    );
     allItemsRef.current = pieces;
     setRecommendation(cache.recommendation);
     setSelectedPieces(pieces);

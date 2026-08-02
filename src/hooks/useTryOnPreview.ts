@@ -6,7 +6,11 @@ import type { WeatherSnapshot } from "@/data/weather";
 import { resolveCloudFileUrl } from "@/services/cloudFile";
 import { fetchUserProfile } from "@/services/profile";
 import { generateTryonImage } from "@/services/tryOnPreview";
-import { readTryOnCache, writeTryOnCache } from "@/services/tryOnCache";
+import {
+  getInitialTryOnCache,
+  readTryOnCache,
+  writeTryOnCache,
+} from "@/services/tryOnCache";
 import type { SavedReturnMeta } from "@/hooks/useTryOnRecommend";
 import { isEphemeralExternalImageUrl } from "@/utils/imageUrl";
 
@@ -27,15 +31,25 @@ export function useTryOnPreview({
   recommendReady,
   weatherSnapshot,
 }: UseTryOnPreviewOptions) {
-  const [status, setStatus] = useState<TryOnPreviewStatus>("idle");
-  const [heroImageUrl, setHeroImageUrl] = useState<string | null>(null);
-  const [heroCoverFileId, setHeroCoverFileId] = useState<string | null>(null);
-  const [heroFromCache, setHeroFromCache] = useState(false);
+  const [initialCache] = useState(getInitialTryOnCache);
+  const [status, setStatus] = useState<TryOnPreviewStatus>(
+    initialCache?.heroImageUrl ? "success" : "idle",
+  );
+  const [heroImageUrl, setHeroImageUrl] = useState<string | null>(
+    initialCache?.heroImageUrl ?? null,
+  );
+  const [heroCoverFileId, setHeroCoverFileId] = useState<string | null>(
+    initialCache?.heroCoverFileId ?? null,
+  );
+  const [heroFromCache, setHeroFromCache] = useState(
+    !!initialCache?.heroImageUrl,
+  );
   const [previewErrorMessage, setPreviewErrorMessage] = useState<string | null>(
     null,
   );
   const loadingRef = useRef(false);
   const handledKeyRef = useRef<string | null>(null);
+  const imageRetriedRef = useRef<Set<string>>(new Set());
 
   const applyHero = useCallback(
     (url: string | null, fileId: string | null, cached: boolean) => {
@@ -48,20 +62,24 @@ export function useTryOnPreview({
   );
 
   const loadHeroFromCache = useCallback(async () => {
-    const cache = readTryOnCache();
+    const cache = getInitialTryOnCache();
     if (!cache?.heroImageUrl && !cache?.heroCoverFileId) {
       return false;
     }
 
+    if (cache.heroImageUrl) {
+      setPreviewErrorMessage(null);
+      applyHero(
+        cache.heroImageUrl,
+        cache.heroCoverFileId ?? null,
+        true,
+      );
+      return true;
+    }
+
     const coverFileId = cache.heroCoverFileId ?? null;
     if (!coverFileId) {
-      const cachedUrl = cache.heroImageUrl;
-      if (!cachedUrl || isEphemeralExternalImageUrl(cachedUrl)) {
-        return false;
-      }
-      setPreviewErrorMessage(null);
-      applyHero(cachedUrl, null, true);
-      return true;
+      return false;
     }
 
     const freshUrl = await resolveCloudFileUrl(coverFileId);
@@ -77,6 +95,7 @@ export function useTryOnPreview({
       selectedPieces: cache.selectedPieces,
       heroCoverFileId: coverFileId,
       heroImageUrl: freshUrl,
+      heroImageUrlAt: Date.now(),
     });
 
     return true;
@@ -135,6 +154,7 @@ export function useTryOnPreview({
       }
 
       applyHero(coverUrl, coverFileId, false);
+      imageRetriedRef.current.delete(coverFileId);
 
       const cache = readTryOnCache();
       if (cache) {
@@ -143,6 +163,7 @@ export function useTryOnPreview({
           selectedPieces,
           heroCoverFileId: coverFileId,
           heroImageUrl: coverUrl,
+          heroImageUrlAt: Date.now(),
         });
       }
     } catch (err) {
@@ -154,6 +175,36 @@ export function useTryOnPreview({
       loadingRef.current = false;
     }
   }, [selectedPieces, applyHero, weatherSnapshot?.conditionCode]);
+
+  const handleHeroImageError = useCallback(async () => {
+    const fileId = heroCoverFileId;
+    if (!fileId || imageRetriedRef.current.has(fileId)) return;
+    if (loadingRef.current) return;
+    imageRetriedRef.current.add(fileId);
+
+    try {
+      const freshUrl = await resolveCloudFileUrl(fileId);
+      if (!freshUrl) return;
+
+      setHeroImageUrl(freshUrl);
+      setHeroFromCache(false);
+      setPreviewErrorMessage(null);
+      setStatus("success");
+
+      const cache = readTryOnCache();
+      if (cache) {
+        writeTryOnCache({
+          recommendation: cache.recommendation,
+          selectedPieces: cache.selectedPieces,
+          heroCoverFileId: fileId,
+          heroImageUrl: freshUrl,
+          heroImageUrlAt: Date.now(),
+        });
+      }
+    } catch {
+      // 兜底失败不打扰用户，手动重试时会重新生成
+    }
+  }, [heroCoverFileId]);
 
   useEffect(() => {
     if (!recommendReady || selectedPieces.length === 0) return;
@@ -218,5 +269,6 @@ export function useTryOnPreview({
     heroFromCache,
     previewErrorMessage,
     generatePreview,
+    handleHeroImageError,
   };
 }

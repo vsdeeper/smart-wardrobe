@@ -27,6 +27,8 @@ export interface TryOnDailyCache {
   weatherSnapshot?: WeatherSnapshot;
   heroCoverFileId?: string;
   heroImageUrl?: string;
+  /** heroImageUrl 的生成时刻，用于判断云存储临时链接是否仍可复用 */
+  heroImageUrlAt?: number;
   cachedAt: number;
 }
 
