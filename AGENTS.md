@@ -2,20 +2,20 @@
 
 面向在本仓库工作的 AI 编码代理的操作指南。与 `CLAUDE.md` 内容一致，并补充可执行命令与约束。
 
-## Overview & Scope
+## 概述与适用范围
 
 智能衣橱（Smart Wardrobe）是基于 Taro 4.2 的跨平台小程序应用，结合 AI 打造个人化衣橱体验。技术栈：React 18、TypeScript 5.1、NutUI React Taro 2.6、Sass、Vite + SWC，包管理器为 pnpm。主要目标平台为微信小程序，亦支持 H5 及其他小程序平台。
 
 本文件适用于仓库根目录下的全部源码（`src/`、`config/`、`types/`、`cloudfunctions/`）。当前为单包项目，无嵌套 `AGENTS.md`；若日后在子目录新增，以距离被编辑文件最近的 `AGENTS.md` 为准。
 
-## Agent Role
+## 代理角色
 
 - **角色**：熟悉 Taro + React + 小程序生态的前端工程师，能按现有约定扩展页面与组件。
 - **对话语言（必须遵守）**：默认使用**简体中文**与用户对话，并以简体中文撰写代码注释、commit message、PR 描述；除非用户在当次对话中明确要求切换到其他语言。
 - **允许**：在 `src/` 下新增/修改页面与样式；使用 NutUI 与 Taro API；运行开发构建与 lint；小范围、聚焦的改动。
 - **禁止**：未经要求提交 git、强制推送、修改 git 配置；引入与任务无关的依赖或大重构；编辑 `node_modules/`、`dist/`、锁文件（除非用户明确要求）；猜测不存在的脚本或工具。
 
-## Build, Test & Validation Commands
+## 构建、测试与验证命令
 
 在仓库根目录执行：
 
@@ -41,7 +41,7 @@ pnpm exec eslint .
 
 当前仓库**未配置**测试 runner 与 `test` 脚本；不要臆造测试命令。完整平台命令以 `package.json` 为准。
 
-## Conventions & Patterns
+## 约定与模式
 
 ### 目录结构
 
@@ -154,9 +154,9 @@ types/
 
 排查代码时排除：`node_modules/`、`dist/`、`.git/`。
 
-## Dos and Don’ts
+## 应做与不应做
 
-**Do**
+**应做**
 
 - 改动前阅读相邻文件，匹配命名、导入与目录习惯。
 - 新页面按「目录 + 注册 `app.config.ts` + `definePageConfig`」完整落地。
@@ -165,7 +165,7 @@ types/
 - 新功能开发时，先判断 UI / 状态 / 请求是否应落在 `components`、`hooks`、`services` 层。
 - 页面 `index.tsx` 保持「读一遍能看清页面结构」。
 
-**Don’t**
+**不应做**
 
 - 不要为简单 UI 手写大量原生组件，应先查 NutUI。
 - 不要跳过 `app.config.ts` 注册页面。
@@ -178,14 +178,14 @@ types/
 - 不要用 NutUI `Button` 实现高度定制的页面 CTA；应使用 `View` + `Text`（见「自定义按钮」）。
 - 不要在云函数中用 `https.get` 直接请求外部 JSON API；应使用 `fetch`（见「云函数」）。
 
-## Safety & Guardrails
+## 安全与防护措施
 
 - **勿动**：`node_modules/`、`dist/`、`.env` 及含密钥/凭证的文件。
 - **慎用**：全量 `pnpm install` 以外的破坏性 git 操作（`reset --hard`、`push --force` 等），除非用户明确要求。
 - **构建**：`pnpm build:*` 会写入 `dist/`，属安全操作；开发优先 `pnpm dev:weapp` 而非反复全量构建。
 - **依赖**：新增 npm 包前确认任务需要，并说明原因。
 
-## Git & PR Rules
+## Git 与 PR 规范
 
 - 仅在用户**明确要求**时创建 commit；不要主动提交。
 - 提交信息使用简体中文，简洁说明「为什么」。
@@ -193,12 +193,41 @@ types/
 - 不要对 `main`/`master` 做 force push；已推送的提交避免 `--amend`，除非用户明确要求。
 - 创建 PR 时：先 `git status` / `git diff` 了解变更，说明测试方式（如微信开发者工具预览 `dist`）。
 
-## Additional rules
+### 提交信息规范（Commit Message）
+
+格式：`<type>: <简体中文描述>`（`type` 为英文小写，冒号后一个空格，描述用简体中文）。
+
+```
+feat: 添加穿搭建议功能，更新多个组件以支持 stylingAdvice 字段
+refactor: 移除冗余的性别选择和输入逻辑，简化 MineProfileFieldPage 组件结构
+style: 调整 MediaListCard 字体大小和 OutfitPanel 按钮文本
+docs: 更新 AGENTS.md，翻译为简体中文并补充提交规范说明
+fix: 修复衣橱列表图片链接解析失败的问题
+```
+
+`type` 取值（与本仓库历史提交保持一致）：
+
+| type       | 说明                                             |
+| ---------- | ------------------------------------------------ |
+| `feat`     | 新增功能                                         |
+| `fix`      | 修复 bug                                         |
+| `refactor` | 重构（不改变外部行为的代码结构调整）             |
+| `style`    | 样式/UI 调优（不涉及逻辑变更）                   |
+| `docs`     | 文档变更（如 `AGENTS.md`、`README.md`）          |
+| `chore`    | 构建配置、依赖、脚手架等杂项变更                 |
+| `perf`     | 性能优化                                         |
+| `test`     | 测试相关变更（当前仓库暂无测试 runner，谨慎使用）|
+
+- 描述部分**用简体中文**，动词开头（如「添加」「修复」「更新」「移除」），概括本次改动做了什么、以及必要时说明为什么。
+- 一次 commit 聚焦一个主题；避免把多个不相关改动混在一条提交信息里。
+- 不使用 `feat(scope):` 这类带 scope 的写法（保持与历史提交一致的简单格式），除非用户明确要求。
+
+## 其他规则
 
 - 人类可读的项目说明见 `CLAUDE.md`（与本文件同源约定）；勿在本文件重复长篇营销文案。
 - 架构或命令变更时，同步更新 `AGENTS.md` 与 `CLAUDE.md`，避免代理读到过期结构（例如页面路径以 `app.config.ts` 为准）。
 
-## Design Context
+## 设计背景
 
 设计与产品战略文档（做 UI/UX 任务前先读）：
 
