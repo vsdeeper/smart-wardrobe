@@ -60,9 +60,8 @@
 
   &__suggestion-icon {
     flex-shrink: 0;
-    margin-top: 2px;
-    font-size: 14px;
-    line-height: 1;
+    font-size: var(--nutui-font-size-2);
+    line-height: 1.55;
     color: var(--nutui-gray-5);
   }
 
