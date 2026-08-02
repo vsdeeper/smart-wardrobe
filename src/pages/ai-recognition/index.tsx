@@ -1,8 +1,10 @@
 import { useCallback, useRef } from "react";
 import { View, Text } from "@tarojs/components";
-import { Loading, Swipe } from "@nutui/nutui-react-taro";
+import { Swipe } from "@nutui/nutui-react-taro";
 import AppNavbar from "@/components/AppNavbar";
+import OutlineButton from "@/components/OutlineButton";
 import PageLoading from "@/components/PageLoading";
+import SolidButton from "@/components/SolidButton";
 import { useAiRecognitionList } from "@/hooks/useAiRecognitionList";
 import Main from "@/layouts/Main";
 import RecognitionItemCard from "./components/RecognitionItemCard";
@@ -143,37 +145,17 @@ function AiRecognitionPage() {
 
       {initialized && !readonly ? (
         <View className="sw-action-bar">
-          <View
-            className={[
-              "sw-btn sw-btn--block sw-btn--secondary",
-              submitting && "sw-btn--disabled",
-            ]
-              .filter(Boolean)
-              .join(" ")}
-            onClick={handleDiscard}
-          >
-            <Text className="sw-btn__text">放弃</Text>
-          </View>
-          <View
-            className={[
-              "sw-btn sw-btn--block sw-btn--primary",
-              items.length === 0 && "sw-btn--disabled",
-              submitting && "sw-btn--loading",
-            ]
-              .filter(Boolean)
-              .join(" ")}
+          <OutlineButton block disabled={submitting} onClick={handleDiscard}>
+            放弃
+          </OutlineButton>
+          <SolidButton
+            block
+            disabled={items.length === 0}
+            loading={submitting}
             onClick={handleConfirm}
           >
-            {submitting ? (
-              <Loading
-                type="circular"
-                color="var(--sw-color-on-primary)"
-                className="sw-btn-loading"
-              />
-            ) : (
-              <Text className="sw-btn__text sw-btn__text--primary">确认</Text>
-            )}
-          </View>
+            确认
+          </SolidButton>
         </View>
       ) : null}
     </Main>
