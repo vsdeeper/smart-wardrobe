@@ -25,7 +25,7 @@ export interface TryOnDailyCache {
   /** 直接进入试穿页时使用的 AI 推荐链路数据 */
   recommendation?: TryOnRecommendation;
   selectedPieces?: WardrobeItem[];
-  /** 从搭配页手动选品后生成的 AI 评价，与推荐链路互不回填 */
+  /** 从搭配页手动选品后生成的 AI 搭评，与推荐链路互不回填 */
   selectedRecommendation?: TryOnRecommendation;
   manualSelectedPieces?: WardrobeItem[];
   weatherSnapshot?: WeatherSnapshot;

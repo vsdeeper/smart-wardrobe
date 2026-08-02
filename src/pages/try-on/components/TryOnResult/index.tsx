@@ -74,7 +74,6 @@ function TryOnResult({
           title={recommendation?.outfitName ?? "今日推荐"}
           styleTags={styleTags}
           suggestion={recommendation?.description ?? ""}
-          suggestionLabel={isManualOutfit ? "AI 评价" : "AI 搭配建议"}
         />
         <OutfitPieceList pieces={selectedPieces} />
       </OutfitCard>

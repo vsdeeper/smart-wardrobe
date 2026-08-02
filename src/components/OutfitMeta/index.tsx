@@ -14,7 +14,7 @@ export default function OutfitMeta({
   styleTags,
   subtitle,
   suggestion,
-  suggestionLabel = "AI 搭配建议",
+  suggestionLabel = "AI 搭评",
 }: OutfitMetaProps) {
   return (
     <View className="outfit-meta">
