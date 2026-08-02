@@ -15,7 +15,7 @@ function buildRecommendSystemPrompt(mode = 'recommend') {
 2. 每个 slot 的 selectedId 必须来自对应 typeName 下的衣橱 id
 3. alternatives 为同类别其他候选 id（0–3 个），不得重复 selectedId
 4. outfitName 为 4–8 字中文意境短名，体现天气/场景与材质或廓形（如「晴日亚麻层叠」）；禁止「今日推荐」「清爽搭配」等空泛名
-5. tips 为不超过 6 个风格标签：label 为无 emoji 的短词且不超过 4 个字（如「清爽」「自然」「舒适」）；icon 可填空字符串或占位，UI 主要展示 label；禁止天气预警类文案（如「高紫外线」「注意防晒」）
+5. tips 为不超过 6 个风格标签：label 为无 emoji 的短词且不超过 4 个字（如「清爽」「自然」「舒适」）；禁止天气预警类文案（如「高紫外线」「注意防晒」）
 6. description 为「AI 搭配建议」正文：一句约 20–40 字，说明材质、色彩或体感为何适合当前天气/场景（如「亚麻材质透气亲肤，浅色系在阳光下更显轻盈。」）；须与 slots 实际选品一致，勿描述未选入 slots 的单品，勿带「AI 搭配建议：」前缀，勿罗列单品清单
 7. 若单品带 advice 字段（该单品自身的穿搭建议），组合搭配与撰写 description 时应优先参考，但仍须遵守以上搭配常识与规则，不得为迁就 advice 而破坏整体合理性
 8. 只返回 JSON，无其他文字
@@ -35,9 +35,9 @@ ${selectionRule}
     { "typeName": "上装", "selectedId": "id", "alternatives": ["id2"] }
   ],
   "tips": [
-    { "icon": "", "label": "清爽" },
-    { "icon": "", "label": "自然" },
-    { "icon": "", "label": "舒适" }
+    { "label": "清爽" },
+    { "label": "自然" },
+    { "label": "舒适" }
   ]
 }`
 }
@@ -93,7 +93,6 @@ function parseRecommendResult(content) {
     ? parsed.tips
         .map((tip, index) => ({
           id: index + 1,
-          icon: String(tip.icon ?? '✨').trim(),
           label: String(tip.label ?? '').trim(),
         }))
         .filter((t) => t.label)
@@ -171,20 +170,20 @@ function buildFallbackRecommendation(wardrobeByType, season, weather) {
   const tips =
     temp >= 28
       ? [
-          { id: 1, icon: '', label: '清爽' },
-          { id: 2, icon: '', label: '轻盈' },
-          { id: 3, icon: '', label: '舒适' },
+          { id: 1, label: '清爽' },
+          { id: 2, label: '轻盈' },
+          { id: 3, label: '舒适' },
         ]
       : temp < 18
         ? [
-            { id: 1, icon: '', label: '温暖' },
-            { id: 2, icon: '', label: '层叠' },
-            { id: 3, icon: '', label: '得体' },
+            { id: 1, label: '温暖' },
+            { id: 2, label: '层叠' },
+            { id: 3, label: '得体' },
           ]
         : [
-            { id: 1, icon: '', label: '自然' },
-            { id: 2, icon: '', label: '舒适' },
-            { id: 3, icon: '', label: '随性' },
+            { id: 1, label: '自然' },
+            { id: 2, label: '舒适' },
+            { id: 3, label: '随性' },
           ]
 
   const outfitName =
@@ -226,7 +225,7 @@ function buildSelectionFallbackRecommendation(wardrobeByType, season, weather) {
     outfitName: `${season}日个性穿搭`,
     description: '所选单品共同形成鲜明的个人表达，色彩与层次可结合当日场景灵活呈现。',
     slots,
-    tips: tips.map((label, index) => ({ id: index + 1, icon: '', label })),
+    tips: tips.map((label, index) => ({ id: index + 1, label })),
   }
 }
 
