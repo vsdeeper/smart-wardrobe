@@ -13,6 +13,8 @@ export interface WardrobeItem {
   typeName: string
   imageFileId: string
   imageUrl?: string
+  /** imageUrl 的生成时刻，用于判断该链接是否仍在有效期内 */
+  imageUrlAt?: number
   tags?: string[]
   createdAt: number
   updatedAt?: number

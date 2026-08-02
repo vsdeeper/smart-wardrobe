@@ -1,5 +1,5 @@
 import Taro from "@tarojs/taro";
-import { CLOUD_TEMP_URL_MAX_AGE_S } from "@/config/cloud";
+import { CLOUD_TEMP_URL_MAX_AGE_S, CLOUD_TEMP_URL_TTL_MS } from "@/config/cloud";
 
 /** getTempFileURL 单次调用的文件数上限 */
 const TEMP_URL_BATCH_SIZE = 50;
@@ -8,6 +8,20 @@ const TEMP_URL_BATCH_SIZE = 50;
 export interface CloudImageItem {
   imageFileId: string;
   imageUrl?: string;
+  /** imageUrl 的生成时刻，用于判断该链接是否仍在有效期内 */
+  imageUrlAt?: number;
+}
+
+/** 单个图片临时链接及其生成时刻 */
+export interface ResolvedImageUrl {
+  url: string;
+  at: number;
+}
+
+/** 判断某个 imageUrl 的生成时刻是否仍在有效期内 */
+export function isImageUrlFresh(at: number | undefined): boolean {
+  if (!at) return false;
+  return Date.now() - at < CLOUD_TEMP_URL_TTL_MS;
 }
 
 /**
@@ -28,8 +42,8 @@ function toTempUrlFileList(fileIds: string[]): string[] {
  */
 export async function resolveTempFileUrls(
   fileIds: string[],
-  knownUrls?: Map<string, string>,
-): Promise<Map<string, string>> {
+  knownUrls?: Map<string, ResolvedImageUrl>,
+): Promise<Map<string, ResolvedImageUrl>> {
   const urlMap = new Map(knownUrls ?? []);
   const pending = [...new Set(fileIds.filter((id) => id && !urlMap.has(id)))];
 
@@ -40,7 +54,7 @@ export async function resolveTempFileUrls(
     });
     for (const file of res.fileList) {
       if (file.status === 0 && file.fileID) {
-        urlMap.set(file.fileID, file.tempFileURL);
+        urlMap.set(file.fileID, { url: file.tempFileURL, at: Date.now() });
       }
     }
   }
@@ -51,7 +65,7 @@ export async function resolveTempFileUrls(
 /** 为列表补齐图片临时链接，解析失败的项保留原有 imageUrl */
 export async function attachImageUrls<T extends CloudImageItem>(
   items: T[],
-  knownUrls?: Map<string, string>,
+  knownUrls?: Map<string, ResolvedImageUrl>,
 ): Promise<T[]> {
   if (items.length === 0) return items;
 
@@ -60,20 +74,24 @@ export async function attachImageUrls<T extends CloudImageItem>(
     knownUrls,
   );
 
-  return items.map((item) => ({
-    ...item,
-    imageUrl: urlMap.get(item.imageFileId) ?? item.imageUrl,
-  }));
+  return items.map((item) => {
+    const resolved = urlMap.get(item.imageFileId);
+    return {
+      ...item,
+      imageUrl: resolved?.url ?? item.imageUrl,
+      imageUrlAt: resolved?.at ?? item.imageUrlAt,
+    };
+  });
 }
 
-/** 收集列表中已有的图片链接，供刷新时复用 */
+/** 收集列表中仍新鲜的图片链接，供刷新时复用；已过期的不收集，交由下次请求重新解析 */
 export function collectImageUrls<T extends CloudImageItem>(
   items: T[],
-): Map<string, string> {
-  const urlMap = new Map<string, string>();
+): Map<string, ResolvedImageUrl> {
+  const urlMap = new Map<string, ResolvedImageUrl>();
   for (const item of items) {
-    if (item.imageFileId && item.imageUrl) {
-      urlMap.set(item.imageFileId, item.imageUrl);
+    if (item.imageFileId && item.imageUrl && isImageUrlFresh(item.imageUrlAt)) {
+      urlMap.set(item.imageFileId, { url: item.imageUrl, at: item.imageUrlAt! });
     }
   }
   return urlMap;
@@ -87,5 +105,5 @@ export async function resolveCloudFileUrl(
   if (!id) return null;
 
   const urlMap = await resolveTempFileUrls([id]);
-  return urlMap.get(id) ?? null;
+  return urlMap.get(id)?.url ?? null;
 }

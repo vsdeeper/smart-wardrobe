@@ -75,7 +75,7 @@ async function resolveCoverUrls(
 
   return entries.map((entry) => {
     if (entry.coverFileId) {
-      return { ...entry, coverUrl: urlMap.get(entry.coverFileId) };
+      return { ...entry, coverUrl: urlMap.get(entry.coverFileId)?.url };
     }
     if (entry.coverUrl && isEphemeralExternalImageUrl(entry.coverUrl)) {
       return { ...entry, coverUrl: undefined };

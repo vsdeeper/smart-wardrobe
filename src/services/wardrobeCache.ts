@@ -1,5 +1,5 @@
 import Taro from "@tarojs/taro";
-import { CLOUD_TEMP_URL_TTL_MS } from "@/config/cloud";
+import { isImageUrlFresh } from "@/services/cloudFile";
 import type { ClothingType, WardrobeItem } from "@/data/wardrobe";
 import { WARDROBE_PAGE_SIZE } from "@/data/wardrobe";
 
@@ -7,8 +7,6 @@ import { WARDROBE_PAGE_SIZE } from "@/data/wardrobe";
 export interface WardrobeCacheEntry {
   clothingTypes: ClothingType[];
   items: WardrobeItem[];
-  /** items 内图片临时链接的解析时刻，用于判断链接是否仍有效 */
-  imageUrlsAt: number;
 }
 
 export interface InitialWardrobeState {
@@ -16,8 +14,6 @@ export interface InitialWardrobeState {
   items: WardrobeItem[];
   hasMore: boolean;
   hasCache: boolean;
-  /** 链接仍有效时为解析时刻，已过期时为 0 */
-  imageUrlsAt: number;
 }
 
 const CACHE_KEY = "sw_wardrobe_list_cache";
@@ -50,7 +46,6 @@ function isValidEntry(raw: unknown): raw is WardrobeCacheEntry {
   if (!raw || typeof raw !== "object") return false;
   const entry = raw as WardrobeCacheEntry;
   return (
-    typeof entry.imageUrlsAt === "number" &&
     Array.isArray(entry.items) &&
     entry.items.every(isValidItem) &&
     Array.isArray(entry.clothingTypes) &&
@@ -58,16 +53,13 @@ function isValidEntry(raw: unknown): raw is WardrobeCacheEntry {
   );
 }
 
-/** 缓存内的图片临时链接是否仍在有效期内 */
-function isImageUrlFresh(entry: WardrobeCacheEntry): boolean {
-  return Date.now() - entry.imageUrlsAt < CLOUD_TEMP_URL_TTL_MS;
-}
-
-function stripImageUrls(items: WardrobeItem[]): WardrobeItem[] {
+/** 逐 item 清理已过期的图片链接，新鲜的 item 原样保留 */
+function stripStaleImageUrls(items: WardrobeItem[]): WardrobeItem[] {
   return items.map((item) => {
-    if (!item.imageUrl) return item;
+    if (!item.imageUrl || isImageUrlFresh(item.imageUrlAt)) return item;
     const next = { ...item };
     delete next.imageUrl;
+    delete next.imageUrlAt;
     return next;
   });
 }
@@ -101,7 +93,7 @@ export function writeWardrobeCache(entry: WardrobeCacheEntry): void {
 }
 
 /**
- * 页面首帧的初始状态。临时链接过期时保留列表结构、丢弃 imageUrl，
+ * 页面首帧的初始状态。逐 item 判断临时链接是否过期，过期的丢弃 imageUrl，
  * 图片位显示占位底色，等静默刷新回来补图。
  */
 export function getInitialWardrobeState(): InitialWardrobeState {
@@ -112,17 +104,14 @@ export function getInitialWardrobeState(): InitialWardrobeState {
       items: [],
       hasMore: true,
       hasCache: false,
-      imageUrlsAt: 0,
     };
   }
 
-  const fresh = isImageUrlFresh(cached);
   return {
     clothingTypes: cached.clothingTypes,
-    items: fresh ? cached.items : stripImageUrls(cached.items),
+    items: stripStaleImageUrls(cached.items),
     hasMore: cached.items.length >= WARDROBE_PAGE_SIZE,
     hasCache: true,
-    imageUrlsAt: fresh ? cached.imageUrlsAt : 0,
   };
 }
 
@@ -148,10 +137,11 @@ export function removeItemFromWardrobeCache(
   });
 }
 
-/** 图片加载失败重解析后回填缓存（不刷新 imageUrlsAt，仍以原始解析时间计算有效期） */
+/** 图片加载失败重解析后回填缓存，同时刷新该 item 自己的 imageUrlAt */
 export function updateWardrobeCacheItemUrl(
   itemId: string,
   imageUrl: string,
+  imageUrlAt: number,
 ): void {
   const cached = readWardrobeCache();
   if (!cached) return;
@@ -160,7 +150,7 @@ export function updateWardrobeCacheItemUrl(
   const items = cached.items.map((item) => {
     if (item._id !== itemId) return item;
     changed = true;
-    return { ...item, imageUrl };
+    return { ...item, imageUrl, imageUrlAt };
   });
   if (!changed) return;
 

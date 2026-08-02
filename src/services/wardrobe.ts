@@ -7,6 +7,7 @@ import type {
 } from "@/data/wardrobe";
 import { WARDROBE_PAGE_SIZE } from "@/data/wardrobe";
 import { attachImageUrls } from "@/services/cloudFile";
+import type { ResolvedImageUrl } from "@/services/cloudFile";
 import { fetchUserProfile } from "@/services/profile";
 import { readProfileCache } from "@/services/profileCache";
 import { createTempId } from "@/utils/recognition";
@@ -16,7 +17,7 @@ export interface FetchWardrobeItemsOptions {
   skip: number;
   limit?: number;
   /** 已知的 fileId -> 临时链接，命中则复用，避免图片重新加载 */
-  knownUrls?: Map<string, string>;
+  knownUrls?: Map<string, ResolvedImageUrl>;
 }
 
 interface RecognizeClothingError {
