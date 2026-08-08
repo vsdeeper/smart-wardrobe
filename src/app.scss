@@ -34,7 +34,9 @@ h4 {
 
 // ========== 图片占位底色（唯一入口：--sw-color-image-bg） ==========
 page .nut-avatar,
-page .nut-avatar .avatar-img {
+page .nut-avatar .avatar-img,
+page .nut-image .nut-img-loading,
+page .nut-image .nut-img-error {
   background-color: var(--sw-color-image-bg);
 }
 
