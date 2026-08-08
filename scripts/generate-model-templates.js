@@ -51,7 +51,6 @@ try {
 
 const {
   generateSeedreamImage,
-  DEFAULT_HERO_SIZE,
 } = require("../cloudfunctions/common/doubaoVision");
 const {
   MODEL_TEMPLATE_SIZE,

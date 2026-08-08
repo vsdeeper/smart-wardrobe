@@ -1,4 +1,5 @@
 const cloud = require('wx-server-sdk')
+const { requireEnv } = require('./env')
 
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 
@@ -16,7 +17,7 @@ const PROVIDERS = {
 }
 
 function resolveProvider(name) {
-  const provider = name || process.env.LLM_DEFAULT_PROVIDER || 'deepseek'
+  const provider = name || requireEnv('LLM_DEFAULT_PROVIDER')
   const config = PROVIDERS[provider]
   if (!config) {
     return { error: `不支持的 provider: ${provider}，可选 deepseek | doubao` }

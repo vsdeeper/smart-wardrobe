@@ -1,8 +1,5 @@
-const DEFAULT_BASE_URL = 'https://ark.cn-beijing.volces.com/api/v3'
-// Hero 1:1；1920x1920 = 3686400 像素，为 Seedream 5.0 像素下限
-const DEFAULT_HERO_SIZE = '1920x1920'
-// 衣橱单品卡片 1:1；1920x1920 = 3686400 像素，为 Seedream 5.0 像素下限（1024x1024 会报错）
-const DEFAULT_ITEM_DISPLAY_SIZE = '1920x1920'
+const { requireEnv } = require('./env')
+
 const MAX_REFERENCE_IMAGES = 10
 
 async function resolveImageUrl(cloud, fileID) {
@@ -29,14 +26,14 @@ async function resolveImageUrls(cloud, fileIDs) {
 
 function getSeedreamConfig() {
   const apiKey = process.env.DOUBAO_API_KEY
-  const baseUrl = process.env.DOUBAO_API_BASE_URL || DEFAULT_BASE_URL
+  const baseUrl = requireEnv('DOUBAO_API_BASE_URL')
   const model = process.env.DOUBAO_VISION_MODEL
-  const size = process.env.DOUBAO_VISION_SIZE || DEFAULT_HERO_SIZE
+  const size = requireEnv('DOUBAO_VISION_SIZE')
   return { apiKey, baseUrl, model, size }
 }
 
 function getItemDisplaySize() {
-  return process.env.DOUBAO_ITEM_DISPLAY_SIZE || DEFAULT_ITEM_DISPLAY_SIZE
+  return requireEnv('DOUBAO_ITEM_DISPLAY_SIZE')
 }
 
 function parseSeedreamImageItem(item) {
@@ -138,9 +135,6 @@ async function generateSeedreamImage({ prompt, imageUrls = [], size }) {
 }
 
 module.exports = {
-  DEFAULT_BASE_URL,
-  DEFAULT_HERO_SIZE,
-  DEFAULT_ITEM_DISPLAY_SIZE,
   resolveImageUrl,
   resolveImageUrls,
   getSeedreamConfig,

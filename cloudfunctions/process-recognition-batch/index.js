@@ -17,11 +17,11 @@ const {
   generateSeedreamImages,
   getItemDisplaySize,
 } = require('./common/doubaoVision')
+const { requireEnv } = require('./common/env')
 
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 
 const db = cloud.database()
-const DEFAULT_BASE_URL = 'https://ark.cn-beijing.volces.com/api/v3'
 const DEFAULT_TEMPERATURE = 0.1
 const COLLECTION = 'recognition_batches'
 
@@ -265,7 +265,7 @@ exports.main = async (event) => {
     }
 
     const apiKey = process.env.DOUBAO_API_KEY
-    const baseUrl = process.env.DOUBAO_API_BASE_URL || DEFAULT_BASE_URL
+    const baseUrl = requireEnv('DOUBAO_API_BASE_URL')
     const seedModel = process.env.DOUBAO_SEED_MODEL
 
     if (!apiKey) {
