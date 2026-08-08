@@ -69,7 +69,7 @@ export default function OutfitHero({
 }: OutfitHeroProps) {
   const isLoading = previewStatus === "loading";
   const isError = previewStatus === "error";
-  const heroSrc = heroImageUrl || heroCoverFileId;
+  const heroSrc = !isLoading && (heroImageUrl || heroCoverFileId);
   const showWeatherChip =
     weatherStatus !== undefined && typeof onWeatherClick === "function";
 

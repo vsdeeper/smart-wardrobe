@@ -97,6 +97,8 @@ export function useTryOnPreview({
     if (loadingRef.current || selectedPieces.length === 0) return;
     loadingRef.current = true;
     setStatus("loading");
+    setHeroImageUrl(null);
+    setHeroCoverFileId(null);
     setHeroFromCache(false);
     setPreviewErrorMessage(null);
 
@@ -194,6 +196,15 @@ export function useTryOnPreview({
       // 兜底失败不打扰用户，手动重试时会重新生成
     }
   }, [heroCoverFileId, savedReturn]);
+
+  useEffect(() => {
+    if (!recommendReady || fromCache || selectedPieces.length === 0) return;
+
+    setHeroImageUrl(null);
+    setHeroCoverFileId(null);
+    setStatus("loading");
+    setPreviewErrorMessage(null);
+  }, [recommendReady, fromCache, selectedPieces]);
 
   useEffect(() => {
     if (!recommendReady || selectedPieces.length === 0) return;
