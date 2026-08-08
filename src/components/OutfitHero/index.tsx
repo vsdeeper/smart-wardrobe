@@ -1,5 +1,6 @@
 import { View, Text } from "@tarojs/components";
-import { Image, Loading } from "@nutui/nutui-react-taro";
+import { Image } from "@nutui/nutui-react-taro";
+import OverlayLoading from "@/components/OverlayLoading";
 import type { TryOnPreviewStatus } from "@/data/tryOn";
 import type { WeatherCardViewModel } from "@/data/weather";
 import type { WeatherLoadStatus } from "@/services/weather";
@@ -82,13 +83,7 @@ export default function OutfitHero({
           onError={onImageError}
         />
       ) : null}
-      {isLoading && (
-        <View className="outfit-hero__loading">
-          <Loading type="circular" direction="vertical">
-            <Text>AI 试穿中...</Text>
-          </Loading>
-        </View>
-      )}
+      {isLoading ? <OverlayLoading text="AI 试穿中..." /> : null}
       {isError && (
         <View className="outfit-hero__error">
           <Text className="outfit-hero__error-title">试穿图没能生成</Text>
