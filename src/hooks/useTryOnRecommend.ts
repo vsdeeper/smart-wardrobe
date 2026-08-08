@@ -13,9 +13,11 @@ import {
 import { fetchUserProfile } from "@/services/profile";
 import { fetchWeather } from "@/services/weather";
 import {
+  allPieceUrlsFresh,
   clearTryOnCache,
   getInitialTryOnCache,
   isTryOnCacheValid,
+  updateTryOnCacheSelectedPieceUrls,
   writeTryOnCache,
 } from "@/services/tryOnCache";
 import { consumeTryOnDraft } from "@/services/tryOnDraft";
@@ -24,6 +26,14 @@ import { getCurrentSeason } from "@/utils/season";
 
 export interface SavedReturnMeta {
   piecesChanged: boolean;
+}
+
+function selectedPieceUrlsChanged(
+  prev: WardrobeItem[],
+  next: WardrobeItem[],
+): boolean {
+  if (prev.length !== next.length) return true;
+  return next.some((piece, index) => piece.imageUrl !== prev[index]?.imageUrl);
 }
 
 export function useTryOnRecommend() {
@@ -120,7 +130,10 @@ export function useTryOnRecommend() {
         });
 
         const pieces = resolveSelectedPieces(rec, items);
-        const piecesWithUrls = await attachImageUrls(pieces);
+        const piecesWithUrls = await attachImageUrls(
+          pieces,
+          collectImageUrls(items),
+        );
         applyRecommendation(rec, piecesWithUrls);
         writeTryOnCache(
           {
@@ -225,13 +238,16 @@ export function useTryOnRecommend() {
     if (!cache) {
       return false;
     }
-    const pieces = await attachImageUrls(
-      cache.selectedPieces,
-      collectImageUrls(cache.selectedPieces)
-    );
+    const knownUrls = collectImageUrls(cache.selectedPieces);
+    const pieces = await attachImageUrls(cache.selectedPieces, knownUrls);
     allItemsRef.current = pieces;
+
+    if (selectedPieceUrlsChanged(cache.selectedPieces, pieces)) {
+      setSelectedPieces(pieces);
+      updateTryOnCacheSelectedPieceUrls(pieces);
+    }
+
     setRecommendation(cache.recommendation);
-    setSelectedPieces(pieces);
     setWeatherSnapshot(cache.weatherSnapshot ?? null);
     setFromCache(true);
     setSavedReturn(null);
@@ -249,8 +265,19 @@ export function useTryOnRecommend() {
     }
 
     manualDraftRef.current = null;
-    if (isTryOnCacheValid() && (await loadFromCache())) {
-      return;
+
+    if (isTryOnCacheValid()) {
+      const cache = getInitialTryOnCache();
+      if (cache && allPieceUrlsFresh(cache.selectedPieces)) {
+        setFromCache(true);
+        setSavedReturn(null);
+        setStatus("success");
+        setErrorMessage(null);
+        return;
+      }
+      if (await loadFromCache()) {
+        return;
+      }
     }
 
     loadFresh(false);

@@ -50,6 +50,21 @@ export function readTryOnCache(): TryOnDailyCache | null {
  * 页面首帧可直接使用的当天缓存。
  * 过期的临时 URL 会被剥离，保留 fileId 供页面静默重解析。
  */
+/** 判断 selectedPieces 是否全部持有仍新鲜的临时链接（对标 Hero 的 heroImageUrlAt 判断） */
+export function allPieceUrlsFresh(pieces: WardrobeItem[]): boolean {
+  return (
+    pieces.length > 0 &&
+    pieces.every(
+      (piece) => !!piece.imageUrl && isImageUrlFresh(piece.imageUrlAt),
+    )
+  );
+}
+
+/** 单品图 URL 重解析后回填试穿缓存 */
+export function updateTryOnCacheSelectedPieceUrls(pieces: WardrobeItem[]): void {
+  writeTryOnCache({ selectedPieces: pieces });
+}
+
 export function getInitialTryOnCache(): TryOnAiCache | null {
   const cache = readTryOnCache();
   if (
