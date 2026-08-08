@@ -1,3 +1,5 @@
+import { getEnv } from "@/utils/env";
+
 type WechatFail = { errMsg?: string; errno?: number; message?: string };
 
 /** 本文件仅用到的 wx 隐私相关 API（避免依赖 WechatMiniprogram 全局类型） */
@@ -67,7 +69,7 @@ export interface PrivacySettingResult {
 
 /** 查询用户是否需要授权隐私协议（weapp） */
 export function checkNeedPrivacyAuthorization(): Promise<PrivacySettingResult> {
-  if (process.env.TARO_ENV !== "weapp") {
+  if (getEnv("TARO_ENV") !== "weapp") {
     return Promise.resolve({ needAuthorization: false });
   }
 

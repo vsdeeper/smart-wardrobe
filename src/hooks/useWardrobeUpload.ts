@@ -1,4 +1,5 @@
 import { useCallback, useRef, useState } from "react";
+import { getEnv } from "@/utils/env";
 import Taro from "@tarojs/taro";
 import { WARDROBE_BATCH_UPLOAD_MAX } from "@/data/wardrobe";
 import { createRecognitionBatchAndStart } from "@/services/recognitionBatch";
@@ -68,7 +69,7 @@ export function useWardrobeUpload({
   }, [ensureGenderSet, runPickAndUpload]);
 
   const handleAddItem = useCallback(async () => {
-    if (process.env.TARO_ENV !== "weapp") {
+    if (getEnv("TARO_ENV") !== "weapp") {
       Taro.showToast({ title: "请在微信小程序中使用", icon: "none" });
       return;
     }

@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react";
+import { getEnv } from "@/utils/env";
 import Taro, { useLoad } from "@tarojs/taro";
 import type { WardrobeItem } from "@/data/wardrobe";
 import { fetchWardrobeItemById } from "@/services/wardrobe";
@@ -20,7 +21,7 @@ export function useWardrobeDetail() {
       return;
     }
 
-    if (process.env.TARO_ENV !== "weapp") {
+    if (getEnv("TARO_ENV") !== "weapp") {
       setLoading(false);
       setError("请在微信小程序中使用");
       return;
