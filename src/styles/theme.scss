@@ -171,7 +171,7 @@ page {
 
   --sw-color-tag-bg: #e8f2ff;
   --sw-color-tag-text: #5b9bd5;
-  --sw-color-image-bg: #f5f2ed; // 图片加载前占位 / 透明区域填充（与展示图生成底色一致）
+  --sw-color-image-bg: var(--nutui-gray-2); // 图片加载前占位
 
   --sw-color-ai-label: var(--nutui-brand-5); // AI 状态条标签 / 进度填充叶绿
   --sw-color-progress-track: #d5e5f1; // surface-container-highest — 进度轨道
