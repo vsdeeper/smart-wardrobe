@@ -1,5 +1,6 @@
 /**
- * 异步处理衣物识别批次：串行对 sourceFileIds 执行识别 + 展示图生成，写回 recognition_batches。
+ * 异步处理衣物识别批次：对 coverFileId 原图执行识别 + 展示图生成，写回 recognition_batches。
+ * 一图一批次，封面原图保留供列表展示。
  */
 const cloud = require('wx-server-sdk')
 const {
@@ -179,14 +180,6 @@ async function generateDisplayPreviews(items, sourceUrl, openid) {
   return previews
 }
 
-async function deleteSourceFile(fileID) {
-  try {
-    await cloud.deleteFile({ fileList: [fileID] })
-  } catch {
-    // 原图删除失败不阻断主流程
-  }
-}
-
 async function updateBatch(batchId, data) {
   await db
     .collection(COLLECTION)
@@ -211,14 +204,13 @@ async function failBatch(batchId, message, extra = {}) {
   }
 }
 
-async function processOneSource(
+async function processCoverImage(
   fileID,
   userGender,
   apiKey,
   baseUrl,
   seedModel,
   openid,
-  { keepSource = false } = {},
 ) {
   const imageUrl = await resolveImageUrl(fileID)
   const rawItems = await recognizeItemsFromImage(
@@ -242,10 +234,6 @@ async function processOneSource(
     throw new Error('未能生成展示图')
   }
 
-  // 封面原图需保留供列表展示；其余源图可删以控存储
-  if (!keepSource) {
-    await deleteSourceFile(fileID)
-  }
   return previews
 }
 
@@ -303,63 +291,48 @@ exports.main = async (event) => {
       }
     }
 
-    const sourceFileIds = Array.isArray(batch.sourceFileIds)
-      ? batch.sourceFileIds.filter((id) => typeof id === 'string' && id)
-      : []
-    if (sourceFileIds.length === 0) {
+    const coverFileId =
+      typeof batch.coverFileId === 'string' && batch.coverFileId
+        ? batch.coverFileId
+        : ''
+    if (!coverFileId) {
       await failBatch(batchId, '缺少原图')
       return { error: 'INVALID_SOURCES', message: '缺少原图' }
     }
 
-    const allItems = []
-    const errors = []
-    const total = sourceFileIds.length
-
-    const coverFileId = sourceFileIds[0]
-
-    for (let i = 0; i < total; i++) {
-      const fileID = sourceFileIds[i]
+    try {
       await updateBatch(batchId, {
-        progress: { current: i + 1, total, phase: 'recognizing' },
+        progress: { current: 1, total: 1, phase: 'recognizing' },
+      })
+      await updateBatch(batchId, {
+        progress: { current: 1, total: 1, phase: 'generating' },
+      })
+      const items = await processCoverImage(
+        coverFileId,
+        userGender,
+        apiKey,
+        baseUrl,
+        seedModel,
+        openid,
+      )
+
+      await updateBatch(batchId, {
+        status: 'succeeded',
+        progress: { current: 1, total: 1 },
+        items,
+        itemCount: items.length,
+        coverFileId,
       })
 
-      try {
-        await updateBatch(batchId, {
-          progress: { current: i + 1, total, phase: 'generating' },
-        })
-        const previews = await processOneSource(
-          fileID,
-          userGender,
-          apiKey,
-          baseUrl,
-          seedModel,
-          openid,
-          { keepSource: i === 0 },
-        )
-        allItems.push(...previews)
-      } catch (err) {
-        const message = err instanceof Error ? err.message : String(err)
-        errors.push({ index: i + 1, message })
-        console.warn(
-          `[process-recognition-batch] 第 ${i + 1} 张失败:`,
-          message,
-        )
+      return {
+        batchId,
+        itemCount: items.length,
       }
-    }
-
-    if (allItems.length === 0) {
-      // 保留封面原图供失败卡片展示；其余源图可清理
-      const toDelete = sourceFileIds.slice(1)
-      if (toDelete.length > 0) {
-        try {
-          await cloud.deleteFile({ fileList: toDelete })
-        } catch {
-          // 清理原图失败不阻断
-        }
-      }
-      const message = errors[0]?.message || '识别失败'
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err)
+      console.warn('[process-recognition-batch] 识别失败:', message)
       await failBatch(batchId, message, {
-        progress: { current: total, total },
+        progress: { current: 1, total: 1 },
         itemCount: 0,
         items: [],
         coverFileId,
@@ -367,25 +340,7 @@ exports.main = async (event) => {
       return {
         error: 'RECOGNIZE_FAILED',
         message,
-        failed: errors,
       }
-    }
-
-    await updateBatch(batchId, {
-      status: 'succeeded',
-      progress: { current: total, total },
-      items: allItems,
-      itemCount: allItems.length,
-      coverFileId,
-      ...(errors.length > 0 && {
-        errorMessage: `部分失败：成功 ${allItems.length} 件`,
-      }),
-    })
-
-    return {
-      batchId,
-      itemCount: allItems.length,
-      failed: errors,
     }
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)

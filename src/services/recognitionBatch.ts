@@ -77,9 +77,6 @@ function normalizeBatch(raw: Record<string, unknown>): RecognitionBatch {
       confirmStatus === "pending"
         ? confirmStatus
         : "pending",
-    sourceFileIds: Array.isArray(raw.sourceFileIds)
-      ? raw.sourceFileIds.map(String)
-      : [],
     createdAt: normalizeCreatedAt(raw.createdAt),
   };
 
@@ -116,42 +113,15 @@ function normalizeBatch(raw: Record<string, unknown>): RecognitionBatch {
   return batch;
 }
 
-function getBatchCoverFileId(batch: RecognitionBatch): string | undefined {
-  return batch.sourceFileIds[0] || batch.coverFileId;
-}
-
 async function resolveBatchCover(
   batch: RecognitionBatch,
 ): Promise<RecognitionBatch> {
-  const preferredId = batch.sourceFileIds[0];
-  const fallbackId = batch.coverFileId;
-  if (!preferredId && !fallbackId) return batch;
-
-  if (preferredId) {
-    if (batch.coverUrl && batch.coverFileId === preferredId) {
-      return batch;
-    }
-    const url = await resolveCloudFileUrl(preferredId);
-    if (url) {
-      return { ...batch, coverFileId: preferredId, coverUrl: url };
-    }
-    // 原图已删（旧数据）时回退到库内 coverFileId（可能是单品图）
-    if (fallbackId && fallbackId !== preferredId) {
-      if (batch.coverUrl && batch.coverFileId === fallbackId) {
-        return batch;
-      }
-      const fallbackUrl = await resolveCloudFileUrl(fallbackId);
-      if (fallbackUrl) {
-        return { ...batch, coverFileId: fallbackId, coverUrl: fallbackUrl };
-      }
-    }
-    return { ...batch, coverFileId: preferredId };
-  }
-
-  if (batch.coverUrl && batch.coverFileId === fallbackId) return batch;
-  const url = await resolveCloudFileUrl(fallbackId!);
+  const coverFileId = batch.coverFileId;
+  if (!coverFileId) return batch;
+  if (batch.coverUrl) return batch;
+  const url = await resolveCloudFileUrl(coverFileId);
   if (url) {
-    return { ...batch, coverFileId: fallbackId, coverUrl: url };
+    return { ...batch, coverUrl: url };
   }
   return batch;
 }
@@ -169,8 +139,8 @@ export async function mergeBatchCover(
   prev: RecognitionBatch | undefined,
   next: RecognitionBatch,
 ): Promise<RecognitionBatch> {
-  const nextCoverId = getBatchCoverFileId(next);
-  const prevCoverId = prev ? getBatchCoverFileId(prev) : undefined;
+  const nextCoverId = next.coverFileId;
+  const prevCoverId = prev?.coverFileId;
   if (prevCoverId && prevCoverId === nextCoverId && prev?.coverUrl) {
     return {
       ...next,
@@ -179,7 +149,7 @@ export async function mergeBatchCover(
     };
   }
   if (next.coverUrl && next.coverFileId === nextCoverId) {
-    return nextCoverId ? { ...next, coverFileId: nextCoverId } : next;
+    return next;
   }
   return resolveBatchCover(next);
 }
@@ -325,7 +295,6 @@ export async function createRecognitionBatchAndStart(
       data: {
         status: "processing",
         confirmStatus: "pending",
-        sourceFileIds: [fileID],
         coverFileId: fileID,
         progress: { current: 0, total: 1 },
         itemCount: 0,

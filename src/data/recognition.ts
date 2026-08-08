@@ -12,12 +12,12 @@ export interface RecognitionBatchProgress {
   phase?: "recognizing" | "generating"
 }
 
-/** 识别批次（云数据库 recognition_batches） */
+/** 识别批次（云数据库 recognition_batches，一图一批次） */
 export interface RecognitionBatch {
   _id: string
   status: RecognitionBatchStatus
   confirmStatus: RecognitionConfirmStatus
-  sourceFileIds: string[]
+  /** 本批次唯一原图 / 列表封面 */
   coverFileId?: string
   coverUrl?: string
   progress?: RecognitionBatchProgress
@@ -40,13 +40,9 @@ export const RECOGNITION_POLL_INTERVAL_MS = 5000
 export const RECOGNITION_STALE_MS = 6 * 60 * 1000
 
 export function getRecognitionBatchStatusLabel(
-  batch: Pick<RecognitionBatch, "status" | "confirmStatus" | "progress">,
+  batch: Pick<RecognitionBatch, "status" | "confirmStatus">,
 ): string {
   if (batch.status === "processing") {
-    const { current, total } = batch.progress ?? {}
-    if (current && total && total > 1) {
-      return `识别中 ${current}/${total}`
-    }
     return "识别中"
   }
   if (batch.status === "failed") {

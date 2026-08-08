@@ -182,8 +182,7 @@ wx.cloud
 | `_openid`       | string   | 用户隔离                                                             |
 | `status`        | string   | `processing` \| `succeeded` \| `failed`                              |
 | `confirmStatus` | string   | `pending` \| `confirmed` \| `discarded`（创建时 `pending`）          |
-| `sourceFileIds` | array    | 原图云存储 fileID 列表（新流程一图一卡，通常长度为 1）               |
-| `coverFileId`   | string   | 列表封面（始终为原图 `sourceFileIds[0]`）                            |
+| `coverFileId`   | string   | 本批次唯一原图 / 列表封面（一图一批次）                              |
 | `progress`      | object   | `{ current, total, phase? }` 识别中进度                              |
 | `items`         | array    | 成功后的预览单品（含 `tempId` / `name` / `typeName` / `imageFileId` 等） |
 | `itemCount`     | number   | 成功件数                                                             |
@@ -344,7 +343,7 @@ wx.cloud
 
 ## 8.1 部署 process-recognition-batch 云函数
 
-异步处理 `recognition_batches`：串行对批次内原图执行识别 + 展示图生成，写回 `status` / `items`。
+异步处理 `recognition_batches`：对 `coverFileId` 单张原图执行识别 + 展示图生成，写回 `status` / `items`（一图一批次，原图保留作列表封面）。
 
 1. 执行 `pnpm cf:sync-common`
 2. 微信开发者工具展开 `cloudfunctions/process-recognition-batch`
@@ -352,7 +351,7 @@ wx.cloud
 
 环境变量与 `recognize-clothing` + `generate-wardrobe-display` 相同：`DOUBAO_API_KEY`、`DOUBAO_SEED_MODEL`、`DOUBAO_VISION_MODEL`（及可选 Base URL / Temperature）。
 
-**超时**：`config.json` 为 `timeout: 300`（批次最多 3 张图）。
+**超时**：`config.json` 为 `timeout: 300`。
 
 ### Console 验证
 
@@ -368,7 +367,7 @@ wx.cloud
   .catch(console.error);
 ```
 
-预期返回 `{ batchId, itemCount, failed }`；失败时 batch 文档 `status` 为 `failed`。
+预期返回 `{ batchId, itemCount }`；失败时 batch 文档 `status` 为 `failed`。
 
 ## 9. 部署 save-wardrobe-items 云函数
 
