@@ -6,5 +6,4 @@ node_modules/
 cloudfunctions/**/node_modules/
 .DS_Store
 .swc
-.env.development
 .env.local

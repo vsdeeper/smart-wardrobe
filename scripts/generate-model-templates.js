@@ -42,7 +42,6 @@ function loadEnvFile(filePath) {
 }
 
 loadEnvFile(path.join(ROOT, ".env.local"));
-loadEnvFile(path.join(ROOT, ".env.development"));
 
 try {
   require("dotenv").config({ path: path.join(ROOT, ".env.local") });
