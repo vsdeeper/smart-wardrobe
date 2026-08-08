@@ -85,7 +85,7 @@ export default function OutfitHero({
       {isLoading && (
         <View className="outfit-hero__loading">
           <Loading type="circular" direction="vertical">
-            <Text>AI 生成中...</Text>
+            <Text>AI 试穿中...</Text>
           </Loading>
         </View>
       )}
