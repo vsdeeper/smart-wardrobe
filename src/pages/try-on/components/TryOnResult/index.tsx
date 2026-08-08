@@ -71,7 +71,7 @@ function TryOnResult({
         }
       >
         <OutfitMeta
-          title={recommendation?.outfitName ?? "今日推荐"}
+          title={recommendation?.outfitName ?? ""}
           styleTags={styleTags}
           suggestion={recommendation?.description ?? ""}
         />

@@ -45,7 +45,7 @@ function TryOnPage() {
     handleHeroImageError,
   } = useTryOnPreview({
     selectedPieces,
-    outfitName: recommendation?.outfitName ?? "今日推荐",
+    outfitName: recommendation?.outfitName ?? "",
     description: recommendation?.description ?? "",
     fromCache,
     savedReturn,
