@@ -4,10 +4,7 @@ import type { ProfileEditableField } from "@/data/profile";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { uploadAvatar } from "@/services/profileAvatar";
 import { openProfileFieldEdit } from "@/utils/openProfileFieldEdit";
-
-function isWeapp(): boolean {
-  return Taro.getEnv() === Taro.ENV_TYPE.WEAPP;
-}
+import { isWeapp } from "@/utils/platform";
 
 export function useMineProfileEdit() {
   const { profile, avatarUrl, loading, updating, updateProfile, onAvatarLoadError } =

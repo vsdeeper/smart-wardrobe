@@ -1,7 +1,15 @@
 type EnvName = keyof NodeJS.ProcessEnv
 
+/** Taro 构建时内联的环境变量（须静态访问 process.env.XXX，勿用动态下标） */
+const ENV = {
+  NODE_ENV: process.env.NODE_ENV,
+  TARO_ENV: process.env.TARO_ENV,
+  TARO_APP_ID: process.env.TARO_APP_ID,
+  TARO_APP_CLOUD_ENV: process.env.TARO_APP_CLOUD_ENV,
+} as const satisfies Record<EnvName, string | undefined>
+
 function readEnv(name: EnvName): string | undefined {
-  const raw = process.env[name]
+  const raw = ENV[name]
   if (raw == null) return undefined
   const trimmed = raw.trim()
   return trimmed === '' ? undefined : trimmed

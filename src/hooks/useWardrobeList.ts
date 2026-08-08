@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from "react";
-import { getEnv } from "@/utils/env";
+import { isWeapp } from "@/utils/platform";
 import Taro, { useDidShow } from "@tarojs/taro";
 import type { ClothingType, WardrobeItem } from "@/data/wardrobe";
 import { WARDROBE_PAGE_SIZE } from "@/data/wardrobe";
@@ -162,7 +162,7 @@ export function useWardrobeList({ uploadFlowRef }: UseWardrobeListOptions) {
   );
 
   useDidShow(() => {
-    if (getEnv("TARO_ENV") !== "weapp") {
+    if (!isWeapp()) {
       setInitialLoading(false);
       return;
     }
@@ -234,7 +234,7 @@ export function useWardrobeList({ uploadFlowRef }: UseWardrobeListOptions) {
     async (item: WardrobeItem) => {
       if (deleting) return;
 
-      if (getEnv("TARO_ENV") !== "weapp") {
+      if (!isWeapp()) {
         Taro.showToast({ title: "请在微信小程序中使用", icon: "none" });
         return;
       }

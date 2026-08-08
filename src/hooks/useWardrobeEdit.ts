@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { getEnv } from "@/utils/env";
+import { isWeapp } from "@/utils/platform";
 import Taro, { useLoad } from "@tarojs/taro";
 import type { ClothingType, RecognizedPreviewItem, WardrobeItem } from "@/data/wardrobe";
 import {
@@ -70,7 +70,7 @@ export function useWardrobeEdit() {
       return;
     }
 
-    if (getEnv("TARO_ENV") !== "weapp") {
+    if (!isWeapp()) {
       Taro.showToast({ title: "请在微信小程序中使用", icon: "none" });
       return;
     }
@@ -128,7 +128,7 @@ export function useWardrobeEdit() {
         return;
       }
 
-      if (getEnv("TARO_ENV") !== "weapp") {
+      if (!isWeapp()) {
         setLoading(false);
         setError("请在微信小程序中使用");
         return;
@@ -172,7 +172,7 @@ export function useWardrobeEdit() {
       return;
     }
 
-    if (getEnv("TARO_ENV") !== "weapp") {
+    if (!isWeapp()) {
       setLoading(false);
       setError("请在微信小程序中使用");
       return;

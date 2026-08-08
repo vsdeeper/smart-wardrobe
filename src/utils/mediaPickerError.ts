@@ -1,4 +1,4 @@
-import { getEnv } from "@/utils/env";
+import { isWeapp } from "@/utils/platform";
 
 type WechatFail = { errMsg?: string; errno?: number; message?: string };
 
@@ -69,7 +69,7 @@ export interface PrivacySettingResult {
 
 /** 查询用户是否需要授权隐私协议（weapp） */
 export function checkNeedPrivacyAuthorization(): Promise<PrivacySettingResult> {
-  if (getEnv("TARO_ENV") !== "weapp") {
+  if (!isWeapp()) {
     return Promise.resolve({ needAuthorization: false });
   }
 
