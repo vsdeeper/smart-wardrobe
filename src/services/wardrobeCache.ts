@@ -1,12 +1,23 @@
 import Taro from "@tarojs/taro";
 import { isImageUrlFresh } from "@/services/cloudFile";
 import type { ClothingType, WardrobeItem } from "@/data/wardrobe";
-import { WARDROBE_PAGE_SIZE } from "@/data/wardrobe";
 
-/** 缓存条目：仅「全部」分类的第一页，重入页面时 activeTab 本就回到 0 */
-export interface WardrobeCacheEntry {
-  clothingTypes: ClothingType[];
+/** 「全部」分类的固定 key，其余 key 为 typeId */
+export const WARDROBE_ALL_TYPE_KEY = "all";
+
+const LEGACY_STORAGE_KEY = "sw_wardrobe_list_cache";
+
+export interface WardrobeTypeBucket {
   items: WardrobeItem[];
+  hasMore: boolean;
+}
+
+interface WardrobeMemoryStore {
+  clothingTypes: ClothingType[];
+  /** 当前选中的分类 key（`"all"` 或 typeId） */
+  activeTypeKey: string;
+  /** key 存在即有缓存 */
+  byType: Record<string, WardrobeTypeBucket>;
 }
 
 export interface InitialWardrobeState {
@@ -14,43 +25,44 @@ export interface InitialWardrobeState {
   items: WardrobeItem[];
   hasMore: boolean;
   hasCache: boolean;
+  activeTab: number;
+  activeTypeKey: string;
 }
 
-const CACHE_KEY = "sw_wardrobe_list_cache";
-
-let memoryCache: WardrobeCacheEntry | null | undefined;
-
-function isValidItem(raw: unknown): raw is WardrobeItem {
-  if (!raw || typeof raw !== "object") return false;
-  const item = raw as WardrobeItem;
-  return (
-    typeof item._id === "string" &&
-    item._id.length > 0 &&
-    typeof item.name === "string" &&
-    typeof item.imageFileId === "string" &&
-    typeof item.createdAt === "number"
-  );
+export interface WardrobeListUpdatePatch {
+  kind: "update";
+  item: WardrobeItem;
+  previousTypeId: string;
 }
 
-function isValidType(raw: unknown): raw is ClothingType {
-  if (!raw || typeof raw !== "object") return false;
-  const type = raw as ClothingType;
-  return (
-    typeof type._id === "string" &&
-    typeof type.name === "string" &&
-    typeof type.itemCount === "number"
-  );
+let store: WardrobeMemoryStore | null = null;
+let pendingPatch: WardrobeListUpdatePatch | null = null;
+let legacyStorageCleared = false;
+
+function ensureLegacyStorageCleared(): void {
+  if (legacyStorageCleared) return;
+  legacyStorageCleared = true;
+  try {
+    Taro.removeStorageSync(LEGACY_STORAGE_KEY);
+  } catch {
+    // ignore
+  }
 }
 
-function isValidEntry(raw: unknown): raw is WardrobeCacheEntry {
-  if (!raw || typeof raw !== "object") return false;
-  const entry = raw as WardrobeCacheEntry;
-  return (
-    Array.isArray(entry.items) &&
-    entry.items.every(isValidItem) &&
-    Array.isArray(entry.clothingTypes) &&
-    entry.clothingTypes.every(isValidType)
-  );
+function getOrCreateStore(): WardrobeMemoryStore {
+  ensureLegacyStorageCleared();
+  if (!store) {
+    store = {
+      clothingTypes: [],
+      activeTypeKey: WARDROBE_ALL_TYPE_KEY,
+      byType: {},
+    };
+  }
+  return store;
+}
+
+export function typeKey(typeId: string | null | undefined): string {
+  return typeId ? typeId : WARDROBE_ALL_TYPE_KEY;
 }
 
 /** 逐 item 清理已过期的图片链接，新鲜的 item 原样保留 */
@@ -64,95 +76,333 @@ function stripStaleImageUrls(items: WardrobeItem[]): WardrobeItem[] {
   });
 }
 
-export function readWardrobeCache(): WardrobeCacheEntry | null {
-  if (memoryCache !== undefined) {
-    return memoryCache;
+function resolveActiveTab(
+  activeTypeKey: string,
+  clothingTypes: ClothingType[],
+): { activeTab: number; activeTypeKey: string } {
+  if (activeTypeKey === WARDROBE_ALL_TYPE_KEY) {
+    return { activeTab: 0, activeTypeKey: WARDROBE_ALL_TYPE_KEY };
   }
+  const idx = clothingTypes.findIndex((type) => type._id === activeTypeKey);
+  if (idx < 0) {
+    return { activeTab: 0, activeTypeKey: WARDROBE_ALL_TYPE_KEY };
+  }
+  return { activeTab: idx + 1, activeTypeKey };
+}
 
-  try {
-    const raw = Taro.getStorageSync(CACHE_KEY) as WardrobeCacheEntry | "";
-    if (!isValidEntry(raw)) {
-      memoryCache = null;
-      return null;
-    }
-    memoryCache = raw;
-    return raw;
-  } catch {
-    memoryCache = null;
-    return null;
+function mutateBucketIfExists(
+  key: string,
+  updater: (bucket: WardrobeTypeBucket) => WardrobeTypeBucket,
+): void {
+  const current = getOrCreateStore();
+  const bucket = current.byType[key];
+  if (!bucket) return;
+  current.byType = { ...current.byType, [key]: updater(bucket) };
+}
+
+function removeItemFromBucket(
+  bucket: WardrobeTypeBucket,
+  itemId: string,
+): WardrobeTypeBucket {
+  const items = bucket.items.filter((item) => item._id !== itemId);
+  if (items.length === bucket.items.length) return bucket;
+  return { ...bucket, items };
+}
+
+/** 仅当桶内已有该 _id 时原地替换 */
+function replaceItemInBucket(
+  bucket: WardrobeTypeBucket,
+  item: WardrobeItem,
+): WardrobeTypeBucket {
+  const idx = bucket.items.findIndex((entry) => entry._id === item._id);
+  if (idx < 0) return bucket;
+  const items = bucket.items.slice();
+  items[idx] = item;
+  return { ...bucket, items };
+}
+
+/** 有则替换，无则插到列表头部（用于已缓存的目标分类桶） */
+function upsertItemInBucket(
+  bucket: WardrobeTypeBucket,
+  item: WardrobeItem,
+): WardrobeTypeBucket {
+  const idx = bucket.items.findIndex((entry) => entry._id === item._id);
+  if (idx < 0) {
+    return { ...bucket, items: [item, ...bucket.items] };
+  }
+  const items = bucket.items.slice();
+  items[idx] = item;
+  return { ...bucket, items };
+}
+
+function patchItemInBucket(
+  bucket: WardrobeTypeBucket,
+  itemId: string,
+  patch: Partial<WardrobeItem>,
+): WardrobeTypeBucket {
+  return {
+    ...bucket,
+    items: bucket.items.map((item) =>
+      item._id === itemId ? { ...item, ...patch } : item,
+    ),
+  };
+}
+
+export function hasWardrobeTypeCache(typeId: string | null): boolean {
+  const current = getOrCreateStore();
+  return Object.prototype.hasOwnProperty.call(
+    current.byType,
+    typeKey(typeId),
+  );
+}
+
+export function getWardrobeTypeBucket(
+  typeId: string | null,
+): WardrobeTypeBucket | null {
+  const current = getOrCreateStore();
+  const bucket = current.byType[typeKey(typeId)];
+  if (!bucket) return null;
+  return {
+    items: stripStaleImageUrls(bucket.items),
+    hasMore: bucket.hasMore,
+  };
+}
+
+export function setWardrobeTypeBucket(
+  typeId: string | null,
+  bucket: WardrobeTypeBucket,
+  clothingTypes?: ClothingType[],
+): void {
+  const current = getOrCreateStore();
+  const key = typeKey(typeId);
+  current.byType = {
+    ...current.byType,
+    [key]: {
+      items: bucket.items,
+      hasMore: bucket.hasMore,
+    },
+  };
+  if (clothingTypes) {
+    current.clothingTypes = clothingTypes;
   }
 }
 
-export function writeWardrobeCache(entry: WardrobeCacheEntry): void {
-  memoryCache = entry;
-  try {
-    Taro.setStorageSync(CACHE_KEY, entry);
-  } catch {
-    // ignore
+export function appendWardrobeTypeBucket(
+  typeId: string | null,
+  pageItems: WardrobeItem[],
+  hasMore: boolean,
+): void {
+  const current = getOrCreateStore();
+  const key = typeKey(typeId);
+  const existing = current.byType[key];
+  if (!existing) {
+    current.byType = {
+      ...current.byType,
+      [key]: { items: pageItems, hasMore },
+    };
+    return;
   }
+
+  const seen = new Set(existing.items.map((item) => item._id));
+  const merged = existing.items.slice();
+  for (const item of pageItems) {
+    if (seen.has(item._id)) continue;
+    seen.add(item._id);
+    merged.push(item);
+  }
+  current.byType = {
+    ...current.byType,
+    [key]: { items: merged, hasMore },
+  };
+}
+
+export function getActiveTypeKey(): string {
+  return getOrCreateStore().activeTypeKey;
+}
+
+export function setActiveTypeKey(key: string): void {
+  const current = getOrCreateStore();
+  const resolved = resolveActiveTab(key, current.clothingTypes);
+  current.activeTypeKey = resolved.activeTypeKey;
+}
+
+export function getClothingTypesFromCache(): ClothingType[] {
+  return getOrCreateStore().clothingTypes;
+}
+
+export function setClothingTypesInCache(clothingTypes: ClothingType[]): void {
+  getOrCreateStore().clothingTypes = clothingTypes;
 }
 
 /**
- * 页面首帧的初始状态。逐 item 判断临时链接是否过期，过期的丢弃 imageUrl，
- * 图片位显示占位底色，等静默刷新回来补图。
+ * 页面首帧的初始状态。按 activeTypeKey 恢复 Tab 与对应桶；
+ * 无该桶则 hasCache: false，由页面拉取。
  */
 export function getInitialWardrobeState(): InitialWardrobeState {
-  const cached = readWardrobeCache();
-  if (!cached) {
+  ensureLegacyStorageCleared();
+  const current = store;
+  if (!current) {
     return {
       clothingTypes: [],
       items: [],
       hasMore: true,
       hasCache: false,
+      activeTab: 0,
+      activeTypeKey: WARDROBE_ALL_TYPE_KEY,
+    };
+  }
+
+  const resolved = resolveActiveTab(
+    current.activeTypeKey,
+    current.clothingTypes,
+  );
+  if (resolved.activeTypeKey !== current.activeTypeKey) {
+    current.activeTypeKey = resolved.activeTypeKey;
+  }
+
+  const bucket = current.byType[resolved.activeTypeKey];
+  if (!bucket) {
+    return {
+      clothingTypes: current.clothingTypes,
+      items: [],
+      hasMore: true,
+      hasCache: false,
+      activeTab: resolved.activeTab,
+      activeTypeKey: resolved.activeTypeKey,
     };
   }
 
   return {
-    clothingTypes: cached.clothingTypes,
-    items: stripStaleImageUrls(cached.items),
-    hasMore: cached.items.length >= WARDROBE_PAGE_SIZE,
+    clothingTypes: current.clothingTypes,
+    items: stripStaleImageUrls(bucket.items),
+    hasMore: bucket.hasMore,
     hasCache: true,
+    activeTab: resolved.activeTab,
+    activeTypeKey: resolved.activeTypeKey,
   };
 }
 
-/** 删除单品后就地更新缓存，避免下次进入闪回已删数据 */
+/** 删除单品：双写 `"all"` + 所属 type 桶（仅已存在的 key） */
 export function removeItemFromWardrobeCache(
   itemId: string,
   typeId: string,
 ): void {
-  const cached = readWardrobeCache();
-  if (!cached) return;
-
-  const items = cached.items.filter((item) => item._id !== itemId);
-  if (items.length === cached.items.length) return;
-
-  writeWardrobeCache({
-    ...cached,
-    items,
-    clothingTypes: cached.clothingTypes.map((type) =>
-      type._id === typeId
-        ? { ...type, itemCount: Math.max(0, type.itemCount - 1) }
-        : type,
-    ),
-  });
+  const current = getOrCreateStore();
+  mutateBucketIfExists(WARDROBE_ALL_TYPE_KEY, (bucket) =>
+    removeItemFromBucket(bucket, itemId),
+  );
+  if (typeId) {
+    mutateBucketIfExists(typeId, (bucket) =>
+      removeItemFromBucket(bucket, itemId),
+    );
+  }
+  current.clothingTypes = current.clothingTypes.map((type) =>
+    type._id === typeId
+      ? { ...type, itemCount: Math.max(0, type.itemCount - 1) }
+      : type,
+  );
 }
 
-/** 图片加载失败重解析后回填缓存，同时刷新该 item 自己的 imageUrlAt */
+/** 编辑后双写/迁移单品；只改已存在的桶 */
+export function applyWardrobeItemUpdate(
+  updated: WardrobeItem,
+  previousTypeId: string,
+): void {
+  const current = getOrCreateStore();
+  const newTypeId = updated.typeId;
+  const typeChanged = Boolean(previousTypeId) && previousTypeId !== newTypeId;
+
+  mutateBucketIfExists(WARDROBE_ALL_TYPE_KEY, (bucket) =>
+    replaceItemInBucket(bucket, updated),
+  );
+
+  if (typeChanged) {
+    mutateBucketIfExists(previousTypeId, (bucket) =>
+      removeItemFromBucket(bucket, updated._id),
+    );
+    mutateBucketIfExists(newTypeId, (bucket) =>
+      upsertItemInBucket(bucket, updated),
+    );
+
+    let types = current.clothingTypes.map((type) => {
+      if (type._id === previousTypeId) {
+        return { ...type, itemCount: Math.max(0, type.itemCount - 1) };
+      }
+      if (type._id === newTypeId) {
+        return { ...type, itemCount: type.itemCount + 1 };
+      }
+      return type;
+    });
+
+    if (
+      newTypeId &&
+      !types.some((type) => type._id === newTypeId)
+    ) {
+      types = [
+        {
+          _id: newTypeId,
+          name: updated.typeName,
+          itemCount: 1,
+        },
+        ...types,
+      ];
+    }
+    current.clothingTypes = types;
+    return;
+  }
+
+  if (newTypeId) {
+    mutateBucketIfExists(newTypeId, (bucket) =>
+      replaceItemInBucket(bucket, updated),
+    );
+  }
+}
+
+/** 临时链接回填：双写 `"all"` + 所属 type 桶 */
 export function updateWardrobeCacheItemUrl(
   itemId: string,
   imageUrl: string,
   imageUrlAt: number,
+  typeId?: string,
 ): void {
-  const cached = readWardrobeCache();
-  if (!cached) return;
+  const current = getOrCreateStore();
+  let resolvedTypeId = typeId;
 
-  let changed = false;
-  const items = cached.items.map((item) => {
-    if (item._id !== itemId) return item;
-    changed = true;
-    return { ...item, imageUrl, imageUrlAt };
-  });
-  if (!changed) return;
+  if (!resolvedTypeId) {
+    const allBucket = current.byType[WARDROBE_ALL_TYPE_KEY];
+    const found = allBucket?.items.find((item) => item._id === itemId);
+    resolvedTypeId = found?.typeId;
+    if (!resolvedTypeId) {
+      for (const [key, bucket] of Object.entries(current.byType)) {
+        if (key === WARDROBE_ALL_TYPE_KEY) continue;
+        const hit = bucket.items.find((item) => item._id === itemId);
+        if (hit) {
+          resolvedTypeId = hit.typeId || key;
+          break;
+        }
+      }
+    }
+  }
 
-  writeWardrobeCache({ ...cached, items });
+  const patch = { imageUrl, imageUrlAt };
+  mutateBucketIfExists(WARDROBE_ALL_TYPE_KEY, (bucket) =>
+    patchItemInBucket(bucket, itemId, patch),
+  );
+  if (resolvedTypeId) {
+    mutateBucketIfExists(resolvedTypeId, (bucket) =>
+      patchItemInBucket(bucket, itemId, patch),
+    );
+  }
+}
+
+export function setPendingWardrobeListPatch(
+  patch: WardrobeListUpdatePatch,
+): void {
+  pendingPatch = patch;
+}
+
+export function takePendingWardrobeListPatch(): WardrobeListUpdatePatch | null {
+  const patch = pendingPatch;
+  pendingPatch = null;
+  return patch;
 }

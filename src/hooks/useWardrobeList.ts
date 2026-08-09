@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { isWeapp } from "@/utils/platform";
 import Taro, { useDidShow } from "@tarojs/taro";
 import type { ClothingType, WardrobeItem } from "@/data/wardrobe";
@@ -10,11 +10,19 @@ import {
   fetchWardrobeItems,
 } from "@/services/wardrobe";
 import {
+  appendWardrobeTypeBucket,
+  getClothingTypesFromCache,
   getInitialWardrobeState,
-  readWardrobeCache,
+  getWardrobeTypeBucket,
+  hasWardrobeTypeCache,
   removeItemFromWardrobeCache,
+  setActiveTypeKey,
+  setClothingTypesInCache,
+  setWardrobeTypeBucket,
+  takePendingWardrobeListPatch,
+  typeKey,
   updateWardrobeCacheItemUrl,
-  writeWardrobeCache,
+  WARDROBE_ALL_TYPE_KEY,
 } from "@/services/wardrobeCache";
 
 interface UseWardrobeListOptions {
@@ -39,7 +47,7 @@ export function useWardrobeList({ uploadFlowRef }: UseWardrobeListOptions) {
     initial.clothingTypes,
   );
   const [items, setItems] = useState<WardrobeItem[]>(initial.items);
-  const [activeTab, setActiveTab] = useState(0);
+  const [activeTab, setActiveTab] = useState(initial.activeTab);
   const [hasMore, setHasMore] = useState(initial.hasMore);
   const [listLoading, setListLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(!initial.hasCache);
@@ -50,12 +58,10 @@ export function useWardrobeList({ uploadFlowRef }: UseWardrobeListOptions) {
   const loadingRef = useRef(false);
   const itemsRef = useRef<WardrobeItem[]>([]);
   itemsRef.current = items;
-  /** 最近一次拉取到的类型列表，供写缓存时取用（setState 后同轮读不到新值） */
   const typesRef = useRef<ClothingType[]>(initial.clothingTypes);
-  /** 已尝试重解析过的 imageFileId，避免坏链反复触发 onError 造成循环请求 */
   const imageRetriedRef = useRef<Set<string>>(new Set());
-  /** 请求序号：静默刷新期间切换分类会并发两次请求，只允许最新一次落地 */
   const requestSeqRef = useRef(0);
+  const bootstrappedRef = useRef(false);
 
   const activeTypeId = useMemo(() => {
     if (activeTab === 0) return null;
@@ -73,6 +79,7 @@ export function useWardrobeList({ uploadFlowRef }: UseWardrobeListOptions) {
   const loadTypes = useCallback(async () => {
     const types = await fetchClothingTypes();
     typesRef.current = types;
+    setClothingTypesInCache(types);
     setClothingTypes((prev) => (isSameTypes(prev, types) ? prev : types));
     return types;
   }, []);
@@ -82,8 +89,6 @@ export function useWardrobeList({ uploadFlowRef }: UseWardrobeListOptions) {
       options: {
         reset?: boolean;
         typeId?: string | null;
-        /** 静默刷新：不改动 loading 状态，页面保持展示已有数据 */
-        silent?: boolean;
       } = {},
     ) => {
       if (loadingRef.current) return;
@@ -91,22 +96,17 @@ export function useWardrobeList({ uploadFlowRef }: UseWardrobeListOptions) {
 
       const seq = ++requestSeqRef.current;
       const reset = options.reset ?? false;
-      const silent = options.silent ?? false;
       const typeId =
         options.typeId !== undefined ? options.typeId : activeTypeId;
 
-      if (!silent) {
-        if (reset) {
-          setInitialLoading(true);
-        } else {
-          setListLoading(true);
-        }
+      if (reset) {
+        setInitialLoading(true);
+      } else {
+        setListLoading(true);
       }
 
       try {
         const skip = reset ? 0 : itemsRef.current.length;
-        // 按 item 各自的 imageUrlAt 判断新鲜度，只复用未过期的旧链接：
-        // 临时链接每次签名不同，换新会让 <image> 重新加载而闪一下
         const nextItems = await fetchWardrobeItems({
           typeId,
           skip: reset ? 0 : skip,
@@ -116,22 +116,26 @@ export function useWardrobeList({ uploadFlowRef }: UseWardrobeListOptions) {
 
         if (seq !== requestSeqRef.current) return;
 
-        setItems((prev) => (reset ? nextItems : [...prev, ...nextItems]));
-        setHasMore(nextItems.length >= WARDROBE_PAGE_SIZE);
+        const pageHasMore = nextItems.length >= WARDROBE_PAGE_SIZE;
 
-        if (reset && typeId === null) {
-          writeWardrobeCache({
-            clothingTypes: typesRef.current,
-            items: nextItems,
-          });
+        if (reset) {
+          setItems(nextItems);
+          setHasMore(pageHasMore);
+          setWardrobeTypeBucket(
+            typeId,
+            { items: nextItems, hasMore: pageHasMore },
+            typesRef.current,
+          );
+        } else {
+          setItems((prev) => [...prev, ...nextItems]);
+          setHasMore(pageHasMore);
+          appendWardrobeTypeBucket(typeId, nextItems, pageHasMore);
         }
       } catch (err) {
         if (seq !== requestSeqRef.current) return;
-        if (!silent || itemsRef.current.length === 0) {
-          const message =
-            err instanceof Error ? err.message : "衣橱加载失败，请稍后重试";
-          Taro.showToast({ title: message, icon: "none" });
-        }
+        const message =
+          err instanceof Error ? err.message : "衣橱加载失败，请稍后重试";
+        Taro.showToast({ title: message, icon: "none" });
       } finally {
         if (seq === requestSeqRef.current) {
           loadingRef.current = false;
@@ -143,43 +147,106 @@ export function useWardrobeList({ uploadFlowRef }: UseWardrobeListOptions) {
     [activeTypeId],
   );
 
-  const refreshWardrobe = useCallback(
-    async (options: { silent?: boolean } = {}) => {
-      const silent = options.silent ?? false;
-      try {
-        await loadTypes();
-        await loadItems({ reset: true, silent });
-      } catch (err) {
-        if (!silent || itemsRef.current.length === 0) {
-          const message =
-            err instanceof Error ? err.message : "衣橱加载失败，请稍后重试";
-          Taro.showToast({ title: message, icon: "none" });
-        }
-        setInitialLoading(false);
-      }
-    },
-    [loadItems, loadTypes],
-  );
+  /** 冷启动 / remount：仅当当前分类无缓存时拉取 */
+  useEffect(() => {
+    if (bootstrappedRef.current) return;
+    bootstrappedRef.current = true;
 
-  useDidShow(() => {
     if (!isWeapp()) {
       setInitialLoading(false);
       return;
     }
+
+    if (initial.hasCache) {
+      setInitialLoading(false);
+      return;
+    }
+
+    const typeId =
+      initial.activeTypeKey === WARDROBE_ALL_TYPE_KEY
+        ? null
+        : initial.activeTypeKey;
+
+    void (async () => {
+      try {
+        if (getClothingTypesFromCache().length === 0) {
+          await loadTypes();
+        } else {
+          typesRef.current = getClothingTypesFromCache();
+        }
+        await loadItems({ reset: true, typeId });
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "衣橱加载失败，请稍后重试";
+        Taro.showToast({ title: message, icon: "none" });
+        setInitialLoading(false);
+      }
+    })();
+  }, [initial, loadItems, loadTypes]);
+
+  const activeTypeIdRef = useRef(activeTypeId);
+  activeTypeIdRef.current = activeTypeId;
+
+  useDidShow(() => {
+    if (!isWeapp()) return;
     if (uploadFlowRef.current) return;
-    // 有缓存说明页面已渲染出上次的数据（含空衣橱），此时刷新对用户无感
-    refreshWardrobe({ silent: readWardrobeCache() !== null });
+
+    const patch = takePendingWardrobeListPatch();
+    if (!patch) return;
+
+    const { item, previousTypeId } = patch;
+    const types = getClothingTypesFromCache();
+    typesRef.current = types;
+    setClothingTypes((prev) => (isSameTypes(prev, types) ? prev : types));
+
+    const currentKey = typeKey(activeTypeIdRef.current);
+    if (currentKey === WARDROBE_ALL_TYPE_KEY) {
+      setItems((prev) => {
+        const idx = prev.findIndex((entry) => entry._id === item._id);
+        if (idx < 0) return prev;
+        const next = prev.slice();
+        next[idx] = item;
+        return next;
+      });
+      return;
+    }
+
+    if (currentKey === previousTypeId && previousTypeId !== item.typeId) {
+      setItems((prev) => prev.filter((entry) => entry._id !== item._id));
+      return;
+    }
+
+    if (currentKey === item.typeId) {
+      setItems((prev) => {
+        const idx = prev.findIndex((entry) => entry._id === item._id);
+        if (idx < 0) return [item, ...prev];
+        const next = prev.slice();
+        next[idx] = item;
+        return next;
+      });
+    }
   });
 
   const handleTypeChange = useCallback(
     async (value: string | number) => {
       const nextTab = value as number;
-      setActiveTab(nextTab);
-      setItems([]);
-      setHasMore(true);
-
       const typeId =
         nextTab === 0 ? null : (clothingTypes[nextTab - 1]?._id ?? null);
+      const key = typeKey(typeId);
+
+      setActiveTab(nextTab);
+      setActiveTypeKey(key);
+
+      if (hasWardrobeTypeCache(typeId)) {
+        const bucket = getWardrobeTypeBucket(typeId);
+        setItems(bucket?.items ?? []);
+        setHasMore(bucket?.hasMore ?? false);
+        setInitialLoading(false);
+        return;
+      }
+
+      setItems([]);
+      setHasMore(true);
       loadingRef.current = false;
       await loadItems({ reset: true, typeId });
     },
@@ -207,11 +274,9 @@ export function useWardrobeList({ uploadFlowRef }: UseWardrobeListOptions) {
     });
   }, []);
 
-  /** 临时链接失效时的兜底：单图重解析，不依赖 TTL 估算 */
   const handleItemImageError = useCallback(async (item: WardrobeItem) => {
     const fileId = item.imageFileId;
     if (!fileId || imageRetriedRef.current.has(fileId)) return;
-    // 列表请求进行中时，整批 URL 马上会被刷新覆盖，无需逐图重解析
     if (loadingRef.current) return;
     imageRetriedRef.current.add(fileId);
 
@@ -224,9 +289,9 @@ export function useWardrobeList({ uploadFlowRef }: UseWardrobeListOptions) {
           i.imageFileId === fileId ? { ...i, imageUrl: url, imageUrlAt } : i,
         ),
       );
-      updateWardrobeCacheItemUrl(item._id, url, imageUrlAt);
+      updateWardrobeCacheItemUrl(item._id, url, imageUrlAt, item.typeId);
     } catch {
-      // 兜底失败不打扰用户，等下次进入页面刷新
+      // 兜底失败不打扰用户
     }
   }, []);
 
@@ -251,15 +316,11 @@ export function useWardrobeList({ uploadFlowRef }: UseWardrobeListOptions) {
       setDeleting(true);
       try {
         await deleteWardrobeItem(item);
-        setItems((prev) => prev.filter((i) => i._id !== item._id));
-        setClothingTypes((prev) =>
-          prev.map((type) =>
-            type._id === item.typeId
-              ? { ...type, itemCount: Math.max(0, type.itemCount - 1) }
-              : type,
-          ),
-        );
         removeItemFromWardrobeCache(item._id, item.typeId);
+        const types = getClothingTypesFromCache();
+        typesRef.current = types;
+        setClothingTypes(types);
+        setItems((prev) => prev.filter((i) => i._id !== item._id));
         Taro.showToast({ title: "已删除", icon: "success" });
       } catch (err) {
         const message =
@@ -309,7 +370,6 @@ export function useWardrobeList({ uploadFlowRef }: UseWardrobeListOptions) {
     initialLoading,
     actionSheetVisible,
     loadTypes,
-    refreshWardrobe,
     handleTypeChange,
     handleScrollToLower,
     closeActionSheet,

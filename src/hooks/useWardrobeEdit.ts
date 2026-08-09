@@ -11,6 +11,10 @@ import {
   fetchWardrobeItemById,
   updateWardrobeItem,
 } from "@/services/wardrobe";
+import {
+  applyWardrobeItemUpdate,
+  setPendingWardrobeListPatch,
+} from "@/services/wardrobeCache";
 import { afterToastNavigate } from "@/utils/afterToastNavigate";
 
 function recognitionItemToDisplayItem(
@@ -95,12 +99,19 @@ export function useWardrobeEdit() {
         return;
       }
 
-      await updateWardrobeItem({
+      const previousTypeId = item.typeId;
+      const updated = await updateWardrobeItem({
         _id: item._id,
         name: trimmedName,
         typeName: trimmedTypeName,
         tags,
-        previousTypeId: item.typeId,
+        previousTypeId,
+      });
+      applyWardrobeItemUpdate(updated, previousTypeId);
+      setPendingWardrobeListPatch({
+        kind: "update",
+        item: updated,
+        previousTypeId,
       });
       Taro.showToast({ title: "已保存", icon: "success" });
       afterToastNavigate(() => Taro.navigateBack());
