@@ -216,7 +216,7 @@ wx.cloud
 pnpm cf:sync-common
 ```
 
-同步后：`recognize-clothing/common/` 含 `recognitionRules.js`、`wardrobeSave.js`；`generate-wardrobe-display/common/` 含 `doubaoVision.js`、`itemDisplayImageRules.js`；`process-recognition-batch/common/` 含 `recognitionRules.js`、`doubaoVision.js`、`itemDisplayImageRules.js`；`save-wardrobe-items/common/` 仅含 `wardrobeSave.js`；`generate-tryon-image/common/` 含 `doubaoVision.js`、`tryonImageRules.js`、`modelTemplateMatch.js`、`modelTemplateFileIds.js`；`recommend-outfit/common/` 含 `recommendOutfitRules.js`。**修改 `cloudfunctions/common/` 下源码后，须重新执行上述命令再上传部署。**
+同步后：`recognize-clothing/common/` 含 `recognitionRules.js`、`wardrobeSave.js`；`generate-wardrobe-display/common/` 含 `doubaoVision.js`、`itemDisplayImageRules.js`、`providers/ark/`；`process-recognition-batch/common/` 含 `recognitionRules.js`、`doubaoVision.js`、`itemDisplayImageRules.js`、`providers/ark/`；`save-wardrobe-items/common/` 仅含 `wardrobeSave.js`；`generate-tryon-image/common/` 含 `doubaoVision.js`、`tryonImageRules.js`、`modelTemplateMatch.js`、`modelTemplateFileIds.js`、`providers/ark/`；`recommend-outfit/common/` 含 `recommendOutfitRules.js`。**修改 `cloudfunctions/common/` 下源码后，须重新执行上述命令再上传部署。**
 
 业务约束（typeName 白名单、name 长度、tags 规则、name/tags 互斥）由 **Prompt** 负责；云函数侧仅做 JSON 解析与非空 trim，不再做白名单归并或截断兜底。
 
@@ -307,7 +307,8 @@ tcb fn deploy generate-wardrobe-display -e cloudbase-d6gkz1xlx9adbfe51
 | `DOUBAO_API_KEY`      | 火山方舟 API Key（可与其它云函数共用）             |
 | `DOUBAO_API_BASE_URL` | 可选，默认 `https://ark.cn-beijing.volces.com/api/v3` |
 | `DOUBAO_VISION_MODEL` | Seedream 模型 ID，示例 `doubao-seedream-5-0-260128`（按 items 从原图生成展示图） |
-| `DOUBAO_VISION_SIZE` | 输出尺寸，与试穿图共用，示例 `1920x1920`（1:1，像素数 ≥3686400） |
+
+出图尺寸由 [`common/providers/ark`](common/providers/ark/index.js) 的 `VISION_SIZE`（`1920x1920`）静态配置，与试穿图共用，无需环境变量。
 
 **超时**：`config.json` 为 `timeout: 120`（Seedream 组图常需 40–90s）。客户端 `callFunction` 须设 `config.timeout: 120000` 与之对齐。
 
@@ -338,7 +339,7 @@ wx.cloud
 | `未配置 DOUBAO_VISION_MODEL` | 未在 `generate-wardrobe-display` 配置 Seedream 模型 ID |
 | `SEEDREAM_FAILED` | Seedream 组图失败，检查模型 ID 与 prompt/参考图 |
 | `Seedream 未返回图片` | 模型无图像生成权限或组图参数不符合要求 |
-| `image size must be at least 3686400 pixels` | 展示图 `size` 过小；使用默认 `1920x1920` 或更大 |
+| `image size must be at least 3686400 pixels` | 展示图 `size` 过小；检查 `providers/ark` 的 `VISION_SIZE`（须 ≥3686400 像素） |
 | `-504003` / 云函数超时 | 确认 `config.json` 为 `timeout: 120` 且客户端 `callFunction` timeout 为 120000 |
 
 ## 8.1 部署 process-recognition-batch 云函数
@@ -349,7 +350,7 @@ wx.cloud
 2. 微信开发者工具展开 `cloudfunctions/process-recognition-batch`
 3. 右键 → **上传并部署：云端安装依赖**
 
-环境变量与 `recognize-clothing` + `generate-wardrobe-display` 相同：`DOUBAO_API_KEY`、`DOUBAO_SEED_MODEL`、`DOUBAO_VISION_MODEL`、`DOUBAO_VISION_SIZE`（及可选 Base URL / Temperature）。
+环境变量与 `recognize-clothing` + `generate-wardrobe-display` 相同：`DOUBAO_API_KEY`、`DOUBAO_SEED_MODEL`、`DOUBAO_VISION_MODEL`（及可选 Base URL / Temperature）。出图尺寸见 `common/providers/ark` 的 `VISION_SIZE`。
 
 **超时**：`config.json` 为 `timeout: 300`。
 
@@ -441,9 +442,9 @@ LLM 失败时回退规则推荐 `buildFallbackRecommendation`。
 
 右键 `cloudfunctions/generate-tryon-image` → **上传并部署：云端安装依赖**。
 
-部署前若修改过 `cloudfunctions/common/` 下 `doubaoVision.js`、`tryonImageRules.js`、`modelTemplateMatch.js` 或 `modelTemplateFileIds.js`，须先执行 `pnpm cf:sync-common`。
+部署前若修改过 `cloudfunctions/common/` 下 `doubaoVision.js`、`tryonImageRules.js`、`modelTemplateMatch.js`、`modelTemplateFileIds.js` 或 `providers/ark/`，须先执行 `pnpm cf:sync-common`。
 
-调用火山方舟 **Seedream 图像生成 API**：`POST {DOUBAO_API_BASE_URL}/images/generations`（非 `/chat/completions`）。参考图通过 `image` 传入：若已配置固定模特模板，则 **图1 = 模特人物参考**（锁定脸型/发型/肤质，姿势不沿用模板），其后为衣物参考图；文本需求通过 `prompt` 描述。
+调用火山方舟 **Seedream 图像生成 API**：`POST {DOUBAO_API_BASE_URL}/images/generations`（非 `/chat/completions`）。参考图通过 `image` 传入：若已配置固定模特模板，则 **图1 = 模特人物参考**（锁定脸型/发型/肤质，姿势不沿用模板），其后为衣物参考图；文本需求通过 `prompt` 描述。输出尺寸来自 [`common/providers/ark`](common/providers/ark/index.js) 的 `VISION_SIZE`（`1920x1920`，1:1，满足 Seedream 5.0 像素下限）。
 
 场景约定（`tryonImageRules.js`）：始终**全身**生活方式构图；身体略侧、一手插袋；背景为简洁浅色纹理墙 + 中性地面；光影按 `weatherConditionCode` 调节（缺省按晴天暖日光）。
 
@@ -454,7 +455,6 @@ LLM 失败时回退规则推荐 `buildFallbackRecommendation`。
 | `DOUBAO_API_KEY` | 火山方舟 API Key（可与其它云函数共用） |
 | `DOUBAO_API_BASE_URL` | 可选，默认 `https://ark.cn-beijing.volces.com/api/v3` |
 | `DOUBAO_VISION_MODEL` | Hero 试穿图专用 Seedream 模型 ID，示例 `doubao-seedream-5-0-260128` |
-| `DOUBAO_VISION_SIZE` | 输出尺寸，与单品展示图共用，示例 `1920x1920`（1:1，Seedream 5.0 像素下限；若控制台仍配竖版如 `1600x2304` / `2K`，请改为 `1920x1920`） |
 
 入参：`imageFileIds[]`（衣物）、`heightCm`、`weightKg`、`gender`（`male`/`female`）、`pieceLabels[]`、`pieceTypeNames[]`、可选 `weatherConditionCode`（如 `sunny`/`rainy`，用于背景光影）。
 

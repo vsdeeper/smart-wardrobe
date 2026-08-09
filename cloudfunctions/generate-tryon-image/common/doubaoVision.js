@@ -1,4 +1,5 @@
 const { requireEnv } = require('./env')
+const ark = require('./providers/ark')
 
 const MAX_REFERENCE_IMAGES = 10
 
@@ -28,7 +29,7 @@ function getSeedreamConfig() {
   const apiKey = process.env.DOUBAO_API_KEY
   const baseUrl = requireEnv('DOUBAO_API_BASE_URL')
   const model = process.env.DOUBAO_VISION_MODEL
-  const size = requireEnv('DOUBAO_VISION_SIZE')
+  const size = ark.VISION_SIZE
   return { apiKey, baseUrl, model, size }
 }
 
