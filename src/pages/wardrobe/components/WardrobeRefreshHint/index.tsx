@@ -3,7 +3,6 @@ import "./index.scss";
 
 export interface WardrobeRefreshHintProps {
   onClick?: () => void;
-  loading?: boolean;
   /** 有新衣物的分类名，如「上装」「外套」 */
   typeNames?: string[];
 }
@@ -17,24 +16,12 @@ function formatHintText(typeNames: string[]): string {
 
 export default function WardrobeRefreshHint({
   onClick,
-  loading = false,
   typeNames = [],
 }: WardrobeRefreshHintProps) {
   return (
-    <View
-      className={[
-        "wardrobe-refresh-hint",
-        loading && "wardrobe-refresh-hint--loading",
-      ]
-        .filter(Boolean)
-        .join(" ")}
-      onClick={() => {
-        if (loading) return;
-        onClick?.();
-      }}
-    >
+    <View className="wardrobe-refresh-hint" onClick={() => onClick?.()}>
       <Text className="wardrobe-refresh-hint__text">
-        {loading ? "正在刷新…" : formatHintText(typeNames)}
+        {formatHintText(typeNames)}
       </Text>
     </View>
   );

@@ -77,9 +77,8 @@ function WardrobePage() {
           </Tabs>
         </View>
 
-        {showRefreshHint && (
+        {showRefreshHint && !refreshHintLoading && (
           <WardrobeRefreshHint
-            loading={refreshHintLoading}
             typeNames={refreshHintTypeNames}
             onClick={handleRefreshHintClick}
           />
