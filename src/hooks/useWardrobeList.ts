@@ -94,6 +94,13 @@ export function useWardrobeList({ uploadFlowRef }: UseWardrobeListOptions) {
     return inboundRefresh.typeIds.includes(activeTypeId);
   }, [activeTab, activeTypeId, inboundRefresh]);
 
+  const refreshHintTypeNames = useMemo(() => {
+    if (!inboundRefresh) return [];
+    if (activeTab === 0) return inboundRefresh.typeNames;
+    const name = clothingTypes[activeTab - 1]?.name;
+    return name ? [name] : inboundRefresh.typeNames;
+  }, [activeTab, clothingTypes, inboundRefresh]);
+
   useEffect(() => {
     return subscribeInboundRefresh(setInboundRefreshState);
   }, []);
@@ -467,6 +474,7 @@ export function useWardrobeList({ uploadFlowRef }: UseWardrobeListOptions) {
     initialLoading,
     actionSheetVisible,
     showRefreshHint,
+    refreshHintTypeNames,
     refreshHintLoading,
     loadTypes,
     handleTypeChange,

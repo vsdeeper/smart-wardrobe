@@ -37,6 +37,7 @@ function WardrobePage() {
     listLoading,
     actionSheetVisible,
     showRefreshHint,
+    refreshHintTypeNames,
     refreshHintLoading,
     handleTypeChange,
     handleScrollToLower,
@@ -79,6 +80,7 @@ function WardrobePage() {
         {showRefreshHint && (
           <WardrobeRefreshHint
             loading={refreshHintLoading}
+            typeNames={refreshHintTypeNames}
             onClick={handleRefreshHintClick}
           />
         )}
