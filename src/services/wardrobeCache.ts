@@ -1,6 +1,7 @@
 import Taro from "@tarojs/taro";
 import { isImageUrlFresh } from "@/services/cloudFile";
 import type { ClothingType, WardrobeItem } from "@/data/wardrobe";
+import { getFreshUrlMap } from "@/services/imageUrlCache";
 
 /** 「全部」分类的固定 key，其余 key 为 typeId */
 export const WARDROBE_ALL_TYPE_KEY = "all";
@@ -65,10 +66,31 @@ export function typeKey(typeId: string | null | undefined): string {
   return typeId ? typeId : WARDROBE_ALL_TYPE_KEY;
 }
 
-/** 逐 item 清理已过期的图片链接，新鲜的 item 原样保留 */
+/**
+ * 逐 item 清理已过期的图片链接；缺 URL 时用跨会话 imageUrlCache 补齐。
+ */
 function stripStaleImageUrls(items: WardrobeItem[]): WardrobeItem[] {
+  const needHydrateIds = items
+    .filter(
+      (item) =>
+        item.imageFileId &&
+        (!item.imageUrl || !isImageUrlFresh(item.imageUrlAt)),
+    )
+    .map((item) => item.imageFileId);
+  const cachedUrls =
+    needHydrateIds.length > 0
+      ? getFreshUrlMap("wardrobe", needHydrateIds)
+      : null;
+
   return items.map((item) => {
-    if (!item.imageUrl || isImageUrlFresh(item.imageUrlAt)) return item;
+    if (item.imageUrl && isImageUrlFresh(item.imageUrlAt)) return item;
+
+    const cached = cachedUrls?.get(item.imageFileId);
+    if (cached) {
+      return { ...item, imageUrl: cached.url, imageUrlAt: cached.at };
+    }
+
+    if (!item.imageUrl && !item.imageUrlAt) return item;
     const next = { ...item };
     delete next.imageUrl;
     delete next.imageUrlAt;

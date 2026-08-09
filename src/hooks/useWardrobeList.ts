@@ -5,6 +5,10 @@ import type { ClothingType, WardrobeItem } from "@/data/wardrobe";
 import { WARDROBE_PAGE_SIZE } from "@/data/wardrobe";
 import { collectImageUrls, resolveCloudFileUrl } from "@/services/cloudFile";
 import {
+  putImageUrlCache,
+  removeImageUrlCache,
+} from "@/services/imageUrlCache";
+import {
   deleteWardrobeItem,
   fetchClothingTypes,
   fetchWardrobeItems,
@@ -431,6 +435,7 @@ export function useWardrobeList({ uploadFlowRef }: UseWardrobeListOptions) {
         ),
       );
       updateWardrobeCacheItemUrl(item._id, url, imageUrlAt, item.typeId);
+      putImageUrlCache("wardrobe", fileId, url, imageUrlAt);
     } catch {
       // 兜底失败不打扰用户
     }
@@ -458,6 +463,9 @@ export function useWardrobeList({ uploadFlowRef }: UseWardrobeListOptions) {
       try {
         await deleteWardrobeItem(item);
         removeItemFromWardrobeCache(item._id, item.typeId);
+        if (item.imageFileId) {
+          removeImageUrlCache("wardrobe", item.imageFileId);
+        }
         const types = getClothingTypesFromCache();
         typesRef.current = types;
         setClothingTypes(types);

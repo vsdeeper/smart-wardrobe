@@ -30,9 +30,6 @@ export const IMAGE_URL_CACHE_CATEGORY_KEYS: Record<
   recognition: "recognitionList",
 };
 
-/** 单域条目上限，超出时按 at 升序淘汰最旧条目 */
-export const IMAGE_URL_CACHE_MAX_PER_CATEGORY = 200;
-
 export function createEmptyImageUrlCacheStore(): ImageUrlCacheStore {
   return {
     wardrobeList: [],

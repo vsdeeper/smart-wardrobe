@@ -6,13 +6,13 @@
  * - `visualDiary` → `VisualDiaryEntry.coverFileId`（仅封面）
  * - `recognition` → `RecognitionBatch.coverFileId`（仅封面）
  *
- * 后续接入示例（本期未联动业务模块）：
+ * 衣橱列表已接入（`fetchWardrobeItems`）；其余域接入示例：
  *
  * ```typescript
  * // 衣橱单品
  * const known = getFreshUrlMap("wardrobe", items.map((i) => i.imageFileId));
  * const map = await resolveTempFileUrls(fileIds, known);
- * mergeImageUrlCache("wardrobe", mapToEntries(map));
+ * mergeImageUrlCache("wardrobe", resolvedUrlMapToEntries(map));
  *
  * // 视觉日记封面
  * const coverIds = entries.map((e) => e.coverFileId).filter(Boolean);
@@ -29,7 +29,6 @@ import Taro from "@tarojs/taro";
 import {
   createEmptyImageUrlCacheStore,
   IMAGE_URL_CACHE_CATEGORY_KEYS,
-  IMAGE_URL_CACHE_MAX_PER_CATEGORY,
   type ImageUrlCacheCategory,
   type ImageUrlCacheEntry,
   type ImageUrlCacheStore,
@@ -104,14 +103,6 @@ function upsertEntries(
     }
   }
   return [...map.values()];
-}
-
-/** 超出上限时按 at 升序淘汰最旧条目 */
-function enforceMaxEntries(list: ImageUrlCacheEntry[]): ImageUrlCacheEntry[] {
-  if (list.length <= IMAGE_URL_CACHE_MAX_PER_CATEGORY) return list;
-  return [...list]
-    .sort((a, b) => a.at - b.at)
-    .slice(list.length - IMAGE_URL_CACHE_MAX_PER_CATEGORY);
 }
 
 function normalizeStore(raw: ImageUrlCacheStore): ImageUrlCacheStore {
@@ -195,7 +186,19 @@ export function getFreshUrlMap(
   return map;
 }
 
-/** 批量 upsert 并持久化 */
+/** 将 resolveTempFileUrls 结果转为可写入缓存的条目 */
+export function resolvedUrlMapToEntries(
+  map: Map<string, ResolvedImageUrl>,
+): ImageUrlCacheEntry[] {
+  const entries: ImageUrlCacheEntry[] = [];
+  for (const [fileId, resolved] of map) {
+    if (!fileId || !resolved.url || !isImageUrlFresh(resolved.at)) continue;
+    entries.push({ fileId, url: resolved.url, at: resolved.at });
+  }
+  return entries;
+}
+
+/** 批量 upsert 并持久化（无条数上限，仅依赖 TTL 淘汰） */
 export function mergeImageUrlCache(
   category: ImageUrlCacheCategory,
   entries: ImageUrlCacheEntry[],
@@ -204,9 +207,7 @@ export function mergeImageUrlCache(
   if (valid.length === 0) return;
 
   const store = readImageUrlCache();
-  const merged = enforceMaxEntries(
-    upsertEntries(getCategoryList(store, category), valid),
-  );
+  const merged = upsertEntries(getCategoryList(store, category), valid);
   persistStore(setCategoryList(store, category, merged));
 }
 

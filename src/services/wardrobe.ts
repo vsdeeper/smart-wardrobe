@@ -6,8 +6,13 @@ import type {
   WardrobeItem,
 } from "@/data/wardrobe";
 import { WARDROBE_PAGE_SIZE } from "@/data/wardrobe";
-import { attachImageUrls } from "@/services/cloudFile";
+import { attachImageUrls, collectImageUrls } from "@/services/cloudFile";
 import type { ResolvedImageUrl } from "@/services/cloudFile";
+import {
+  getFreshUrlMap,
+  mergeImageUrlCache,
+  resolvedUrlMapToEntries,
+} from "@/services/imageUrlCache";
 import { fetchUserProfile } from "@/services/profile";
 import { readProfileCache } from "@/services/profileCache";
 import { createTempId, RECOGNITION_FAIL_MESSAGE } from "@/utils/recognition";
@@ -176,7 +181,17 @@ export async function fetchWardrobeItems(
   const items = (res.data as Record<string, unknown>[]).map(
     normalizeWardrobeItem,
   );
-  return attachImageUrls(items, options.knownUrls);
+  const fileIds = items.map((item) => item.imageFileId);
+  const known = new Map([
+    ...getFreshUrlMap("wardrobe", fileIds),
+    ...(options.knownUrls ?? []),
+  ]);
+  const withUrls = await attachImageUrls(items, known);
+  mergeImageUrlCache(
+    "wardrobe",
+    resolvedUrlMapToEntries(collectImageUrls(withUrls)),
+  );
+  return withUrls;
 }
 
 /** 上传图片并调用 AI 识别（预览模式，不入库） */
