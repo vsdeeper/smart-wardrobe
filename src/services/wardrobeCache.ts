@@ -187,6 +187,16 @@ export function setWardrobeTypeBucket(
   }
 }
 
+/** 清空指定分类桶（`null` 为「全部」）；不存在时无操作 */
+export function clearWardrobeTypeBucket(typeId: string | null): void {
+  const current = getOrCreateStore();
+  const key = typeKey(typeId);
+  if (!Object.prototype.hasOwnProperty.call(current.byType, key)) return;
+  const next = { ...current.byType };
+  delete next[key];
+  current.byType = next;
+}
+
 export function appendWardrobeTypeBucket(
   typeId: string | null,
   pageItems: WardrobeItem[],

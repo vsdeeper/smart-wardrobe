@@ -10,7 +10,14 @@ import {
   fetchWardrobeItems,
 } from "@/services/wardrobe";
 import {
+  clearInboundRefresh,
+  consumeInboundRefreshTypes,
+  subscribeInboundRefresh,
+  type InboundRefreshPayload,
+} from "@/services/recognitionInboundCache";
+import {
   appendWardrobeTypeBucket,
+  clearWardrobeTypeBucket,
   getClothingTypesFromCache,
   getInitialWardrobeState,
   getWardrobeTypeBucket,
@@ -54,6 +61,9 @@ export function useWardrobeList({ uploadFlowRef }: UseWardrobeListOptions) {
   const [actionSheetVisible, setActionSheetVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState<WardrobeItem | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [inboundRefresh, setInboundRefreshState] =
+    useState<InboundRefreshPayload | null>(null);
+  const [refreshHintLoading, setRefreshHintLoading] = useState(false);
 
   const loadingRef = useRef(false);
   const itemsRef = useRef<WardrobeItem[]>([]);
@@ -62,6 +72,7 @@ export function useWardrobeList({ uploadFlowRef }: UseWardrobeListOptions) {
   const imageRetriedRef = useRef<Set<string>>(new Set());
   const requestSeqRef = useRef(0);
   const bootstrappedRef = useRef(false);
+  const refreshHintLoadingRef = useRef(false);
 
   const activeTypeId = useMemo(() => {
     if (activeTab === 0) return null;
@@ -75,6 +86,17 @@ export function useWardrobeList({ uploadFlowRef }: UseWardrobeListOptions) {
         : [],
     [clothingTypes],
   );
+
+  const showRefreshHint = useMemo(() => {
+    if (!inboundRefresh) return false;
+    if (activeTab === 0) return true;
+    if (!activeTypeId) return false;
+    return inboundRefresh.typeIds.includes(activeTypeId);
+  }, [activeTab, activeTypeId, inboundRefresh]);
+
+  useEffect(() => {
+    return subscribeInboundRefresh(setInboundRefreshState);
+  }, []);
 
   const loadTypes = useCallback(async () => {
     const types = await fetchClothingTypes();
@@ -258,6 +280,81 @@ export function useWardrobeList({ uploadFlowRef }: UseWardrobeListOptions) {
     loadItems();
   }, [hasMore, initialLoading, listLoading, loadItems]);
 
+  const handleRefreshHintClick = useCallback(async () => {
+    if (!isWeapp()) return;
+    if (refreshHintLoadingRef.current || !inboundRefresh) return;
+
+    const typeIdsToInvalidate = inboundRefresh.typeIds.slice();
+    const currentTypeId = activeTypeIdRef.current;
+
+    refreshHintLoadingRef.current = true;
+    setRefreshHintLoading(true);
+    loadingRef.current = true;
+    const seq = ++requestSeqRef.current;
+    setInitialLoading(true);
+
+    try {
+      await loadTypes();
+
+      if (currentTypeId) {
+        clearWardrobeTypeBucket(null);
+        const nextItems = await fetchWardrobeItems({
+          typeId: currentTypeId,
+          skip: 0,
+          limit: WARDROBE_PAGE_SIZE,
+        });
+        if (seq !== requestSeqRef.current) return;
+        const pageHasMore = nextItems.length >= WARDROBE_PAGE_SIZE;
+        setItems(nextItems);
+        setHasMore(pageHasMore);
+        setWardrobeTypeBucket(
+          currentTypeId,
+          { items: nextItems, hasMore: pageHasMore },
+          typesRef.current,
+        );
+        const typeName =
+          typesRef.current.find((type) => type._id === currentTypeId)?.name ??
+          "";
+        consumeInboundRefreshTypes({
+          typeIds: [currentTypeId],
+          typeNames: typeName ? [typeName] : [],
+        });
+      } else {
+        typeIdsToInvalidate.forEach((typeId) => {
+          clearWardrobeTypeBucket(typeId);
+        });
+        const nextItems = await fetchWardrobeItems({
+          typeId: null,
+          skip: 0,
+          limit: WARDROBE_PAGE_SIZE,
+        });
+        if (seq !== requestSeqRef.current) return;
+        const pageHasMore = nextItems.length >= WARDROBE_PAGE_SIZE;
+        setItems(nextItems);
+        setHasMore(pageHasMore);
+        setWardrobeTypeBucket(
+          null,
+          { items: nextItems, hasMore: pageHasMore },
+          typesRef.current,
+        );
+        clearInboundRefresh();
+      }
+    } catch (err) {
+      if (seq !== requestSeqRef.current) return;
+      const message =
+        err instanceof Error ? err.message : "衣橱刷新失败，请稍后重试";
+      Taro.showToast({ title: message, icon: "none" });
+    } finally {
+      if (seq === requestSeqRef.current) {
+        loadingRef.current = false;
+        setListLoading(false);
+        setInitialLoading(false);
+      }
+      refreshHintLoadingRef.current = false;
+      setRefreshHintLoading(false);
+    }
+  }, [inboundRefresh, loadTypes]);
+
   const closeActionSheet = useCallback(() => {
     setActionSheetVisible(false);
     setSelectedItem(null);
@@ -369,9 +466,12 @@ export function useWardrobeList({ uploadFlowRef }: UseWardrobeListOptions) {
     listLoading,
     initialLoading,
     actionSheetVisible,
+    showRefreshHint,
+    refreshHintLoading,
     loadTypes,
     handleTypeChange,
     handleScrollToLower,
+    handleRefreshHintClick,
     closeActionSheet,
     handleItemLongPress,
     handleItemClick,

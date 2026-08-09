@@ -14,6 +14,7 @@ import {
   updateRecognitionBatchItems,
 } from "@/services/recognitionBatch";
 import { attachImageUrls } from "@/services/cloudFile";
+import { setInboundRefresh } from "@/services/recognitionInboundCache";
 import { saveWardrobeItems } from "@/services/wardrobe";
 import { afterToastNavigate } from "@/utils/afterToastNavigate";
 
@@ -178,6 +179,13 @@ export function useAiRecognitionList() {
       await updateRecognitionBatchItems(batchId, items);
       await confirmRecognitionBatch(batchId);
       clearRecognitionSession();
+
+      if (saved.length > 0) {
+        setInboundRefresh({
+          typeIds: saved.map((item) => item.typeId).filter(Boolean),
+          typeNames: saved.map((item) => item.typeName).filter(Boolean),
+        });
+      }
 
       if (failed.length > 0) {
         Taro.showToast({

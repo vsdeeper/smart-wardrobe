@@ -13,6 +13,7 @@ import { useWardrobeUpload } from "@/hooks/useWardrobeUpload";
 import { useMainTabNavigation } from "@/hooks/useMainTabNavigation";
 import PrivacyAuthorizeDialog from "./components/PrivacyAuthorizeDialog";
 import WardrobeItemCard from "./components/WardrobeItemCard";
+import WardrobeRefreshHint from "./components/WardrobeRefreshHint";
 import "./index.scss";
 
 function WardrobePage() {
@@ -35,8 +36,11 @@ function WardrobePage() {
     initialLoading,
     listLoading,
     actionSheetVisible,
+    showRefreshHint,
+    refreshHintLoading,
     handleTypeChange,
     handleScrollToLower,
+    handleRefreshHintClick,
     closeActionSheet,
     handleItemLongPress,
     handleItemClick,
@@ -71,6 +75,13 @@ function WardrobePage() {
             ))}
           </Tabs>
         </View>
+
+        {showRefreshHint && (
+          <WardrobeRefreshHint
+            loading={refreshHintLoading}
+            onClick={handleRefreshHintClick}
+          />
+        )}
 
         {initialLoading ? (
           <PageLoading />
