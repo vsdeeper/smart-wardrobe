@@ -6,7 +6,7 @@ const cloud = require('wx-server-sdk')
 const {
   buildSystemPrompt,
   USER_PROMPT,
-  parseRecognitionItems,
+  parseRecognitionContent,
   filterItemsByUserGender,
 } = require('./common/recognitionRules')
 const {
@@ -44,15 +44,6 @@ function resolveVisionTemperature() {
   return Math.min(2, Math.max(0, parsed))
 }
 
-function parseRecognitionContent(content) {
-  const jsonMatch = content.match(/\{[\s\S]*\}/)
-  if (!jsonMatch) {
-    throw new Error('AI 返回格式无效')
-  }
-  const parsed = JSON.parse(jsonMatch[0])
-  return parseRecognitionItems(parsed)
-}
-
 async function recognizeItemsFromImage(imageUrl, apiKey, baseUrl, model) {
   const temperature = resolveVisionTemperature()
   const response = await fetch(`${baseUrl}/chat/completions`, {
@@ -64,6 +55,7 @@ async function recognizeItemsFromImage(imageUrl, apiKey, baseUrl, model) {
     body: JSON.stringify({
       model,
       temperature,
+      response_format: { type: 'json_object' },
       messages: [
         { role: 'system', content: buildSystemPrompt() },
         {

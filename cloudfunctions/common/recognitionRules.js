@@ -110,7 +110,7 @@ function buildSystemPrompt() {
 - 正例：${formatPromptExample(positiveB)}
 - 反例：name ${negative.name}，tags ${JSON.stringify(negative.tags)}（${negative.reason}）
 
-只返回 JSON，不要其他文字。格式：
+只返回合法 JSON 对象，不要 Markdown 代码块或其他文字。所有字符串必须用双引号包裹（含 tags 内每一项）。格式：
 {
   "items": [
     {
@@ -133,6 +133,93 @@ function normalizeAudienceGender(raw) {
     return value
   }
   return 'unisex'
+}
+
+function normalizeModelContent(content) {
+  if (typeof content === 'string') return content
+  if (Array.isArray(content)) {
+    return content
+      .map((part) => {
+        if (typeof part === 'string') return part
+        if (part && typeof part.text === 'string') return part.text
+        return ''
+      })
+      .join('')
+  }
+  return String(content ?? '')
+}
+
+function stripCodeFence(text) {
+  const trimmed = text.trim()
+  const fenced = trimmed.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/i)
+  return fenced ? fenced[1].trim() : trimmed
+}
+
+/** 按括号深度提取首个 JSON 对象，避免贪婪正则把后续说明文字一并吞入 */
+function extractBalancedJsonObject(text) {
+  const start = text.indexOf('{')
+  if (start < 0) return null
+
+  let depth = 0
+  let inString = false
+  let escape = false
+
+  for (let i = start; i < text.length; i += 1) {
+    const ch = text[i]
+    if (inString) {
+      if (escape) {
+        escape = false
+      } else if (ch === '\\') {
+        escape = true
+      } else if (ch === '"') {
+        inString = false
+      }
+      continue
+    }
+    if (ch === '"') {
+      inString = true
+      continue
+    }
+    if (ch === '{') depth += 1
+    else if (ch === '}') {
+      depth -= 1
+      if (depth === 0) return text.slice(start, i + 1)
+    }
+  }
+
+  return null
+}
+
+function parseJsonFromModelContent(content) {
+  const text = stripCodeFence(normalizeModelContent(content))
+  if (!text) {
+    throw new Error('AI 返回为空')
+  }
+
+  const candidates = []
+  candidates.push(text)
+  const balanced = extractBalancedJsonObject(text)
+  if (balanced && balanced !== text) {
+    candidates.push(balanced)
+  }
+
+  let lastError
+  for (const candidate of candidates) {
+    try {
+      return JSON.parse(candidate)
+    } catch (err) {
+      lastError = err
+    }
+  }
+
+  const preview = text.length > 400 ? `${text.slice(0, 400)}…` : text
+  console.error('[recognize-clothing] JSON 解析失败，原始内容预览:', preview)
+  throw new Error(lastError instanceof Error ? lastError.message : 'AI 返回格式无效')
+}
+
+function parseRecognitionContent(content) {
+  const parsed = parseJsonFromModelContent(content)
+  return parseRecognitionItems(parsed)
 }
 
 function parseRecognitionResult(parsed) {
@@ -200,6 +287,7 @@ module.exports = {
   RECOGNITION_LIMITS,
   buildSystemPrompt,
   USER_PROMPT,
+  parseRecognitionContent,
   parseRecognitionResult,
   parseRecognitionItems,
   filterItemsByUserGender,
