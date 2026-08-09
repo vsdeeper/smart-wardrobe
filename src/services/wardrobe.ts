@@ -10,7 +10,7 @@ import { attachImageUrls } from "@/services/cloudFile";
 import type { ResolvedImageUrl } from "@/services/cloudFile";
 import { fetchUserProfile } from "@/services/profile";
 import { readProfileCache } from "@/services/profileCache";
-import { createTempId } from "@/utils/recognition";
+import { createTempId, RECOGNITION_FAIL_MESSAGE } from "@/utils/recognition";
 
 export interface FetchWardrobeItemsOptions {
   typeId?: string | null;
@@ -283,7 +283,7 @@ export async function uploadAndRecognizeBatch(
       succeeded.push(...results);
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : "这次没识别出来，请换张图试试";
+        err instanceof Error ? err.message : RECOGNITION_FAIL_MESSAGE;
       failed.push({ index: current, message });
     }
   }

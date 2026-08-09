@@ -11,7 +11,10 @@ import { isGenderSet } from "@/data/profile";
 import { resolveCloudFileUrl } from "@/services/cloudFile";
 import { fetchUserProfile } from "@/services/profile";
 import { readProfileCache } from "@/services/profileCache";
-import { normalizeRecognitionErrorMessage } from "@/utils/recognition";
+import {
+  normalizeRecognitionErrorMessage,
+  RECOGNITION_FAIL_MESSAGE,
+} from "@/utils/recognition";
 
 const COLLECTION = "recognition_batches";
 
@@ -248,9 +251,7 @@ function triggerProcessRecognitionBatch(
         void markRecognitionBatchFailed(
           batchId,
           normalizeRecognitionErrorMessage(
-            result.message ||
-              result.error ||
-              "这次没识别出来，请换张图试试",
+            result.message || result.error || RECOGNITION_FAIL_MESSAGE,
           ),
         );
       }
@@ -326,7 +327,7 @@ export async function markRecognitionBatchFailed(
     await db.collection(COLLECTION).doc(batchId).update({
       data: {
         status: "failed",
-        errorMessage: errorMessage || "这次没识别出来，请换张图试试",
+        errorMessage: errorMessage || RECOGNITION_FAIL_MESSAGE,
         updatedAt: Date.now(),
       },
     });

@@ -46,7 +46,7 @@ export function getRecognitionBatchStatusLabel(
     return "识别中"
   }
   if (batch.status === "failed") {
-    return "这次没识别出来，请换张图试试"
+    return "识别失败"
   }
   switch (batch.confirmStatus) {
     case "confirmed":

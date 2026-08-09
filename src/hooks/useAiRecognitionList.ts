@@ -17,6 +17,10 @@ import { attachImageUrls } from "@/services/cloudFile";
 import { setInboundRefresh } from "@/services/recognitionInboundCache";
 import { saveWardrobeItems } from "@/services/wardrobe";
 import { afterToastNavigate } from "@/utils/afterToastNavigate";
+import {
+  normalizeRecognitionErrorMessage,
+  RECOGNITION_FAIL_MESSAGE,
+} from "@/utils/recognition";
 
 export function useAiRecognitionList() {
   const [items, setItems] = useState<RecognizedPreviewItem[]>([]);
@@ -65,7 +69,9 @@ export function useAiRecognitionList() {
         const title =
           batch.status === "processing"
             ? "识别中，请稍候"
-            : batch.errorMessage || "这次没识别出来，请换张图试试";
+            : normalizeRecognitionErrorMessage(
+                batch.errorMessage || RECOGNITION_FAIL_MESSAGE,
+              );
         Taro.showToast({ title, icon: "none" });
         afterToastNavigate(() => Taro.navigateBack());
         return;

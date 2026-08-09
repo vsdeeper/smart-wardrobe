@@ -2,7 +2,8 @@ export function createTempId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
 }
 
-const RECOGNITION_FAIL_MESSAGE = "这次没识别出来，请换张图试试"
+export const RECOGNITION_FAIL_MESSAGE = "识别失败"
+const RECOGNITION_FAIL_MESSAGE_LEGACY = "这次没识别出来，请换张图试试"
 const RECOGNITION_TIMEOUT_MESSAGE = "识别时间有点长，请稍后再试"
 
 /** 将识别失败底层错误转为用户可读文案 */
@@ -23,7 +24,10 @@ export function normalizeRecognitionErrorMessage(raw?: string): string {
     return RECOGNITION_TIMEOUT_MESSAGE
   }
 
-  if (message === "识别失败") {
+  if (
+    message === RECOGNITION_FAIL_MESSAGE ||
+    message === RECOGNITION_FAIL_MESSAGE_LEGACY
+  ) {
     return RECOGNITION_FAIL_MESSAGE
   }
 
