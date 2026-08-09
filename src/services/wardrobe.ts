@@ -6,9 +6,9 @@ import type {
   WardrobeItem,
 } from "@/data/wardrobe";
 import { WARDROBE_PAGE_SIZE } from "@/data/wardrobe";
-import { attachImageUrls, collectImageUrls } from "@/services/cloudFile";
-import type { ResolvedImageUrl } from "@/services/cloudFile";
+import { attachImageUrls, resolveTempFileUrls } from "@/services/cloudFile";
 import {
+  applyFreshImageUrls,
   getFreshUrlMap,
   mergeImageUrlCache,
   resolvedUrlMapToEntries,
@@ -21,8 +21,6 @@ export interface FetchWardrobeItemsOptions {
   typeId?: string | null;
   skip: number;
   limit?: number;
-  /** 已知的 fileId -> 临时链接，命中则复用，避免图片重新加载 */
-  knownUrls?: Map<string, ResolvedImageUrl>;
 }
 
 interface RecognizeClothingError {
@@ -182,16 +180,12 @@ export async function fetchWardrobeItems(
     normalizeWardrobeItem,
   );
   const fileIds = items.map((item) => item.imageFileId);
-  const known = new Map([
-    ...getFreshUrlMap("wardrobe", fileIds),
-    ...(options.knownUrls ?? []),
-  ]);
-  const withUrls = await attachImageUrls(items, known);
-  mergeImageUrlCache(
-    "wardrobe",
-    resolvedUrlMapToEntries(collectImageUrls(withUrls)),
+  const urlMap = await resolveTempFileUrls(
+    fileIds,
+    getFreshUrlMap("wardrobe", fileIds),
   );
-  return withUrls;
+  mergeImageUrlCache("wardrobe", resolvedUrlMapToEntries(urlMap));
+  return applyFreshImageUrls("wardrobe", items);
 }
 
 /** 上传图片并调用 AI 识别（预览模式，不入库） */

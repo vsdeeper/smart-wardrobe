@@ -1,7 +1,6 @@
 import Taro from "@tarojs/taro";
-import { isImageUrlFresh } from "@/services/cloudFile";
 import type { ClothingType, WardrobeItem } from "@/data/wardrobe";
-import { getFreshUrlMap } from "@/services/imageUrlCache";
+import { applyFreshImageUrls } from "@/services/imageUrlCache";
 
 /** 「全部」分类的固定 key，其余 key 为 typeId */
 export const WARDROBE_ALL_TYPE_KEY = "all";
@@ -66,36 +65,21 @@ export function typeKey(typeId: string | null | undefined): string {
   return typeId ? typeId : WARDROBE_ALL_TYPE_KEY;
 }
 
-/**
- * 逐 item 清理已过期的图片链接；缺 URL 时用跨会话 imageUrlCache 补齐。
- */
-function stripStaleImageUrls(items: WardrobeItem[]): WardrobeItem[] {
-  const needHydrateIds = items
-    .filter(
-      (item) =>
-        item.imageFileId &&
-        (!item.imageUrl || !isImageUrlFresh(item.imageUrlAt)),
-    )
-    .map((item) => item.imageFileId);
-  const cachedUrls =
-    needHydrateIds.length > 0
-      ? getFreshUrlMap("wardrobe", needHydrateIds)
-      : null;
+/** 内存桶不存临时链；展示前统一从 imageUrlCache 填充 */
+function withoutImageUrl(item: WardrobeItem): WardrobeItem {
+  if (!item.imageUrl && !item.imageUrlAt) return item;
+  const next = { ...item };
+  delete next.imageUrl;
+  delete next.imageUrlAt;
+  return next;
+}
 
-  return items.map((item) => {
-    if (item.imageUrl && isImageUrlFresh(item.imageUrlAt)) return item;
+function withoutImageUrls(items: WardrobeItem[]): WardrobeItem[] {
+  return items.map(withoutImageUrl);
+}
 
-    const cached = cachedUrls?.get(item.imageFileId);
-    if (cached) {
-      return { ...item, imageUrl: cached.url, imageUrlAt: cached.at };
-    }
-
-    if (!item.imageUrl && !item.imageUrlAt) return item;
-    const next = { ...item };
-    delete next.imageUrl;
-    delete next.imageUrlAt;
-    return next;
-  });
+function hydrateImageUrls(items: WardrobeItem[]): WardrobeItem[] {
+  return applyFreshImageUrls("wardrobe", items);
 }
 
 function resolveActiveTab(
@@ -139,7 +123,7 @@ function replaceItemInBucket(
   const idx = bucket.items.findIndex((entry) => entry._id === item._id);
   if (idx < 0) return bucket;
   const items = bucket.items.slice();
-  items[idx] = item;
+  items[idx] = withoutImageUrl(item);
   return { ...bucket, items };
 }
 
@@ -148,26 +132,14 @@ function upsertItemInBucket(
   bucket: WardrobeTypeBucket,
   item: WardrobeItem,
 ): WardrobeTypeBucket {
-  const idx = bucket.items.findIndex((entry) => entry._id === item._id);
+  const stripped = withoutImageUrl(item);
+  const idx = bucket.items.findIndex((entry) => entry._id === stripped._id);
   if (idx < 0) {
-    return { ...bucket, items: [item, ...bucket.items] };
+    return { ...bucket, items: [stripped, ...bucket.items] };
   }
   const items = bucket.items.slice();
-  items[idx] = item;
+  items[idx] = stripped;
   return { ...bucket, items };
-}
-
-function patchItemInBucket(
-  bucket: WardrobeTypeBucket,
-  itemId: string,
-  patch: Partial<WardrobeItem>,
-): WardrobeTypeBucket {
-  return {
-    ...bucket,
-    items: bucket.items.map((item) =>
-      item._id === itemId ? { ...item, ...patch } : item,
-    ),
-  };
 }
 
 export function hasWardrobeTypeCache(typeId: string | null): boolean {
@@ -185,7 +157,7 @@ export function getWardrobeTypeBucket(
   const bucket = current.byType[typeKey(typeId)];
   if (!bucket) return null;
   return {
-    items: stripStaleImageUrls(bucket.items),
+    items: hydrateImageUrls(bucket.items),
     hasMore: bucket.hasMore,
   };
 }
@@ -200,7 +172,7 @@ export function setWardrobeTypeBucket(
   current.byType = {
     ...current.byType,
     [key]: {
-      items: bucket.items,
+      items: withoutImageUrls(bucket.items),
       hasMore: bucket.hasMore,
     },
   };
@@ -226,18 +198,19 @@ export function appendWardrobeTypeBucket(
 ): void {
   const current = getOrCreateStore();
   const key = typeKey(typeId);
+  const strippedPage = withoutImageUrls(pageItems);
   const existing = current.byType[key];
   if (!existing) {
     current.byType = {
       ...current.byType,
-      [key]: { items: pageItems, hasMore },
+      [key]: { items: strippedPage, hasMore },
     };
     return;
   }
 
   const seen = new Set(existing.items.map((item) => item._id));
   const merged = existing.items.slice();
-  for (const item of pageItems) {
+  for (const item of strippedPage) {
     if (seen.has(item._id)) continue;
     seen.add(item._id);
     merged.push(item);
@@ -306,7 +279,7 @@ export function getInitialWardrobeState(): InitialWardrobeState {
 
   return {
     clothingTypes: current.clothingTypes,
-    items: stripStaleImageUrls(bucket.items),
+    items: hydrateImageUrls(bucket.items),
     hasMore: bucket.hasMore,
     hasCache: true,
     activeTab: resolved.activeTab,
@@ -386,43 +359,6 @@ export function applyWardrobeItemUpdate(
   if (newTypeId) {
     mutateBucketIfExists(newTypeId, (bucket) =>
       replaceItemInBucket(bucket, updated),
-    );
-  }
-}
-
-/** 临时链接回填：双写 `"all"` + 所属 type 桶 */
-export function updateWardrobeCacheItemUrl(
-  itemId: string,
-  imageUrl: string,
-  imageUrlAt: number,
-  typeId?: string,
-): void {
-  const current = getOrCreateStore();
-  let resolvedTypeId = typeId;
-
-  if (!resolvedTypeId) {
-    const allBucket = current.byType[WARDROBE_ALL_TYPE_KEY];
-    const found = allBucket?.items.find((item) => item._id === itemId);
-    resolvedTypeId = found?.typeId;
-    if (!resolvedTypeId) {
-      for (const [key, bucket] of Object.entries(current.byType)) {
-        if (key === WARDROBE_ALL_TYPE_KEY) continue;
-        const hit = bucket.items.find((item) => item._id === itemId);
-        if (hit) {
-          resolvedTypeId = hit.typeId || key;
-          break;
-        }
-      }
-    }
-  }
-
-  const patch = { imageUrl, imageUrlAt };
-  mutateBucketIfExists(WARDROBE_ALL_TYPE_KEY, (bucket) =>
-    patchItemInBucket(bucket, itemId, patch),
-  );
-  if (resolvedTypeId) {
-    mutateBucketIfExists(resolvedTypeId, (bucket) =>
-      patchItemInBucket(bucket, itemId, patch),
     );
   }
 }

@@ -6,23 +6,15 @@
  * - `visualDiary` → `VisualDiaryEntry.coverFileId`（仅封面）
  * - `recognition` → `RecognitionBatch.coverFileId`（仅封面）
  *
- * 衣橱列表已接入（`fetchWardrobeItems`）；其余域接入示例：
+ * 衣橱列表：解析结果写入本缓存，展示/读列表时以本缓存为 URL 唯一来源
+ *（`applyFreshImageUrls`）；`wardrobeCache` 仅存业务字段。
+ *
+ * 其余域接入示例：
  *
  * ```typescript
- * // 衣橱单品
- * const known = getFreshUrlMap("wardrobe", items.map((i) => i.imageFileId));
- * const map = await resolveTempFileUrls(fileIds, known);
- * mergeImageUrlCache("wardrobe", resolvedUrlMapToEntries(map));
- *
- * // 视觉日记封面
- * const coverIds = entries.map((e) => e.coverFileId).filter(Boolean);
  * const known = getFreshUrlMap("visualDiary", coverIds);
- * // ... resolve → mergeImageUrlCache("visualDiary", ...)
- *
- * // 识别批次封面
- * const coverIds = batches.map((b) => b.coverFileId).filter(Boolean);
- * const known = getFreshUrlMap("recognition", coverIds);
- * // ... 批量 resolveTempFileUrls 替代 N+1 resolveCloudFileUrl
+ * const map = await resolveTempFileUrls(coverIds, known);
+ * mergeImageUrlCache("visualDiary", resolvedUrlMapToEntries(map));
  * ```
  */
 import Taro from "@tarojs/taro";
@@ -35,6 +27,7 @@ import {
 } from "@/data/imageUrl";
 import {
   isImageUrlFresh,
+  type CloudImageItem,
   type ResolvedImageUrl,
 } from "@/services/cloudFile";
 
@@ -196,6 +189,35 @@ export function resolvedUrlMapToEntries(
     entries.push({ fileId, url: resolved.url, at: resolved.at });
   }
   return entries;
+}
+
+/** 以缓存为唯一来源，为列表项填充（或清除）临时链接 */
+export function applyFreshImageUrls<T extends CloudImageItem>(
+  category: ImageUrlCacheCategory,
+  items: T[],
+): T[] {
+  if (items.length === 0) return items;
+
+  const map = getFreshUrlMap(
+    category,
+    items.map((item) => item.imageFileId),
+  );
+
+  return items.map((item) => {
+    const resolved = map.get(item.imageFileId);
+    if (!resolved) {
+      if (!item.imageUrl && !item.imageUrlAt) return item;
+      const next = { ...item };
+      delete next.imageUrl;
+      delete next.imageUrlAt;
+      return next;
+    }
+    return {
+      ...item,
+      imageUrl: resolved.url,
+      imageUrlAt: resolved.at,
+    };
+  });
 }
 
 /** 批量 upsert 并持久化（无条数上限，仅依赖 TTL 淘汰） */

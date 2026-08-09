@@ -3,8 +3,9 @@ import { isWeapp } from "@/utils/platform";
 import Taro, { useDidShow } from "@tarojs/taro";
 import type { ClothingType, WardrobeItem } from "@/data/wardrobe";
 import { WARDROBE_PAGE_SIZE } from "@/data/wardrobe";
-import { collectImageUrls, resolveCloudFileUrl } from "@/services/cloudFile";
+import { resolveCloudFileUrl } from "@/services/cloudFile";
 import {
+  applyFreshImageUrls,
   putImageUrlCache,
   removeImageUrlCache,
 } from "@/services/imageUrlCache";
@@ -33,7 +34,6 @@ import {
   setWardrobeTypeBucket,
   takePendingWardrobeListPatch,
   typeKey,
-  updateWardrobeCacheItemUrl,
   WARDROBE_ALL_TYPE_KEY,
 } from "@/services/wardrobeCache";
 
@@ -175,7 +175,6 @@ export function useWardrobeList({ uploadFlowRef }: UseWardrobeListOptions) {
           typeId,
           skip: reset ? 0 : skip,
           limit: WARDROBE_PAGE_SIZE,
-          knownUrls: collectImageUrls(itemsRef.current),
         });
 
         if (seq !== requestSeqRef.current) return false;
@@ -263,6 +262,17 @@ export function useWardrobeList({ uploadFlowRef }: UseWardrobeListOptions) {
     if (!patch) return;
 
     const { item, previousTypeId } = patch;
+    if (item.imageFileId && item.imageUrl && item.imageUrlAt) {
+      putImageUrlCache(
+        "wardrobe",
+        item.imageFileId,
+        item.imageUrl,
+        item.imageUrlAt,
+      );
+    }
+    const [hydratedItem] = applyFreshImageUrls("wardrobe", [item]);
+    const displayItem = hydratedItem ?? item;
+
     const types = getClothingTypesFromCache();
     typesRef.current = types;
     setClothingTypes((prev) => (isSameTypes(prev, types) ? prev : types));
@@ -270,26 +280,26 @@ export function useWardrobeList({ uploadFlowRef }: UseWardrobeListOptions) {
     const currentKey = typeKey(activeTypeIdRef.current);
     if (currentKey === WARDROBE_ALL_TYPE_KEY) {
       setItems((prev) => {
-        const idx = prev.findIndex((entry) => entry._id === item._id);
+        const idx = prev.findIndex((entry) => entry._id === displayItem._id);
         if (idx < 0) return prev;
         const next = prev.slice();
-        next[idx] = item;
+        next[idx] = displayItem;
         return next;
       });
       return;
     }
 
-    if (currentKey === previousTypeId && previousTypeId !== item.typeId) {
-      setItems((prev) => prev.filter((entry) => entry._id !== item._id));
+    if (currentKey === previousTypeId && previousTypeId !== displayItem.typeId) {
+      setItems((prev) => prev.filter((entry) => entry._id !== displayItem._id));
       return;
     }
 
-    if (currentKey === item.typeId) {
+    if (currentKey === displayItem.typeId) {
       setItems((prev) => {
-        const idx = prev.findIndex((entry) => entry._id === item._id);
-        if (idx < 0) return [item, ...prev];
+        const idx = prev.findIndex((entry) => entry._id === displayItem._id);
+        if (idx < 0) return [displayItem, ...prev];
         const next = prev.slice();
-        next[idx] = item;
+        next[idx] = displayItem;
         return next;
       });
     }
@@ -428,14 +438,8 @@ export function useWardrobeList({ uploadFlowRef }: UseWardrobeListOptions) {
     try {
       const url = await resolveCloudFileUrl(fileId);
       if (!url) return;
-      const imageUrlAt = Date.now();
-      setItems((prev) =>
-        prev.map((i) =>
-          i.imageFileId === fileId ? { ...i, imageUrl: url, imageUrlAt } : i,
-        ),
-      );
-      updateWardrobeCacheItemUrl(item._id, url, imageUrlAt, item.typeId);
-      putImageUrlCache("wardrobe", fileId, url, imageUrlAt);
+      putImageUrlCache("wardrobe", fileId, url, Date.now());
+      setItems((prev) => applyFreshImageUrls("wardrobe", prev));
     } catch {
       // 兜底失败不打扰用户
     }
