@@ -4,11 +4,7 @@ import Taro, { useDidShow } from "@tarojs/taro";
 import type { ClothingType, WardrobeItem } from "@/data/wardrobe";
 import { WARDROBE_PAGE_SIZE } from "@/data/wardrobe";
 import { resolveCloudFileUrl } from "@/services/cloudFile";
-import {
-  applyFreshImageUrls,
-  putImageUrlCache,
-  removeImageUrlCache,
-} from "@/services/imageUrlCache";
+import { putImageUrlCache, removeImageUrlCache } from "@/services/imageUrlCache";
 import {
   deleteWardrobeItem,
   fetchClothingTypes,
@@ -270,8 +266,9 @@ export function useWardrobeList({ uploadFlowRef }: UseWardrobeListOptions) {
         item.imageUrlAt,
       );
     }
-    const [hydratedItem] = applyFreshImageUrls("wardrobe", [item]);
-    const displayItem = hydratedItem ?? item;
+    const displayItem: WardrobeItem = { ...item };
+    delete displayItem.imageUrl;
+    delete displayItem.imageUrlAt;
 
     const types = getClothingTypesFromCache();
     typesRef.current = types;
@@ -439,7 +436,8 @@ export function useWardrobeList({ uploadFlowRef }: UseWardrobeListOptions) {
       const url = await resolveCloudFileUrl(fileId);
       if (!url) return;
       putImageUrlCache("wardrobe", fileId, url, Date.now());
-      setItems((prev) => applyFreshImageUrls("wardrobe", prev));
+      // 触发重渲染，卡片通过 getCachedImageUrl 读到新链
+      setItems((prev) => prev.map((entry) => ({ ...entry })));
     } catch {
       // 兜底失败不打扰用户
     }

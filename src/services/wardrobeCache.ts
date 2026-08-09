@@ -1,6 +1,5 @@
 import Taro from "@tarojs/taro";
 import type { ClothingType, WardrobeItem } from "@/data/wardrobe";
-import { applyFreshImageUrls } from "@/services/imageUrlCache";
 
 /** 「全部」分类的固定 key，其余 key 为 typeId */
 export const WARDROBE_ALL_TYPE_KEY = "all";
@@ -65,7 +64,7 @@ export function typeKey(typeId: string | null | undefined): string {
   return typeId ? typeId : WARDROBE_ALL_TYPE_KEY;
 }
 
-/** 内存桶不存临时链；展示前统一从 imageUrlCache 填充 */
+/** 内存桶不存临时链；展示用 getCachedImageUrl 查表 */
 function withoutImageUrl(item: WardrobeItem): WardrobeItem {
   if (!item.imageUrl && !item.imageUrlAt) return item;
   const next = { ...item };
@@ -76,10 +75,6 @@ function withoutImageUrl(item: WardrobeItem): WardrobeItem {
 
 function withoutImageUrls(items: WardrobeItem[]): WardrobeItem[] {
   return items.map(withoutImageUrl);
-}
-
-function hydrateImageUrls(items: WardrobeItem[]): WardrobeItem[] {
-  return applyFreshImageUrls("wardrobe", items);
 }
 
 function resolveActiveTab(
@@ -157,7 +152,7 @@ export function getWardrobeTypeBucket(
   const bucket = current.byType[typeKey(typeId)];
   if (!bucket) return null;
   return {
-    items: hydrateImageUrls(bucket.items),
+    items: bucket.items,
     hasMore: bucket.hasMore,
   };
 }
@@ -279,7 +274,7 @@ export function getInitialWardrobeState(): InitialWardrobeState {
 
   return {
     clothingTypes: current.clothingTypes,
-    items: hydrateImageUrls(bucket.items),
+    items: bucket.items,
     hasMore: bucket.hasMore,
     hasCache: true,
     activeTab: resolved.activeTab,

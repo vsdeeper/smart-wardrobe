@@ -4,9 +4,14 @@ import type { TryOnPreviewStatus } from "@/data/tryOn";
 import type { WardrobeItem } from "@/data/wardrobe";
 import type { WeatherSnapshot } from "@/data/weather";
 import { resolveCloudFileUrl } from "@/services/cloudFile";
+import { putImageUrlCache } from "@/services/imageUrlCache";
 import { fetchUserProfile } from "@/services/profile";
 import { generateTryonImage } from "@/services/tryOnPreview";
-import { getInitialTryOnCache, writeTryOnCache } from "@/services/tryOnCache";
+import {
+  getInitialTryOnCache,
+  getTryOnHeroImageUrl,
+  writeTryOnCache,
+} from "@/services/tryOnCache";
 import type { SavedReturnMeta } from "@/hooks/useTryOnRecommend";
 import { isEphemeralExternalImageUrl } from "@/utils/imageUrl";
 
@@ -28,20 +33,19 @@ export function useTryOnPreview({
   weatherSnapshot,
 }: UseTryOnPreviewOptions) {
   const [initialCache] = useState(getInitialTryOnCache);
+  const initialHeroUrl = getTryOnHeroImageUrl(initialCache?.heroCoverFileId);
   const [status, setStatus] = useState<TryOnPreviewStatus>(
-    initialCache?.heroImageUrl ? "success" : "idle"
+    initialHeroUrl ? "success" : "idle",
   );
   const [heroImageUrl, setHeroImageUrl] = useState<string | null>(
-    initialCache?.heroImageUrl ?? null
+    initialHeroUrl || null,
   );
   const [heroCoverFileId, setHeroCoverFileId] = useState<string | null>(
-    initialCache?.heroCoverFileId ?? null
+    initialCache?.heroCoverFileId ?? null,
   );
-  const [heroFromCache, setHeroFromCache] = useState(
-    !!initialCache?.heroImageUrl
-  );
+  const [heroFromCache, setHeroFromCache] = useState(!!initialHeroUrl);
   const [previewErrorMessage, setPreviewErrorMessage] = useState<string | null>(
-    null
+    null,
   );
   const loadingRef = useRef(false);
   const handledKeyRef = useRef<string | null>(null);
@@ -54,24 +58,28 @@ export function useTryOnPreview({
       setHeroFromCache(cached);
       setStatus(url || fileId ? "success" : "error");
     },
-    []
+    [],
+  );
+
+  const persistHeroUrl = useCallback(
+    (coverFileId: string, url: string, at: number = Date.now()) => {
+      putImageUrlCache("visualDiary", coverFileId, url, at);
+    },
+    [],
   );
 
   const loadHeroFromCache = useCallback(async () => {
     const cache = getInitialTryOnCache();
-    if (!cache?.heroImageUrl && !cache?.heroCoverFileId) {
+    if (!cache?.heroCoverFileId) {
       return false;
     }
+    const coverFileId = cache.heroCoverFileId;
 
-    if (cache.heroImageUrl) {
+    const cachedUrl = getTryOnHeroImageUrl(coverFileId);
+    if (cachedUrl) {
       setPreviewErrorMessage(null);
-      applyHero(cache.heroImageUrl, cache.heroCoverFileId ?? null, true);
+      applyHero(cachedUrl, coverFileId, true);
       return true;
-    }
-
-    const coverFileId = cache.heroCoverFileId ?? null;
-    if (!coverFileId) {
-      return false;
     }
 
     const freshUrl = await resolveCloudFileUrl(coverFileId);
@@ -79,6 +87,7 @@ export function useTryOnPreview({
       return false;
     }
 
+    persistHeroUrl(coverFileId, freshUrl);
     setPreviewErrorMessage(null);
     applyHero(freshUrl, coverFileId, true);
 
@@ -86,12 +95,10 @@ export function useTryOnPreview({
       recommendation: cache.recommendation,
       selectedPieces: cache.selectedPieces,
       heroCoverFileId: coverFileId,
-      heroImageUrl: freshUrl,
-      heroImageUrlAt: Date.now(),
     });
 
     return true;
-  }, [applyHero]);
+  }, [applyHero, persistHeroUrl]);
 
   const generatePreview = useCallback(async () => {
     if (loadingRef.current || selectedPieces.length === 0) return;
@@ -143,6 +150,8 @@ export function useTryOnPreview({
         throw new Error("试穿图没能生成，请稍后重试");
       }
 
+      const at = Date.now();
+      persistHeroUrl(coverFileId, coverUrl, at);
       applyHero(coverUrl, coverFileId, false);
       imageRetriedRef.current.delete(coverFileId);
 
@@ -152,8 +161,6 @@ export function useTryOnPreview({
           recommendation: cache.recommendation,
           selectedPieces,
           heroCoverFileId: coverFileId,
-          heroImageUrl: coverUrl,
-          heroImageUrlAt: Date.now(),
           wearConfirmed: false,
         });
       }
@@ -165,7 +172,13 @@ export function useTryOnPreview({
     } finally {
       loadingRef.current = false;
     }
-  }, [selectedPieces, applyHero, weatherSnapshot?.conditionCode, savedReturn]);
+  }, [
+    selectedPieces,
+    applyHero,
+    persistHeroUrl,
+    weatherSnapshot?.conditionCode,
+    savedReturn,
+  ]);
 
   const handleHeroImageError = useCallback(async () => {
     const fileId = heroCoverFileId;
@@ -177,6 +190,7 @@ export function useTryOnPreview({
       const freshUrl = await resolveCloudFileUrl(fileId);
       if (!freshUrl) return;
 
+      persistHeroUrl(fileId, freshUrl);
       setHeroImageUrl(freshUrl);
       setHeroFromCache(false);
       setPreviewErrorMessage(null);
@@ -188,14 +202,12 @@ export function useTryOnPreview({
           recommendation: cache.recommendation,
           selectedPieces: cache.selectedPieces,
           heroCoverFileId: fileId,
-          heroImageUrl: freshUrl,
-          heroImageUrlAt: Date.now(),
         });
       }
     } catch {
       // 兜底失败不打扰用户，手动重试时会重新生成
     }
-  }, [heroCoverFileId, savedReturn]);
+  }, [heroCoverFileId, persistHeroUrl, savedReturn]);
 
   useEffect(() => {
     if (!recommendReady || fromCache || selectedPieces.length === 0) return;

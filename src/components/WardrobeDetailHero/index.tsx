@@ -1,6 +1,7 @@
 import { View } from "@tarojs/components";
 import { Image } from "@nutui/nutui-react-taro";
 import type { WardrobeItem } from "@/data/wardrobe";
+import { getCachedImageUrl } from "@/services/imageUrlCache";
 import "./index.scss";
 
 export interface WardrobeDetailHeroProps {
@@ -8,7 +9,7 @@ export interface WardrobeDetailHeroProps {
 }
 
 export default function WardrobeDetailHero({ item }: WardrobeDetailHeroProps) {
-  const src = item.imageUrl || item.imageFileId;
+  const src = getCachedImageUrl("wardrobe", item.imageFileId);
 
   return (
     <View className="wardrobe-detail-hero">

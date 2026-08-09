@@ -8,7 +8,6 @@ import type {
 import { WARDROBE_PAGE_SIZE } from "@/data/wardrobe";
 import { attachImageUrls, resolveTempFileUrls } from "@/services/cloudFile";
 import {
-  applyFreshImageUrls,
   getFreshUrlMap,
   mergeImageUrlCache,
   resolvedUrlMapToEntries,
@@ -21,6 +20,28 @@ export interface FetchWardrobeItemsOptions {
   typeId?: string | null;
   skip: number;
   limit?: number;
+}
+
+function stripItemImageUrl(item: WardrobeItem): WardrobeItem {
+  if (!item.imageUrl && !item.imageUrlAt) return item;
+  const next = { ...item };
+  delete next.imageUrl;
+  delete next.imageUrlAt;
+  return next;
+}
+
+/** 解析临时链写入 imageUrlCache，返回不含 URL 的业务项 */
+async function resolveWardrobeImageUrls(
+  items: WardrobeItem[],
+): Promise<WardrobeItem[]> {
+  if (items.length === 0) return items;
+  const fileIds = items.map((item) => item.imageFileId);
+  const urlMap = await resolveTempFileUrls(
+    fileIds,
+    getFreshUrlMap("wardrobe", fileIds),
+  );
+  mergeImageUrlCache("wardrobe", resolvedUrlMapToEntries(urlMap));
+  return items.map(stripItemImageUrl);
 }
 
 interface RecognizeClothingError {
@@ -114,7 +135,7 @@ export type WardrobeItemsByType = Record<string, WardrobeItem[]>;
 
 /**
  * 拉取衣橱单品并按 typeName 分组，供 AI 推荐分析使用。
- * 仅供 AI 分析，不解析图片临时链接；如需展示图片，请对最终选中的单品单独调用 attachImageUrls。
+ * 仅供 AI 分析，不解析图片临时链接；展示前请对选中单品解析并 mergeImageUrlCache。
  */
 export async function fetchWardrobeItemsGroupedByType(): Promise<{
   items: WardrobeItem[];
@@ -179,13 +200,7 @@ export async function fetchWardrobeItems(
   const items = (res.data as Record<string, unknown>[]).map(
     normalizeWardrobeItem,
   );
-  const fileIds = items.map((item) => item.imageFileId);
-  const urlMap = await resolveTempFileUrls(
-    fileIds,
-    getFreshUrlMap("wardrobe", fileIds),
-  );
-  mergeImageUrlCache("wardrobe", resolvedUrlMapToEntries(urlMap));
-  return applyFreshImageUrls("wardrobe", items);
+  return resolveWardrobeImageUrls(items);
 }
 
 /** 上传图片并调用 AI 识别（预览模式，不入库） */
@@ -387,7 +402,7 @@ export async function fetchWardrobeItemsByIds(
     .map((id) => itemMap.get(id))
     .filter((item): item is WardrobeItem => item != null);
 
-  return attachImageUrls(ordered);
+  return resolveWardrobeImageUrls(ordered);
 }
 
 /** 按 id 查询单件衣橱单品 */
@@ -401,8 +416,8 @@ export async function fetchWardrobeItemById(id: string): Promise<WardrobeItem> {
   }
 
   const item = normalizeWardrobeItem(raw);
-  const [withUrl] = await attachImageUrls([item]);
-  return withUrl ?? item;
+  const [resolved] = await resolveWardrobeImageUrls([item]);
+  return resolved ?? stripItemImageUrl(item);
 }
 
 export interface UpdateWardrobeItemInput {

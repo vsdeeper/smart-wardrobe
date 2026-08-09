@@ -3,6 +3,7 @@ import { ArrowDown, ArrowUp, Close } from "@nutui/icons-react-taro";
 import { Image } from "@nutui/nutui-react-taro";
 import SolidButton from "@/components/SolidButton";
 import type { WardrobeItem } from "@/data/wardrobe";
+import { getCachedImageUrl } from "@/services/imageUrlCache";
 import "./index.scss";
 
 export interface OutfitPanelProps {
@@ -56,7 +57,7 @@ export default function OutfitPanel({
                   <View className="outfit-thumb__media">
                     <Image
                       className="outfit-thumb__image"
-                      src={piece.imageUrl ?? ""}
+                      src={getCachedImageUrl("wardrobe", piece.imageFileId)}
                       mode="aspectFill"
                     />
                   </View>

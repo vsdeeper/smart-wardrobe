@@ -29,10 +29,8 @@ export interface TryOnDailyCache {
   selectedRecommendation?: TryOnRecommendation;
   manualSelectedPieces?: WardrobeItem[];
   weatherSnapshot?: WeatherSnapshot;
+  /** 试穿效果图云存储 fileId；临时链见 imageUrlCache visualDiary 域 */
   heroCoverFileId?: string;
-  heroImageUrl?: string;
-  /** heroImageUrl 的生成时刻，用于判断云存储临时链接是否仍可复用 */
-  heroImageUrlAt?: number;
   /** 当前推荐是否已确认试穿并记录到视觉日记 */
   wearConfirmed?: boolean;
   cachedAt: number;

@@ -1,6 +1,7 @@
 import { View, Text } from "@tarojs/components";
 import { Image } from "@nutui/nutui-react-taro";
 import type { WardrobeItem } from "@/data/wardrobe";
+import { getCachedImageUrl } from "@/services/imageUrlCache";
 import "./index.scss";
 
 export interface WardrobeItemCardProps {
@@ -26,7 +27,7 @@ export default function WardrobeItemCard({
         <View className="wardrobe-card__image-wrap">
           <Image
             className="wardrobe-card__image"
-            src={item.imageUrl || item.imageFileId}
+            src={getCachedImageUrl("wardrobe", item.imageFileId)}
             mode="aspectFill"
             radius="0"
             onError={() => onImageError?.(item)}

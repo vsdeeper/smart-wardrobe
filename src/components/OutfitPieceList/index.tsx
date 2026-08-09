@@ -1,6 +1,7 @@
 import { View, Text, ScrollView } from "@tarojs/components";
 import { Image } from "@nutui/nutui-react-taro";
 import type { WardrobeItem } from "@/data/wardrobe";
+import { getCachedImageUrl } from "@/services/imageUrlCache";
 import "./index.scss";
 
 export interface OutfitPieceListProps {
@@ -36,7 +37,7 @@ export default function OutfitPieceList({
             <View className="outfit-piece__image-wrap">
               <Image
                 className="outfit-piece__image"
-                src={piece.imageUrl || piece.imageFileId}
+                src={getCachedImageUrl("wardrobe", piece.imageFileId)}
                 mode="aspectFit"
               />
             </View>

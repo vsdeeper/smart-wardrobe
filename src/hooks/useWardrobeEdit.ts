@@ -6,6 +6,7 @@ import {
   getRecognitionSessionItem,
   updateRecognitionSessionItem,
 } from "@/services/recognitionSession";
+import { putImageUrlCache } from "@/services/imageUrlCache";
 import {
   fetchClothingTypes,
   fetchWardrobeItemById,
@@ -20,19 +21,25 @@ import { afterToastNavigate } from "@/utils/afterToastNavigate";
 function recognitionItemToDisplayItem(
   preview: RecognizedPreviewItem,
 ): WardrobeItem {
+  if (preview.imageFileId && preview.imageUrl) {
+    putImageUrlCache(
+      "wardrobe",
+      preview.imageFileId,
+      preview.imageUrl,
+      Date.now(),
+    );
+  }
   return {
     _id: preview.tempId,
     name: preview.name,
     typeId: "",
     typeName: preview.typeName,
     imageFileId: preview.imageFileId,
-    imageUrl: preview.imageUrl,
     tags: preview.tags,
     stylingAdvice: preview.stylingAdvice,
     createdAt: Date.now(),
   };
 }
-
 export function useWardrobeEdit() {
   const [item, setItem] = useState<WardrobeItem | null>(null);
   const [clothingTypes, setClothingTypes] = useState<ClothingType[]>([]);

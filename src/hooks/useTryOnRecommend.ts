@@ -4,7 +4,12 @@ import type { TryOnRecommendation, TryOnRecommendStatus } from "@/data/tryOn";
 import type { WeatherSnapshot } from "@/data/weather";
 import type { WardrobeItem } from "@/data/wardrobe";
 import { isGenderSet, isMetricsSet } from "@/data/profile";
-import { attachImageUrls, collectImageUrls } from "@/services/cloudFile";
+import { resolveTempFileUrls } from "@/services/cloudFile";
+import {
+  getFreshUrlMap,
+  mergeImageUrlCache,
+  resolvedUrlMapToEntries,
+} from "@/services/imageUrlCache";
 import {
   recommendOutfit,
   recommendSelectedOutfit,
@@ -17,7 +22,6 @@ import {
   clearTryOnCache,
   getInitialTryOnCache,
   isTryOnCacheValid,
-  updateTryOnCacheSelectedPieceUrls,
   writeTryOnCache,
 } from "@/services/tryOnCache";
 import { consumeTryOnDraft } from "@/services/tryOnDraft";
@@ -28,24 +32,40 @@ export interface SavedReturnMeta {
   piecesChanged: boolean;
 }
 
-function selectedPieceUrlsChanged(
-  prev: WardrobeItem[],
-  next: WardrobeItem[],
-): boolean {
-  if (prev.length !== next.length) return true;
-  return next.some((piece, index) => piece.imageUrl !== prev[index]?.imageUrl);
+function stripPieceImageUrls(pieces: WardrobeItem[]): WardrobeItem[] {
+  return pieces.map((piece) => {
+    if (!piece.imageUrl && !piece.imageUrlAt) return piece;
+    const next = { ...piece };
+    delete next.imageUrl;
+    delete next.imageUrlAt;
+    return next;
+  });
+}
+
+/** 解析选品临时链并写入 imageUrlCache；返回不含 URL 的 pieces */
+async function resolveAndCachePieceUrls(
+  pieces: WardrobeItem[],
+): Promise<WardrobeItem[]> {
+  if (pieces.length === 0) return pieces;
+  const fileIds = pieces.map((piece) => piece.imageFileId);
+  const urlMap = await resolveTempFileUrls(
+    fileIds,
+    getFreshUrlMap("wardrobe", fileIds),
+  );
+  mergeImageUrlCache("wardrobe", resolvedUrlMapToEntries(urlMap));
+  return stripPieceImageUrls(pieces);
 }
 
 export function useTryOnRecommend() {
   const [initialCache] = useState(getInitialTryOnCache);
   const [status, setStatus] = useState<TryOnRecommendStatus>(
-    initialCache ? "success" : "idle"
+    initialCache ? "success" : "idle",
   );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [recommendation, setRecommendation] =
     useState<TryOnRecommendation | null>(initialCache?.recommendation ?? null);
   const [selectedPieces, setSelectedPieces] = useState<WardrobeItem[]>(
-    initialCache?.selectedPieces ?? []
+    initialCache?.selectedPieces ?? [],
   );
   const [fromCache, setFromCache] = useState(initialCache !== null);
   const [savedReturn, setSavedReturn] = useState<SavedReturnMeta | null>(null);
@@ -57,7 +77,7 @@ export function useTryOnRecommend() {
     piecesChanged: boolean;
   } | null>(null);
   const allItemsRef = useRef<WardrobeItem[]>(
-    initialCache?.selectedPieces ?? []
+    initialCache?.selectedPieces ?? [],
   );
 
   const applyRecommendation = useCallback(
@@ -65,7 +85,7 @@ export function useTryOnRecommend() {
       setRecommendation(rec);
       setSelectedPieces(pieces);
     },
-    []
+    [],
   );
 
   const loadFresh = useCallback(
@@ -130,19 +150,16 @@ export function useTryOnRecommend() {
         });
 
         const pieces = resolveSelectedPieces(rec, items);
-        const piecesWithUrls = await attachImageUrls(
-          pieces,
-          collectImageUrls(items),
-        );
-        applyRecommendation(rec, piecesWithUrls);
+        const cachedPieces = await resolveAndCachePieceUrls(pieces);
+        applyRecommendation(rec, cachedPieces);
         writeTryOnCache(
           {
             recommendation: rec,
-            selectedPieces: piecesWithUrls,
+            selectedPieces: cachedPieces,
             weatherSnapshot: weather,
             wearConfirmed: false,
           },
-          { clearHero: true, clearManual: true }
+          { clearHero: true, clearManual: true },
         );
         setStatus("success");
       } catch (err) {
@@ -154,7 +171,7 @@ export function useTryOnRecommend() {
         loadingRef.current = false;
       }
     },
-    [applyRecommendation]
+    [applyRecommendation],
   );
 
   const loadManual = useCallback(
@@ -200,7 +217,7 @@ export function useTryOnRecommend() {
           };
         }
 
-        const pieces = await attachImageUrls(piecesFromDraft);
+        const pieces = await resolveAndCachePieceUrls(piecesFromDraft);
         const rec = await recommendSelectedOutfit({
           weather,
           season: getCurrentSeason(),
@@ -225,7 +242,7 @@ export function useTryOnRecommend() {
         loadingRef.current = false;
       }
     },
-    [applyRecommendation]
+    [applyRecommendation],
   );
 
   const loadFromCache = useCallback(async () => {
@@ -238,14 +255,9 @@ export function useTryOnRecommend() {
     if (!cache) {
       return false;
     }
-    const knownUrls = collectImageUrls(cache.selectedPieces);
-    const pieces = await attachImageUrls(cache.selectedPieces, knownUrls);
+    const pieces = await resolveAndCachePieceUrls(cache.selectedPieces);
     allItemsRef.current = pieces;
-
-    if (selectedPieceUrlsChanged(cache.selectedPieces, pieces)) {
-      setSelectedPieces(pieces);
-      updateTryOnCacheSelectedPieceUrls(pieces);
-    }
+    setSelectedPieces(pieces);
 
     setRecommendation(cache.recommendation);
     setWeatherSnapshot(cache.weatherSnapshot ?? null);

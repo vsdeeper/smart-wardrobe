@@ -2,6 +2,7 @@ import { View } from "@tarojs/components";
 import { Check } from "@nutui/icons-react-taro";
 import { Image } from "@nutui/nutui-react-taro";
 import type { WardrobeItem } from "@/data/wardrobe";
+import { getCachedImageUrl } from "@/services/imageUrlCache";
 import "./index.scss";
 
 export interface MatchItemCardProps {
@@ -26,7 +27,7 @@ export default function MatchItemCard({
         <View className="match-card__image-wrap">
           <Image
             className="match-card__image"
-            src={item.imageUrl || item.imageFileId}
+            src={getCachedImageUrl("wardrobe", item.imageFileId)}
             mode="aspectFill"
             radius="0"
           />

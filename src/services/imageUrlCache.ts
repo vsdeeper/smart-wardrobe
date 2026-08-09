@@ -2,19 +2,18 @@
  * 云存储临时链接跨会话缓存（`sw_image_url_cache`）。
  *
  * 三域语义：
- * - `wardrobe` → `WardrobeItem.imageFileId`；识别 preview 单品、日记详情 piece 亦走此域
- * - `visualDiary` → `VisualDiaryEntry.coverFileId`（仅封面）
+ * - `wardrobe` → `WardrobeItem.imageFileId`；试穿选品、识别 preview、日记详情 piece 亦走此域
+ * - `visualDiary` → `VisualDiaryEntry.coverFileId`、试穿 Hero `heroCoverFileId`（封面）
  * - `recognition` → `RecognitionBatch.coverFileId`（仅封面）
  *
- * 衣橱列表：解析结果写入本缓存，展示/读列表时以本缓存为 URL 唯一来源
- *（`applyFreshImageUrls`）；`wardrobeCache` 仅存业务字段。
- *
- * 其余域接入示例：
+ * 读模型：业务缓存只存 fileId；展示用 `getCachedImageUrl(category, fileId)` 查表。
+ * 写模型：`resolveTempFileUrls` 后 `mergeImageUrlCache` / `putImageUrlCache`。
  *
  * ```typescript
  * const known = getFreshUrlMap("visualDiary", coverIds);
  * const map = await resolveTempFileUrls(coverIds, known);
  * mergeImageUrlCache("visualDiary", resolvedUrlMapToEntries(map));
+ * const src = getCachedImageUrl("visualDiary", coverId);
  * ```
  */
 import Taro from "@tarojs/taro";
@@ -25,11 +24,7 @@ import {
   type ImageUrlCacheEntry,
   type ImageUrlCacheStore,
 } from "@/data/imageUrl";
-import {
-  isImageUrlFresh,
-  type CloudImageItem,
-  type ResolvedImageUrl,
-} from "@/services/cloudFile";
+import { isImageUrlFresh, type ResolvedImageUrl } from "@/services/cloudFile";
 
 const CACHE_KEY = "sw_image_url_cache";
 
@@ -191,33 +186,19 @@ export function resolvedUrlMapToEntries(
   return entries;
 }
 
-/** 以缓存为唯一来源，为列表项填充（或清除）临时链接 */
-export function applyFreshImageUrls<T extends CloudImageItem>(
+/**
+ * 返回仍新鲜的临时 URL；过期或不存在则回退为 fileId。
+ * 展示层直接 `src={getCachedImageUrl(category, fileId)}`。
+ */
+export function getCachedImageUrl(
   category: ImageUrlCacheCategory,
-  items: T[],
-): T[] {
-  if (items.length === 0) return items;
+  fileId: string,
+): string {
+  const id = fileId.trim();
+  if (!id) return "";
 
-  const map = getFreshUrlMap(
-    category,
-    items.map((item) => item.imageFileId),
-  );
-
-  return items.map((item) => {
-    const resolved = map.get(item.imageFileId);
-    if (!resolved) {
-      if (!item.imageUrl && !item.imageUrlAt) return item;
-      const next = { ...item };
-      delete next.imageUrl;
-      delete next.imageUrlAt;
-      return next;
-    }
-    return {
-      ...item,
-      imageUrl: resolved.url,
-      imageUrlAt: resolved.at,
-    };
-  });
+  const entry = getFreshEntries(category, [id])[0];
+  return entry?.url || id;
 }
 
 /** 批量 upsert 并持久化（无条数上限，仅依赖 TTL 淘汰） */
