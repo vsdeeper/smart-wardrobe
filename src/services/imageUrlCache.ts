@@ -1,13 +1,15 @@
 /**
  * 云存储临时链接跨会话缓存（`sw_image_url_cache`）。
  *
- * 三域语义：
+ * 四域语义：
  * - `wardrobe` → `WardrobeItem.imageFileId`；试穿选品、识别 preview、日记详情 piece 亦走此域
  * - `visualDiary` → `VisualDiaryEntry.coverFileId`、试穿 Hero `heroCoverFileId`（封面）
  * - `recognition` → `RecognitionBatch.coverFileId`（仅封面）
+ * - `avatar` → `UserProfile.avatarFileId`
  *
  * 读模型：业务缓存只存 fileId；展示用 `getCachedImageUrl(category, fileId)` 查表。
  * 写模型：`resolveTempFileUrls` 后 `mergeImageUrlCache` / `putImageUrlCache`。
+ * 旧三域 storage 不兼容，整包作废。
  *
  * ```typescript
  * const known = getFreshUrlMap("visualDiary", coverIds);
@@ -51,7 +53,9 @@ function isValidStore(raw: unknown): raw is ImageUrlCacheStore {
     Array.isArray(store.visualDiaryList) &&
     store.visualDiaryList.every(isValidEntry) &&
     Array.isArray(store.recognitionList) &&
-    store.recognitionList.every(isValidEntry)
+    store.recognitionList.every(isValidEntry) &&
+    Array.isArray(store.avatarList) &&
+    store.avatarList.every(isValidEntry)
   );
 }
 
@@ -122,6 +126,11 @@ function loadRawStore(): ImageUrlCacheStore | null {
     const raw = Taro.getStorageSync(CACHE_KEY) as ImageUrlCacheStore | "";
     if (!isValidStore(raw)) {
       memoryCache = null;
+      try {
+        Taro.removeStorageSync(CACHE_KEY);
+      } catch {
+        // ignore
+      }
       return null;
     }
     memoryCache = raw;

@@ -3,7 +3,12 @@ import { VISUAL_DIARY_PAGE_SIZE } from "@/data/tryOn";
 import type { TryOnTip, VisualDiaryEntry } from "@/data/tryOn";
 import type { WeatherSnapshot } from "@/data/weather";
 import { resolveTempFileUrls } from "@/services/cloudFile";
-import { isEphemeralExternalImageUrl } from "@/utils/imageUrl";
+import {
+  getFreshUrlMap,
+  mergeImageUrlCache,
+  resolvedUrlMapToEntries,
+} from "@/services/imageUrlCache";
+import { clearVisualDiaryPreviewCache } from "@/services/visualDiaryCache";
 
 export interface SaveVisualDiaryInput {
   title: string;
@@ -67,20 +72,24 @@ function normalizeEntry(raw: Record<string, unknown>): VisualDiaryEntry {
 async function resolveCoverUrls(
   entries: VisualDiaryEntry[],
 ): Promise<VisualDiaryEntry[]> {
+  const fileIds = entries
+    .map((entry) => entry.coverFileId)
+    .filter((id): id is string => Boolean(id));
+
   const urlMap = await resolveTempFileUrls(
-    entries
-      .map((entry) => entry.coverFileId)
-      .filter((id): id is string => Boolean(id)),
+    fileIds,
+    getFreshUrlMap("visualDiary", fileIds),
   );
+  mergeImageUrlCache("visualDiary", resolvedUrlMapToEntries(urlMap));
 
   return entries.map((entry) => {
-    if (entry.coverFileId) {
-      return { ...entry, coverUrl: urlMap.get(entry.coverFileId)?.url };
-    }
-    if (entry.coverUrl && isEphemeralExternalImageUrl(entry.coverUrl)) {
+    if (!entry.coverFileId) {
       return { ...entry, coverUrl: undefined };
     }
-    return entry;
+    return {
+      ...entry,
+      coverUrl: urlMap.get(entry.coverFileId)?.url,
+    };
   });
 }
 
@@ -118,6 +127,7 @@ export async function saveVisualDiaryEntry(
     ...data,
     createdAt: Date.now(),
   });
+  clearVisualDiaryPreviewCache();
   return resolveCoverUrl(entry);
 }
 
@@ -156,6 +166,7 @@ export async function fetchVisualDiaryEntryById(
 export async function deleteVisualDiaryEntry(id: string): Promise<void> {
   const db = Taro.cloud.database();
   await db.collection("visual_diary").doc(id).remove({});
+  clearVisualDiaryPreviewCache();
 }
 
 export async function fetchVisualDiaryCount(): Promise<number> {

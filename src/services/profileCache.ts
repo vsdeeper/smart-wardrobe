@@ -1,13 +1,16 @@
 import Taro from "@tarojs/taro";
-import { CLOUD_TEMP_URL_TTL_MS } from "@/config/cloud";
 import { DEFAULT_USER_PROFILE, type UserProfile } from "@/data/profile";
 import { fetchUserProfile } from "@/services/profile";
 import { resolveAvatarUrl } from "@/services/profileAvatar";
+import {
+  getCachedImageUrl,
+  putImageUrlCache,
+  removeImageUrlCache,
+} from "@/services/imageUrlCache";
 import { fetchWardrobeItemCount } from "@/services/wardrobe";
 
 export interface ProfileCacheEntry {
   profile: UserProfile;
-  avatarUrl?: string;
   itemCount: number;
   cachedAt: number;
 }
@@ -19,10 +22,21 @@ export interface InitialProfileState {
   hasCache: boolean;
 }
 
-const CACHE_KEY = "sw_user_profile_cache";
+const LEGACY_STORAGE_KEY = "sw_user_profile_cache";
 
-let memoryCache: ProfileCacheEntry | null | undefined;
+let memoryCache: ProfileCacheEntry | null = null;
+let legacyStorageCleared = false;
 let inflightPromise: Promise<ProfileCacheEntry | null> | null = null;
+
+function ensureLegacyStorageCleared(): void {
+  if (legacyStorageCleared) return;
+  legacyStorageCleared = true;
+  try {
+    Taro.removeStorageSync(LEGACY_STORAGE_KEY);
+  } catch {
+    // ignore
+  }
+}
 
 function isValidProfile(raw: unknown): raw is UserProfile {
   if (!raw || typeof raw !== "object") return false;
@@ -55,91 +69,62 @@ function isValidEntry(raw: unknown): raw is ProfileCacheEntry {
   );
 }
 
-function isAvatarUrlCacheValid(
-  entry: ProfileCacheEntry,
-  fileId: string,
-): boolean {
-  if (entry.profile.avatarFileId !== fileId || !entry.avatarUrl) {
-    return false;
-  }
-  return Date.now() - entry.cachedAt < CLOUD_TEMP_URL_TTL_MS;
+export function getAvatarDisplayUrl(fileId?: string): string | undefined {
+  if (!fileId?.trim()) return undefined;
+  const url = getCachedImageUrl("avatar", fileId);
+  return url && url !== fileId ? url : undefined;
 }
 
-async function resolveAvatarUrlWithCache(
+async function resolveAndCacheAvatar(
   fileId: string,
-  cached: ProfileCacheEntry | null,
   forceRefresh = false,
 ): Promise<string | undefined> {
-  if (!forceRefresh && cached && isAvatarUrlCacheValid(cached, fileId)) {
-    return cached.avatarUrl;
+  if (!forceRefresh) {
+    const cached = getAvatarDisplayUrl(fileId);
+    if (cached) return cached;
+  } else {
+    removeImageUrlCache("avatar", fileId);
   }
 
   const url = await resolveAvatarUrl(fileId);
+  if (url) {
+    putImageUrlCache("avatar", fileId, url);
+  }
   return url ?? undefined;
 }
 
 export function invalidateAvatarUrl(): void {
-  const cached = readProfileCache();
-  if (!cached) return;
-
-  writeProfileCache({
-    ...cached,
-    avatarUrl: undefined,
-    cachedAt: Date.now(),
-  });
+  const fileId = readProfileCache()?.profile.avatarFileId;
+  if (!fileId) return;
+  removeImageUrlCache("avatar", fileId);
 }
 
 export async function refreshAvatarUrl(): Promise<string | undefined> {
-  const cached = readProfileCache();
-  const fileId = cached?.profile.avatarFileId;
+  const fileId = readProfileCache()?.profile.avatarFileId;
   if (!fileId) return undefined;
-
-  const avatarUrl = await resolveAvatarUrlWithCache(fileId, cached, true);
-  if (!cached) return avatarUrl;
-
-  writeProfileCache({
-    ...cached,
-    avatarUrl,
-    cachedAt: Date.now(),
-  });
-  return avatarUrl;
+  return resolveAndCacheAvatar(fileId, true);
 }
 
 export function readProfileCache(): ProfileCacheEntry | null {
-  if (memoryCache !== undefined) {
-    return memoryCache;
-  }
-
-  try {
-    const raw = Taro.getStorageSync(CACHE_KEY) as ProfileCacheEntry | "";
-    if (!isValidEntry(raw)) {
-      memoryCache = null;
-      return null;
-    }
-    memoryCache = raw;
-    return raw;
-  } catch {
-    memoryCache = null;
+  ensureLegacyStorageCleared();
+  if (!memoryCache || !isValidEntry(memoryCache)) {
     return null;
   }
+  return memoryCache;
 }
 
 export function writeProfileCache(entry: ProfileCacheEntry): void {
-  memoryCache = entry;
-  try {
-    Taro.setStorageSync(CACHE_KEY, entry);
-  } catch {
-    // ignore
-  }
+  ensureLegacyStorageCleared();
+  memoryCache = {
+    profile: entry.profile,
+    itemCount: entry.itemCount,
+    cachedAt: entry.cachedAt,
+  };
 }
 
 export function clearProfileCache(): void {
+  ensureLegacyStorageCleared();
   memoryCache = null;
-  try {
-    Taro.removeStorageSync(CACHE_KEY);
-  } catch {
-    // ignore
-  }
 }
 
 export function getInitialProfileState(): InitialProfileState {
@@ -155,7 +140,7 @@ export function getInitialProfileState(): InitialProfileState {
 
   return {
     profile: cached.profile,
-    avatarUrl: cached.avatarUrl,
+    avatarUrl: getAvatarDisplayUrl(cached.profile.avatarFileId),
     itemCount: cached.itemCount,
     hasCache: true,
   };
@@ -170,17 +155,12 @@ async function fetchAndCacheProfile(): Promise<ProfileCacheEntry | null> {
       fetchWardrobeItemCount(),
     ]);
 
-    let avatarUrl: string | undefined;
     if (profile.avatarFileId) {
-      avatarUrl = await resolveAvatarUrlWithCache(
-        profile.avatarFileId,
-        existing,
-      );
+      await resolveAndCacheAvatar(profile.avatarFileId);
     }
 
     const entry: ProfileCacheEntry = {
       profile,
-      avatarUrl,
       itemCount,
       cachedAt: Date.now(),
     };

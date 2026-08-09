@@ -5,8 +5,10 @@ import { isGenderSet } from "@/data/profile";
 import { saveUserProfile } from "@/services/profile";
 import { resolveAvatarUrl } from "@/services/profileAvatar";
 import { clearTryOnCache } from "@/services/tryOnCache";
+import { putImageUrlCache } from "@/services/imageUrlCache";
 import {
   clearProfileCache,
+  getAvatarDisplayUrl,
   getInitialProfileState,
   invalidateAvatarUrl,
   prefetchUserProfile,
@@ -36,7 +38,7 @@ export function useUserProfile() {
     (entry: NonNullable<Awaited<ReturnType<typeof prefetchUserProfile>>>) => {
       setProfile(entry.profile);
       setItemCount(entry.itemCount);
-      setAvatarUrl(entry.avatarUrl);
+      setAvatarUrl(getAvatarDisplayUrl(entry.profile.avatarFileId));
     },
     [],
   );
@@ -85,9 +87,15 @@ export function useUserProfile() {
       let nextAvatarUrl: string | undefined;
       if (saved.avatarFileId) {
         if (patch.avatarFileId !== undefined) {
-          nextAvatarUrl = (await resolveAvatarUrl(saved.avatarFileId)) ?? undefined;
+          const resolved =
+            (await resolveAvatarUrl(saved.avatarFileId)) ?? undefined;
+          if (resolved) {
+            putImageUrlCache("avatar", saved.avatarFileId, resolved);
+          }
+          nextAvatarUrl = resolved;
         } else {
-          nextAvatarUrl = avatarUrlRef.current;
+          nextAvatarUrl =
+            getAvatarDisplayUrl(saved.avatarFileId) ?? avatarUrlRef.current;
         }
         setAvatarUrl(nextAvatarUrl);
       } else {
@@ -97,7 +105,6 @@ export function useUserProfile() {
 
       writeProfileCache({
         profile: saved,
-        avatarUrl: nextAvatarUrl,
         itemCount: itemCountRef.current,
         cachedAt: Date.now(),
       });
@@ -116,7 +123,7 @@ export function useUserProfile() {
   }, []);
 
   useDidShow(() => {
-    refresh();
+    void refresh();
   });
 
   return {

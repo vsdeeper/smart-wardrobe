@@ -6,6 +6,7 @@ import {
   deleteVisualDiaryEntry,
   fetchVisualDiaryEntries,
 } from "@/services/visualDiary";
+import { syncVisualDiaryPreviewFromList } from "@/services/visualDiaryCache";
 
 export function useVisualDiaryList() {
   const [entries, setEntries] = useState<VisualDiaryEntry[]>([]);
@@ -36,7 +37,13 @@ export function useVisualDiaryList() {
         limit: VISUAL_DIARY_PAGE_SIZE,
       });
 
-      setEntries((prev) => (reset ? nextEntries : [...prev, ...nextEntries]));
+      setEntries((prev) => {
+        const merged = reset ? nextEntries : [...prev, ...nextEntries];
+        if (reset) {
+          syncVisualDiaryPreviewFromList(merged);
+        }
+        return merged;
+      });
       setHasMore(nextEntries.length >= VISUAL_DIARY_PAGE_SIZE);
     } catch (err) {
       const message =
@@ -81,6 +88,7 @@ export function useVisualDiaryList() {
         await deleteVisualDiaryEntry(id);
         setEntries((prev) => {
           const next = prev.filter((entry) => entry._id !== id);
+          syncVisualDiaryPreviewFromList(next);
           if (next.length === 0 && hasMore) {
             loadingRef.current = false;
             void loadEntries({ reset: true });

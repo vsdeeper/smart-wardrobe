@@ -13,6 +13,12 @@ import {
   markRecognitionBatchFailed,
   mergeBatchCover,
 } from "@/services/recognitionBatch";
+import {
+  getInitialRecognitionBatchPreview,
+  readRecognitionBatchPreviewCache,
+  syncRecognitionBatchPreviewFromList,
+  writeRecognitionBatchPreviewCache,
+} from "@/services/recognitionBatchCache";
 
 interface UseRecognitionBatchesOptions {
   previewLimit?: number;
@@ -31,10 +37,22 @@ export function useRecognitionBatches(
     options.previewLimit ?? MINE_RECOGNITION_PREVIEW_LIMIT;
   const pageSize = options.pageSize ?? previewLimit;
   const enablePagination = options.enablePagination ?? false;
+  const cacheLimit = enablePagination
+    ? MINE_RECOGNITION_PREVIEW_LIMIT
+    : previewLimit;
 
-  const [batches, setBatches] = useState<RecognitionBatch[]>([]);
-  const [totalCount, setTotalCount] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const initial = getInitialRecognitionBatchPreview(
+    enablePagination ? MINE_RECOGNITION_PREVIEW_LIMIT : previewLimit,
+  );
+  const [batches, setBatches] = useState<RecognitionBatch[]>(
+    enablePagination ? [] : initial.batches,
+  );
+  const [totalCount, setTotalCount] = useState(
+    enablePagination ? 0 : initial.totalCount,
+  );
+  const [loading, setLoading] = useState(
+    enablePagination ? true : !initial.hasCache,
+  );
   const [listLoading, setListLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
 
@@ -47,13 +65,19 @@ export function useRecognitionBatches(
   const stopPolling = useCallback(() => {
     if (pollTimerRef.current) {
       clearInterval(pollTimerRef.current);
-      pollTimerRef.current = null;
     }
+    pollTimerRef.current = null;
   }, []);
 
   const refresh = useCallback(
     async (opts?: { silent?: boolean }) => {
-      const silent = opts?.silent ?? false;
+      const cached = readRecognitionBatchPreviewCache();
+      const hasPreviewCache =
+        !enablePagination &&
+        !!cached &&
+        cached.previewLimit === previewLimit;
+      const silent = opts?.silent ?? hasPreviewCache;
+
       if (!silent) {
         setLoading(true);
       }
@@ -69,8 +93,14 @@ export function useRecognitionBatches(
         setTotalCount(count);
         if (enablePagination) {
           setHasMore(data.length < count);
+          syncRecognitionBatchPreviewFromList(data, count, cacheLimit);
         } else {
           setHasMore(false);
+          writeRecognitionBatchPreviewCache({
+            batches: data,
+            totalCount: count,
+            previewLimit,
+          });
         }
       } catch (err) {
         console.error("[recognition-batches] refresh failed", err);
@@ -84,12 +114,10 @@ export function useRecognitionBatches(
           });
         }
       } finally {
-        if (!silent) {
-          setLoading(false);
-        }
+        setLoading(false);
       }
     },
-    [enablePagination, pageSize, previewLimit],
+    [cacheLimit, enablePagination, pageSize, previewLimit],
   );
 
   const pollProcessing = useCallback(async () => {
@@ -137,12 +165,21 @@ export function useRecognitionBatches(
       );
 
       setBatches(mergedList);
+      if (!enablePagination) {
+        writeRecognitionBatchPreviewCache({
+          batches: mergedList,
+          totalCount:
+            readRecognitionBatchPreviewCache()?.totalCount ??
+            mergedList.length,
+          previewLimit,
+        });
+      }
     } catch (err) {
       console.warn("[recognition-batches] poll processing failed", err);
     } finally {
       pollingRef.current = false;
     }
-  }, [stopPolling]);
+  }, [enablePagination, previewLimit, stopPolling]);
 
   const loadMore = useCallback(async () => {
     if (!enablePagination || loadingRef.current || !hasMore) return;

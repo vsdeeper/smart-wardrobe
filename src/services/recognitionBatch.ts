@@ -8,9 +8,16 @@ import {
   type RecognitionConfirmStatus,
 } from "@/data/recognition";
 import { isGenderSet } from "@/data/profile";
-import { resolveCloudFileUrl } from "@/services/cloudFile";
+import { resolveTempFileUrls } from "@/services/cloudFile";
+import {
+  getCachedImageUrl,
+  getFreshUrlMap,
+  mergeImageUrlCache,
+  resolvedUrlMapToEntries,
+} from "@/services/imageUrlCache";
 import { fetchUserProfile } from "@/services/profile";
 import { readProfileCache } from "@/services/profileCache";
+import { clearRecognitionBatchPreviewCache } from "@/services/recognitionBatchCache";
 import {
   normalizeRecognitionErrorMessage,
   RECOGNITION_FAIL_MESSAGE,
@@ -120,40 +127,66 @@ async function resolveBatchCover(
   batch: RecognitionBatch,
 ): Promise<RecognitionBatch> {
   const coverFileId = batch.coverFileId;
-  if (!coverFileId) return batch;
-  if (batch.coverUrl) return batch;
-  const url = await resolveCloudFileUrl(coverFileId);
-  if (url) {
-    return { ...batch, coverUrl: url };
+  if (!coverFileId) {
+    return { ...batch, coverUrl: undefined };
   }
-  return batch;
+
+  const urlMap = await resolveTempFileUrls(
+    [coverFileId],
+    getFreshUrlMap("recognition", [coverFileId]),
+  );
+  mergeImageUrlCache("recognition", resolvedUrlMapToEntries(urlMap));
+  return {
+    ...batch,
+    coverUrl: urlMap.get(coverFileId)?.url,
+  };
 }
 
 async function resolveBatchCovers(
   batches: RecognitionBatch[],
 ): Promise<RecognitionBatch[]> {
-  return Promise.all(batches.map(resolveBatchCover));
+  const fileIds = batches
+    .map((batch) => batch.coverFileId)
+    .filter((id): id is string => Boolean(id));
+
+  const urlMap = await resolveTempFileUrls(
+    fileIds,
+    getFreshUrlMap("recognition", fileIds),
+  );
+  mergeImageUrlCache("recognition", resolvedUrlMapToEntries(urlMap));
+
+  return batches.map((batch) => {
+    if (!batch.coverFileId) {
+      return { ...batch, coverUrl: undefined };
+    }
+    return {
+      ...batch,
+      coverUrl: urlMap.get(batch.coverFileId)?.url,
+    };
+  });
 }
 
 /**
- * 合并轮询结果到已有条目：封面原图未变则复用 coverUrl，避免临时链接刷新导致闪图。
+ * 合并轮询结果到已有条目：封面原图未变则复用 imageUrlCache，避免临时链接刷新导致闪图。
  */
 export async function mergeBatchCover(
-  prev: RecognitionBatch | undefined,
+  _prev: RecognitionBatch | undefined,
   next: RecognitionBatch,
 ): Promise<RecognitionBatch> {
   const nextCoverId = next.coverFileId;
-  const prevCoverId = prev?.coverFileId;
-  if (prevCoverId && prevCoverId === nextCoverId && prev?.coverUrl) {
+  if (!nextCoverId) {
+    return { ...next, coverUrl: undefined };
+  }
+
+  const cached = getCachedImageUrl("recognition", nextCoverId);
+  if (cached && cached !== nextCoverId) {
     return {
       ...next,
       coverFileId: nextCoverId,
-      coverUrl: prev.coverUrl,
+      coverUrl: cached,
     };
   }
-  if (next.coverUrl && next.coverFileId === nextCoverId) {
-    return next;
-  }
+
   return resolveBatchCover(next);
 }
 
@@ -309,6 +342,7 @@ export async function createRecognitionBatchAndStart(
     triggerProcessRecognitionBatch(batchId, userGender);
   }
 
+  clearRecognitionBatchPreviewCache();
   return { batchIds };
 }
 
@@ -331,6 +365,7 @@ export async function markRecognitionBatchFailed(
         updatedAt: Date.now(),
       },
     });
+    clearRecognitionBatchPreviewCache();
   } catch (err) {
     console.warn("[recognition-batch] mark failed", err);
   }
@@ -370,6 +405,7 @@ export async function confirmRecognitionBatch(
       updatedAt: now,
     },
   });
+  clearRecognitionBatchPreviewCache();
 }
 
 export async function discardRecognitionBatch(
@@ -382,4 +418,5 @@ export async function discardRecognitionBatch(
       updatedAt: Date.now(),
     },
   });
+  clearRecognitionBatchPreviewCache();
 }

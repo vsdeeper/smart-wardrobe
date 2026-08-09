@@ -28,7 +28,6 @@ export async function applyGenderSetup(gender: Gender): Promise<UserProfile> {
 
   writeProfileCache({
     profile: saved,
-    avatarUrl: cached?.avatarUrl,
     itemCount: cached?.itemCount ?? 0,
     cachedAt: Date.now(),
   });
