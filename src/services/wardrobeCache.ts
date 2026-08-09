@@ -13,8 +13,10 @@ export interface WardrobeTypeBucket {
 
 interface WardrobeMemoryStore {
   clothingTypes: ClothingType[];
-  /** 当前选中的分类 key（`"all"` 或 typeId） */
+  /** 衣橱页当前选中的分类 key（`"all"` 或 typeId） */
   activeTypeKey: string;
+  /** 搭配页当前选中的分类 typeId；无「全部」，null 表示尚未选过 */
+  outfitActiveTypeKey: string | null;
   /** key 存在即有缓存 */
   byType: Record<string, WardrobeTypeBucket>;
 }
@@ -26,6 +28,16 @@ export interface InitialWardrobeState {
   hasCache: boolean;
   activeTab: number;
   activeTypeKey: string;
+}
+
+export interface InitialOutfitState {
+  clothingTypes: ClothingType[];
+  activeTypeId: string | null;
+  activeCategoryIndex: number;
+  items: WardrobeItem[];
+  hasMore: boolean;
+  hasCache: boolean;
+  wardrobeEmpty: boolean;
 }
 
 export interface WardrobeListUpdatePatch {
@@ -54,10 +66,38 @@ function getOrCreateStore(): WardrobeMemoryStore {
     store = {
       clothingTypes: [],
       activeTypeKey: WARDROBE_ALL_TYPE_KEY,
+      outfitActiveTypeKey: null,
       byType: {},
     };
   }
   return store;
+}
+
+function isWardrobeEmptyByTypes(types: ClothingType[]): boolean {
+  if (types.length === 0) return true;
+  return types.every((type) => type.itemCount === 0);
+}
+
+/** 搭配页：无「全部」偏移，仅按 typeId 解析 Tab index */
+function resolveOutfitActiveType(
+  outfitActiveTypeKey: string | null,
+  clothingTypes: ClothingType[],
+): { activeTypeId: string | null; activeCategoryIndex: number } {
+  if (clothingTypes.length === 0) {
+    return { activeTypeId: null, activeCategoryIndex: 0 };
+  }
+  if (outfitActiveTypeKey) {
+    const idx = clothingTypes.findIndex(
+      (type) => type._id === outfitActiveTypeKey,
+    );
+    if (idx >= 0) {
+      return { activeTypeId: outfitActiveTypeKey, activeCategoryIndex: idx };
+    }
+  }
+  return {
+    activeTypeId: clothingTypes[0]._id,
+    activeCategoryIndex: 0,
+  };
 }
 
 export function typeKey(typeId: string | null | undefined): string {
@@ -226,6 +266,21 @@ export function setActiveTypeKey(key: string): void {
   current.activeTypeKey = resolved.activeTypeKey;
 }
 
+export function getOutfitActiveTypeKey(): string | null {
+  return getOrCreateStore().outfitActiveTypeKey;
+}
+
+/** 写入搭配页当前分类；typeId 不在 types 中则置 null */
+export function setOutfitActiveTypeKey(typeId: string | null): void {
+  const current = getOrCreateStore();
+  if (!typeId) {
+    current.outfitActiveTypeKey = null;
+    return;
+  }
+  const exists = current.clothingTypes.some((type) => type._id === typeId);
+  current.outfitActiveTypeKey = exists ? typeId : null;
+}
+
 export function getClothingTypesFromCache(): ClothingType[] {
   return getOrCreateStore().clothingTypes;
 }
@@ -279,6 +334,71 @@ export function getInitialWardrobeState(): InitialWardrobeState {
     hasCache: true,
     activeTab: resolved.activeTab,
     activeTypeKey: resolved.activeTypeKey,
+  };
+}
+
+/**
+ * 搭配页首帧状态。按 outfitActiveTypeKey 恢复 Tab 与对应桶（无「全部」）；
+ * 无该桶则 hasCache: false，由页面拉取。
+ */
+export function getInitialOutfitState(): InitialOutfitState {
+  ensureLegacyStorageCleared();
+  const current = store;
+  if (!current) {
+    return {
+      clothingTypes: [],
+      activeTypeId: null,
+      activeCategoryIndex: 0,
+      items: [],
+      hasMore: true,
+      hasCache: false,
+      wardrobeEmpty: true,
+    };
+  }
+
+  const resolved = resolveOutfitActiveType(
+    current.outfitActiveTypeKey,
+    current.clothingTypes,
+  );
+  // 持久化解析后的有效 typeId（含首次回落到首个分类）
+  if (resolved.activeTypeId !== current.outfitActiveTypeKey) {
+    current.outfitActiveTypeKey = resolved.activeTypeId;
+  }
+
+  const wardrobeEmpty = isWardrobeEmptyByTypes(current.clothingTypes);
+  if (!resolved.activeTypeId) {
+    return {
+      clothingTypes: current.clothingTypes,
+      activeTypeId: null,
+      activeCategoryIndex: 0,
+      items: [],
+      hasMore: false,
+      hasCache: current.clothingTypes.length > 0,
+      wardrobeEmpty,
+    };
+  }
+
+  const bucket = current.byType[resolved.activeTypeId];
+  if (!bucket) {
+    return {
+      clothingTypes: current.clothingTypes,
+      activeTypeId: resolved.activeTypeId,
+      activeCategoryIndex: resolved.activeCategoryIndex,
+      items: [],
+      hasMore: true,
+      hasCache: false,
+      wardrobeEmpty,
+    };
+  }
+
+  return {
+    clothingTypes: current.clothingTypes,
+    activeTypeId: resolved.activeTypeId,
+    activeCategoryIndex: resolved.activeCategoryIndex,
+    items: bucket.items,
+    hasMore: bucket.hasMore,
+    hasCache: true,
+    wardrobeEmpty,
   };
 }
 

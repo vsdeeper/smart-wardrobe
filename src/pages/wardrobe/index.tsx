@@ -13,7 +13,7 @@ import { useWardrobeUpload } from "@/hooks/useWardrobeUpload";
 import { useMainTabNavigation } from "@/hooks/useMainTabNavigation";
 import PrivacyAuthorizeDialog from "./components/PrivacyAuthorizeDialog";
 import WardrobeItemCard from "./components/WardrobeItemCard";
-import WardrobeRefreshHint from "./components/WardrobeRefreshHint";
+import WardrobeRefreshHint from "@/components/WardrobeRefreshHint";
 import "./index.scss";
 
 function WardrobePage() {

@@ -3,6 +3,7 @@ import { View, Text } from "@tarojs/components";
 import { Tabs } from "@nutui/nutui-react-taro";
 import AppNavbar from "@/components/AppNavbar";
 import PageLoading from "@/components/PageLoading";
+import WardrobeRefreshHint from "@/components/WardrobeRefreshHint";
 import { useMainTabNavigation } from "@/hooks/useMainTabNavigation";
 import { useOutfitPage } from "@/hooks/useOutfitPage";
 import Main from "@/layouts/Main";
@@ -21,10 +22,15 @@ function OutfitPage() {
     listLoading,
     wardrobeEmpty,
     outfitByCategory,
+    showRefreshHint,
+    refreshHintTypeNames,
+    refreshHintLoading,
     handleToggleItem,
     handleRemovePiece,
     handleSaveOutfit,
     handleCategoryChange,
+    handleScrollToLower,
+    handleRefreshHintClick,
     handleGoWardrobe,
   } = useOutfitPage();
 
@@ -55,10 +61,8 @@ function OutfitPage() {
       scrollClassName={scrollClassName}
       header={<AppNavbar />}
     >
-      <Main.Scroll>
-        {initialLoading ? (
-          <PageLoading />
-        ) : wardrobeEmpty ? (
+      <Main.Scroll lowerThreshold={120} onScrollToLower={handleScrollToLower}>
+        {wardrobeEmpty && !initialLoading ? (
           <View className="outfit-empty">
             <Text className="outfit-empty__title">衣橱还是空的</Text>
             <Text className="outfit-empty__desc">
@@ -70,37 +74,52 @@ function OutfitPage() {
           </View>
         ) : (
           <>
-            <View className="outfit-filter">
-              <Tabs
-                value={activeCategoryIndex}
-                activeType="button"
-                className="type-tabs"
-                onChange={(v) => handleCategoryChange(v as number)}
-              >
-                {typeNames.map((cat, idx) => (
-                  <Tabs.TabPane key={cat} title={cat} value={idx} />
-                ))}
-              </Tabs>
-            </View>
+            {typeNames.length > 0 && (
+              <View className="outfit-filter">
+                <Tabs
+                  value={activeCategoryIndex}
+                  activeType="button"
+                  className="type-tabs"
+                  onChange={(v) => handleCategoryChange(v as number)}
+                >
+                  {typeNames.map((cat, idx) => (
+                    <Tabs.TabPane key={cat} title={cat} value={idx} />
+                  ))}
+                </Tabs>
+              </View>
+            )}
 
-            <View className="match-grid">
-              {listLoading ? (
-                <PageLoading className="page-loading--inline" />
-              ) : filteredItems.length === 0 ? (
-                <View className="outfit-empty-hint">
-                  <Text>该分类暂无单品，请切换其他分类</Text>
-                </View>
-              ) : (
-                filteredItems.map((item) => (
+            {showRefreshHint && !refreshHintLoading && (
+              <WardrobeRefreshHint
+                typeNames={refreshHintTypeNames}
+                onClick={handleRefreshHintClick}
+              />
+            )}
+
+            {initialLoading ? (
+              <PageLoading />
+            ) : filteredItems.length === 0 ? (
+              <View className="outfit-empty-hint">
+                <Text>该分类暂无单品，请切换其他分类</Text>
+              </View>
+            ) : (
+              <View className="match-grid">
+                {filteredItems.map((item) => (
                   <MatchItemCard
                     key={item._id}
                     item={item}
-                    selected={outfitByCategory[item.typeName]?._id === item._id}
+                    selected={
+                      outfitByCategory[item.typeName]?._id === item._id
+                    }
                     onToggle={handleToggleItem}
                   />
-                ))
-              )}
-            </View>
+                ))}
+              </View>
+            )}
+
+            {listLoading && filteredItems.length > 0 && (
+              <PageLoading text="加载更多..." />
+            )}
           </>
         )}
       </Main.Scroll>
