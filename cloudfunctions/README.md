@@ -307,7 +307,7 @@ tcb fn deploy generate-wardrobe-display -e cloudbase-d6gkz1xlx9adbfe51
 | `DOUBAO_API_KEY`      | 火山方舟 API Key（可与其它云函数共用）             |
 | `DOUBAO_API_BASE_URL` | 可选，默认 `https://ark.cn-beijing.volces.com/api/v3` |
 | `DOUBAO_VISION_MODEL` | Seedream 模型 ID，示例 `doubao-seedream-5-0-260128`（按 items 从原图生成展示图） |
-| `DOUBAO_ITEM_DISPLAY_SIZE` | 可选，单品展示图尺寸，默认 `1920x1920`（1:1，像素数 ≥3686400） |
+| `DOUBAO_VISION_SIZE` | 输出尺寸，与试穿图共用，示例 `1920x1920`（1:1，像素数 ≥3686400） |
 
 **超时**：`config.json` 为 `timeout: 120`（Seedream 组图常需 40–90s）。客户端 `callFunction` 须设 `config.timeout: 120000` 与之对齐。
 
@@ -349,7 +349,7 @@ wx.cloud
 2. 微信开发者工具展开 `cloudfunctions/process-recognition-batch`
 3. 右键 → **上传并部署：云端安装依赖**
 
-环境变量与 `recognize-clothing` + `generate-wardrobe-display` 相同：`DOUBAO_API_KEY`、`DOUBAO_SEED_MODEL`、`DOUBAO_VISION_MODEL`（及可选 Base URL / Temperature）。
+环境变量与 `recognize-clothing` + `generate-wardrobe-display` 相同：`DOUBAO_API_KEY`、`DOUBAO_SEED_MODEL`、`DOUBAO_VISION_MODEL`、`DOUBAO_VISION_SIZE`（及可选 Base URL / Temperature）。
 
 **超时**：`config.json` 为 `timeout: 300`。
 
@@ -454,7 +454,7 @@ LLM 失败时回退规则推荐 `buildFallbackRecommendation`。
 | `DOUBAO_API_KEY` | 火山方舟 API Key（可与其它云函数共用） |
 | `DOUBAO_API_BASE_URL` | 可选，默认 `https://ark.cn-beijing.volces.com/api/v3` |
 | `DOUBAO_VISION_MODEL` | Hero 试穿图专用 Seedream 模型 ID，示例 `doubao-seedream-5-0-260128` |
-| `DOUBAO_VISION_SIZE` | 可选，输出尺寸，默认 `1920x1920`（Hero 1:1，Seedream 5.0 像素下限；若控制台仍配竖版如 `1600x2304` / `2K` 会覆盖默认值，请改为 `1920x1920` 或清空） |
+| `DOUBAO_VISION_SIZE` | 输出尺寸，与单品展示图共用，示例 `1920x1920`（1:1，Seedream 5.0 像素下限；若控制台仍配竖版如 `1600x2304` / `2K`，请改为 `1920x1920`） |
 
 入参：`imageFileIds[]`（衣物）、`heightCm`、`weightKg`、`gender`（`male`/`female`）、`pieceLabels[]`、`pieceTypeNames[]`、可选 `weatherConditionCode`（如 `sunny`/`rainy`，用于背景光影）。
 

@@ -14,10 +14,7 @@ const {
   DISPLAY_IMAGE_MAX_COUNT,
   selectItemsForDisplayGeneration,
 } = require('./common/itemDisplayImageRules')
-const {
-  generateSeedreamImages,
-  getItemDisplaySize,
-} = require('./common/doubaoVision')
+const { generateSeedreamImages } = require('./common/doubaoVision')
 const { requireEnv } = require('./common/env')
 
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
@@ -159,7 +156,6 @@ async function generateDisplayPreviews(items, sourceUrl, openid) {
     prompt: buildItemsDisplayPrompt(displayItems),
     imageUrls: [sourceUrl],
     maxImages: M,
-    size: getItemDisplaySize(),
   })
 
   const capped = images.slice(0, M)

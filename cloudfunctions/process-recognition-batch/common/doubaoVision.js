@@ -32,10 +32,6 @@ function getSeedreamConfig() {
   return { apiKey, baseUrl, model, size }
 }
 
-function getItemDisplaySize() {
-  return requireEnv('DOUBAO_ITEM_DISPLAY_SIZE')
-}
-
 function parseSeedreamImageItem(item) {
   if (!item) return null
   if (item.url) {
@@ -138,7 +134,6 @@ module.exports = {
   resolveImageUrl,
   resolveImageUrls,
   getSeedreamConfig,
-  getItemDisplaySize,
   generateSeedreamImage,
   generateSeedreamImages,
 }
