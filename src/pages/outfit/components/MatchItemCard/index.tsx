@@ -34,7 +34,7 @@ export default function MatchItemCard({
           />
           {selected && (
             <View className="match-card__check">
-              <Check size={8} color="var(--sw-color-on-primary)" />
+              <Check size={8} color="var(--nutui-color-primary-text)" />
             </View>
           )}
         </View>

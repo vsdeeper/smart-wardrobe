@@ -1,0 +1,16 @@
+@use "./palette" as palette;
+@use "./nutui-foundation" as foundation;
+@use "./nutui-semantics" as semantics;
+@use "./nutui-components" as components;
+@use "./app-extensions" as app;
+@use "./layout-runtime" as layout;
+
+// 聚合 L0–L5 主题令牌
+@mixin tokens {
+  @include palette.tokens;
+  @include foundation.tokens;
+  @include semantics.tokens;
+  @include components.tokens;
+  @include app.tokens;
+  @include layout.tokens;
+}

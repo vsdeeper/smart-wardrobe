@@ -23,14 +23,12 @@
 
 .mine-diary-empty {
   &__title {
-    font-family: var(--sw-font-heading);
     font-size: var(--nutui-font-size-5);
     font-weight: var(--nutui-font-weight-bold);
     color: var(--nutui-gray-7);
   }
 
   &__desc {
-    font-family: var(--sw-font-body);
     font-size: var(--nutui-font-size-3);
     color: var(--nutui-gray-5);
     text-align: center;
@@ -77,7 +75,6 @@
 }
 
 .mine-header__name {
-  font-family: var(--sw-font-heading);
   font-size: var(--nutui-font-size-8);
   font-weight: var(--nutui-font-weight-bold);
   color: var(--nutui-gray-7);
@@ -87,7 +84,6 @@
 }
 
 .mine-header__bio {
-  font-family: var(--sw-font-body);
   font-size: var(--nutui-font-size-3);
   line-height: var(--nutui-line-height-base);
   color: var(--nutui-secondary-1);
@@ -107,7 +103,6 @@
   }
 
   &__title {
-    font-family: var(--sw-font-heading);
     font-size: var(--nutui-font-size-8);
     font-weight: var(--nutui-font-weight-bold);
     color: var(--nutui-gray-7);
@@ -121,7 +116,6 @@
   }
 
   &__action-text {
-    font-family: var(--sw-font-body);
     font-size: var(--nutui-font-size-2);
     font-weight: 500;
     color: var(--nutui-brand-6);
@@ -176,7 +170,7 @@
     overflow: hidden;
     padding: var(--nutui-spacing-5);
     background: #fff;
-    box-shadow: var(--sw-shadow-card);
+    box-shadow: var(--nutui-shadow-light);
   }
 
   &__image {

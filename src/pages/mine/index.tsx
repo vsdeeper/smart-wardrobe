@@ -110,7 +110,7 @@ function MinePage() {
                 />
               </View>
               <View className="mine-avatar__edit" onClick={handleOpenProfile}>
-                <Setting color="var(--sw-color-on-primary)" size={18} />
+                <Setting color="var(--nutui-color-primary-text)" size={18} />
               </View>
             </View>
             <Text className="mine-header__name">

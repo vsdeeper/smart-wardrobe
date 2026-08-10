@@ -3,7 +3,7 @@
   margin-bottom: 0;
   padding-left: var(--nutui-spacing-7);
   padding-right: var(--nutui-spacing-7);
-  box-shadow: var(--sw-shadow-card);
+  box-shadow: var(--nutui-shadow-light);
 
   // NutUI left/right 为 absolute + top:0，会盖住 padding-top，需同步下移
   .nut-navbar-left,
@@ -17,7 +17,6 @@
   }
 
   &__title {
-    font-family: var(--sw-font-heading);
     font-size: var(--nutui-font-size-4);
     font-weight: var(--nutui-font-weight-bold);
     color: var(--nutui-gray-7);
@@ -40,7 +39,6 @@
   }
 
   &__title {
-    font-family: var(--sw-font-heading);
     font-size: var(--nutui-font-size-4);
     font-weight: var(--nutui-font-weight-bold);
     color: var(--nutui-gray-7);

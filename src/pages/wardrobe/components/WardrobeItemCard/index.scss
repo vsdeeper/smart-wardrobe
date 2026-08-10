@@ -6,7 +6,7 @@
     overflow: hidden;
     background: var(--nutui-gray-1);
     border-radius: var(--sw-radius-card);
-    box-shadow: var(--sw-shadow-card);
+    box-shadow: var(--nutui-shadow-light);
   }
 
   &__image-wrap {
@@ -29,7 +29,6 @@
   }
 
   &__name {
-    font-family: var(--sw-font-heading);
     font-size: var(--nutui-font-size-2);
     color: var(--nutui-gray-7);
     line-height: 1.35;

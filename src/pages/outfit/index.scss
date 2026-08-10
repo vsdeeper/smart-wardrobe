@@ -39,7 +39,6 @@
   text-align: center;
 
   &__title {
-    font-family: var(--sw-font-heading);
     font-size: var(--nutui-font-size-7);
     font-weight: 600;
     color: var(--nutui-gray-7);
@@ -66,11 +65,10 @@
   }
 
   &__cta-text {
-    font-family: var(--sw-font-heading);
     font-size: var(--nutui-font-size-4);
     font-weight: 500;
     line-height: 1;
-    color: var(--sw-color-on-primary);
+    color: var(--nutui-color-primary-text);
   }
 }
 

@@ -57,7 +57,6 @@
   &__title {
     flex: 1;
     min-width: 0;
-    font-family: var(--sw-font-heading);
     font-size: var(--nutui-font-size-4);
     font-weight: var(--nutui-font-weight-bold);
     color: var(--nutui-gray-7);
@@ -69,14 +68,12 @@
 
   &__time {
     flex-shrink: 0;
-    font-family: var(--sw-font-body);
     font-size: var(--nutui-font-size-2);
     color: var(--nutui-gray-5);
     line-height: var(--nutui-line-height-base);
   }
 
   &__desc {
-    font-family: var(--sw-font-body);
     font-size: var(--nutui-font-size-3);
     color: var(--nutui-gray-5);
     line-height: var(--nutui-line-height-base);

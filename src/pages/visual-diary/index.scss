@@ -20,10 +20,9 @@
   }
 
   &__view-text {
-    font-family: var(--sw-font-body);
     font-size: var(--nutui-font-size-3);
     font-weight: 500;
-    color: var(--sw-color-on-primary);
+    color: var(--nutui-color-primary-text);
   }
 
   &__delete {
@@ -36,10 +35,9 @@
   }
 
   &__delete-text {
-    font-family: var(--sw-font-body);
     font-size: var(--nutui-font-size-3);
     font-weight: 500;
-    color: var(--sw-color-on-primary);
+    color: var(--nutui-color-primary-text);
   }
 
   &__empty {
@@ -52,14 +50,12 @@
   }
 
   &__empty-title {
-    font-family: var(--sw-font-heading);
     font-size: var(--nutui-font-size-5);
     font-weight: var(--nutui-font-weight-bold);
     color: var(--nutui-gray-7);
   }
 
   &__empty-desc {
-    font-family: var(--sw-font-body);
     font-size: var(--nutui-font-size-3);
     color: var(--nutui-gray-5);
     line-height: var(--nutui-line-height-base);

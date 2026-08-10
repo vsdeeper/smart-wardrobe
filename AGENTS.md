@@ -140,13 +140,18 @@ types/                # 环境/global 类型声明（如 global.d.ts），非业
 
 | 文件                          | 职责                                                                                                                                                      |
 | ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/styles/theme.scss`       | **仅**定义 CSS 变量（`--nutui-*` 覆盖 NutUI 主题、`--sw-*` 应用语义令牌）。不写选择器、不覆写组件类名。                                                   |
-| `src/app.scss`                | 全局样式：在 `@use "./styles/theme.scss"` 之后引入；`page` 基础排版、`.card` / `.chip` 等工具类、NutUI 组件**全局**覆写（如 `.nut-tabs-titles-button`）。 |
-| `src/pages/<page>/index.scss` | **仅**页面编排/布局/空态等，优先使用 `var(--nutui-*)` / `var(--sw-*)`；组件样式一律与组件同目录，勿散落至此。                                           |
+| `src/styles/theme.scss`       | 主题入口（薄文件）；变量定义在 `src/styles/theme/` 分层 partial，经 `_emit.scss` 聚合到 `:root, page` |
+| `src/styles/theme/`           | L0 `_palette.scss`（换主题改此）→ L1/L2 NutUI 基础/语义 → L3 `_nutui-components.scss`（NutUI 组件变量）→ L4 `_app-extensions.scss`（`.sw-*` 扩展）→ L5 `_layout-runtime.scss`（运行时布局） |
+| `src/app.scss`                | 全局样式：在 `@use "./styles/theme.scss"` 之后引入；`page` 系统字体、`.card` / `.chip` 等工具类、NutUI 组件**全局**覆写（如 `.nut-tabs-titles-button`）。 |
+| `src/pages/<page>/index.scss` | **仅**页面编排/布局/空态等，优先使用 `var(--nutui-*)`；自定义 `.sw-btn` / `.sw-field` 等用 L4 `--sw-*`；组件样式与组件同目录。 |
 | 组件 `index.scss`             | `layouts/`、`src/components/`、`pages/<page>/components/` 下各组件的 BEM/class，与组件同目录并由组件自行引入。                                           |
 
 - `app.scss` 必须在任何 NutUI 样式之前 `@use` `theme.scss`，保证变量先生效。
-- 新增 NutUI 主题项：变量加在 `theme.scss`；若组件无对应 CSS 变量、需改类名样式，覆写写在 `app.scss`。
+- **换主题**：只改 `src/styles/theme/_palette.scss` 中 `--sw-palette-*` 原始色值。
+- **NutUI 组件变量**：L3 由 `node scripts/extract-nutui-css-vars.mjs` 生成；项目定制写在脚本 `projectOverrides`。
+- **引用规范**：页面/NutUI 组件用 `--nutui-*`（优先 L2 语义名）；Tag 用 `--nutui-tag-*`；`.sw-btn` / `.sw-field` 用 L4 `--sw-*`；禁止新增纯 alias 型 `--sw-color-*`。
+- **字体**：全局继承 `page` 系统字体栈（PingFang SC 等）；不引入 `--sw-font-*`。
+- 若 NutUI 组件无对应 CSS 变量、需改类名样式，覆写写在 `app.scss`。
 
 ### TypeScript
 
@@ -215,7 +220,7 @@ types/                # 环境/global 类型声明（如 global.d.ts），非业
 - 不要在 `index.tsx` 内同时维护大块 JSX、复杂 async 流程与多个子组件实现（应下沉到 `components` / `hooks` / `services`）。
 - 不要把仅本页使用的组件 premature 抽到 `src/components/`。
 - 不要在未要求时执行 `git commit` / `git push`。
-- 不要在 `theme.scss` 中写全局选择器或 NutUI 类名覆写；应放在 `app.scss`。
+- 不要在 `src/styles/theme/` 或 `theme.scss` 中写全局选择器或 NutUI 类名覆写；应放在 `app.scss`。
 - 不要把组件样式散写到页面 `index.scss` 或 `app.scss`；应写在组件同目录 `index.scss`（见「组件样式收窄」）。
 - 不要用 NutUI `Button` 实现高度定制的页面 CTA；应使用 `View` + `Text`（见「自定义按钮」）。
 - 不要在云函数中用 `https.get` 直接请求外部 JSON API；应使用 `fetch`（见「云函数」）。
@@ -277,5 +282,5 @@ fix: 修复衣橱列表图片链接解析失败的问题
 
 - **[PRODUCT.md](./PRODUCT.md)** — 注册表 `product`；用户（穿搭爱好者）、产品目的、品牌气质（有机温暖）、反参考、设计原则、无障碍
 - **[DESIGN.md](./DESIGN.md)** — 视觉体系「Botanica & Steel」：叶绿/钢蓝色板、Plus Jakarta Sans + Be Vietnam Pro、圆角与阴影令牌
-- **代码令牌** — `src/styles/theme.scss`（`--nutui-*` / `--sw-*` CSS 变量，与 DESIGN.md 对齐）
+- **代码令牌** — [`src/styles/theme/`](src/styles/theme/)（L0 palette → L1/L2 `--nutui-*` → L3 组件 → L4 `--sw-*` 扩展），与 DESIGN.md 对齐；当前实现使用系统字体回退，西文字体未打包。
 

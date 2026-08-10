@@ -42,10 +42,9 @@
   }
 
   &__text {
-    font-family: var(--sw-font-heading);
     font-size: var(--nutui-font-size-4);
     font-weight: var(--nutui-font-weight-bold);
-    color: var(--sw-color-on-primary);
+    color: var(--nutui-color-primary-text);
     line-height: 1;
     white-space: nowrap;
   }
@@ -55,7 +54,7 @@
     align-items: center;
     justify-content: center;
     --nutui-loading-icon-size: var(--sw-btn-loading-size);
-    --nutui-loading-icon-color: var(--sw-color-on-primary);
+    --nutui-loading-icon-color: var(--nutui-color-primary-text);
 
     .nut-loading {
       display: inline-flex;
@@ -72,7 +71,7 @@
 
     .nut-loading-icon,
     .nut-icon {
-      color: var(--sw-color-on-primary);
+      color: var(--nutui-color-primary-text);
       background-color: currentColor;
     }
   }

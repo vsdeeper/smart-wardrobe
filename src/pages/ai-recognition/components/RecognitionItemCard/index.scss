@@ -5,7 +5,7 @@
   min-height: 96px;
   padding: var(--nutui-spacing-5);
   background: var(--nutui-gray-1);
-  box-shadow: var(--sw-shadow-card);
+  box-shadow: var(--nutui-shadow-light);
   box-sizing: border-box;
 
   &__image-wrap {
@@ -34,7 +34,6 @@
   }
 
   &__category {
-    font-family: var(--sw-font-body);
     font-size: var(--nutui-font-size-2);
     font-weight: 500;
     color: var(--nutui-gray-5);
@@ -45,7 +44,6 @@
   }
 
   &__name {
-    font-family: var(--sw-font-heading);
     font-size: var(--nutui-font-size-4);
     font-weight: var(--nutui-font-weight-bold);
     color: var(--nutui-gray-7);

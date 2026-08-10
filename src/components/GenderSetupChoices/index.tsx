@@ -36,7 +36,7 @@ export default function GenderSetupChoices({
         {loading ? (
           <Loading
             type="circular"
-            color="var(--sw-color-on-primary)"
+            color="var(--nutui-color-primary-text)"
             className="sw-btn-loading"
           />
         ) : (

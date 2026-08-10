@@ -16,14 +16,12 @@
   }
 
   &__empty-title {
-    font-family: var(--sw-font-heading);
     font-size: var(--nutui-font-size-5);
     font-weight: var(--nutui-font-weight-bold);
     color: var(--nutui-gray-7);
   }
 
   &__empty-desc {
-    font-family: var(--sw-font-body);
     font-size: var(--nutui-font-size-3);
     color: var(--nutui-gray-5);
     text-align: center;

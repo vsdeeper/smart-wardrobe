@@ -338,8 +338,6 @@ export function WardrobeEditFormFields() {
               round
               closeable
               className="sw-tag"
-              background="var(--sw-color-tag-bg)"
-              color="var(--sw-color-tag-text)"
               onClose={() => handleRemoveTag(tag)}
             >
               {tag}

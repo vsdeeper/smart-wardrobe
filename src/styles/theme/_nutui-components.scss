@@ -1,0 +1,374 @@
+// L3：NutUI 组件 CSS 变量（scripts/extract-nutui-css-vars.mjs 生成）
+
+@mixin tokens {
+  // --- actionsheet ---
+  --nutui-actionsheet-border-radius: 0;
+
+  // --- addresslist ---
+  --nutui-addresslist-bg: #fff;
+  --nutui-addresslist-border: #f0f0f0;
+  --nutui-addresslist-del-bg: #e1251b;
+  --nutui-addresslist-font-color: #333333;
+  --nutui-addresslist-font-size: 16px;
+  --nutui-addresslist-set-bg: #f5a623;
+
+  // --- avatar ---
+  --nutui-avatar-large-height: 60px;
+  --nutui-avatar-large-width: 60px;
+  --nutui-avatar-normal-height: 40px;
+  --nutui-avatar-normal-width: 40px;
+  --nutui-avatar-small-height: 32px;
+  --nutui-avatar-small-width: 32px;
+  --nutui-avatar-square: 5px;
+
+  // --- badge ---
+  --nutui-badge-color: #fff;
+  --nutui-badge-dot-width: 7px;
+  --nutui-badge-height: 14px;
+  --nutui-badge-icon-padding: 3px;
+  --nutui-badge-icon-size: 12px;
+  --nutui-badge-min-width: 5px;
+  --nutui-badge-padding: 0 4px;
+  --nutui-badge-z-index: 1;
+
+  // --- button ---
+  --nutui-button-border-radius: var(--sw-radius-pill);
+  --nutui-button-border-width: 1px;
+  --nutui-button-default-color: var(--nutui-gray-7);
+  --nutui-button-default-font-size: var(--nutui-font-size-4);
+  --nutui-button-default-height: 32px;
+  --nutui-button-default-padding: 0px 16px;
+  --nutui-button-large-height: 40px;
+  --nutui-button-large-padding: 0px 20px;
+  --nutui-button-mini-height: 24px;
+  --nutui-button-mini-padding: 0px 8px;
+  --nutui-button-normal-padding: 0 16px;
+  --nutui-button-small-height: 28px;
+  --nutui-button-small-padding: 0px 12px;
+  --nutui-button-text-icon-margin: 4px;
+  --nutui-button-xlarge-height: 48px;
+  --nutui-button-xlarge-padding: 0px 32px;
+
+  // --- calendar ---
+  --nutui-calendar-day-height: 60px;
+  --nutui-calendar-header-height: 24px;
+
+  // --- card ---
+  --nutui-card-border-radius: 4px;
+
+  // --- cascader ---
+  --nutui-cascader-bar-line-height: 20px;
+  --nutui-cascader-item-height: 40px;
+  --nutui-cascader-item-margin: 0px;
+  --nutui-cascader-item-padding: 10px 20px;
+  --nutui-cascader-pane-height: 342px;
+
+  // --- cell ---
+  --nutui-cell-border-radius: 6px;
+  --nutui-cell-divider-left: 16px;
+  --nutui-cell-divider-right: 16px;
+  --nutui-cell-extra-color: var(--nutui-gray-5);
+  --nutui-cell-group-wrap-margin: 10px 0;
+  --nutui-cell-line-height: 20px;
+  --nutui-cell-padding: 13px 16px;
+  --nutui-cell-title-color: var(--nutui-gray-7);
+
+  // --- checkbox ---
+  --nutui-checkbox-list-padding: 0 0 0 12px;
+
+  // --- collapse ---
+  --nutui-collapse-item-padding: 13px 26px;
+
+  // --- countdown ---
+  --nutui-countdown-font-size: 14px;
+
+  // --- countup ---
+  --nutui-countup-base-size: 18px;
+  --nutui-countup-border-radius: 4px;
+  --nutui-countup-height: 32px;
+  --nutui-countup-lr-margin: 0;
+
+  // --- dialog ---
+  --nutui-dialog-border-radius: 16px;
+  --nutui-dialog-close-color: #ffffff;
+  --nutui-dialog-close-height: 18px;
+  --nutui-dialog-close-left: 16px;
+  --nutui-dialog-close-right: 16px;
+  --nutui-dialog-close-top: 16px;
+  --nutui-dialog-close-width: 18px;
+  --nutui-dialog-content-margin: 10px 0 12px 0;
+  --nutui-dialog-min-height: 124px;
+  --nutui-dialog-padding: 24px;
+  --nutui-dialog-width: 295px;
+
+  // --- divider ---
+  --nutui-divider-line-height: 2px;
+  --nutui-divider-margin: 16px 0;
+  --nutui-divider-spacing: 8px;
+  --nutui-divider-vertical-height: 12px;
+  --nutui-divider-vertical-margin: 0 8px;
+
+  // --- elevator ---
+  --nutui-elevator-bars-padding: 15px 0;
+  --nutui-elevator-bars-right: 10px;
+  --nutui-elevator-bars-z-index: 1;
+
+  // --- empty ---
+  --nutui-empty-background-color: #fff;
+  --nutui-empty-image-size: 160px;
+  --nutui-empty-image-small-size: 120px;
+  --nutui-empty-padding: 32px 40px;
+  --nutui-empty-title-margin-top: 0px;
+
+  // --- fixednav ---
+  --nutui-fixednav-color: #1a1a1a;
+  --nutui-fixednav-index: 900;
+
+  // --- form ---
+  --nutui-form-item-label-width: 90px;
+
+  // --- grid ---
+  --nutui-grid-item-text-margin: 8px;
+
+  // --- icon ---
+  --nutui-icon-height: 20px;
+  --nutui-icon-line-height: 20px;
+  --nutui-icon-width: 20px;
+
+  // --- indicator ---
+  --nutui-indicator-border-radius: 2px;
+  --nutui-indicator-dot-margin: 2px;
+  --nutui-indicator-dot-size: 4px;
+
+  // --- input ---
+  --nutui-input-border-bottom-width: 0;
+  --nutui-input-border-radius: var(--nutui-radius-5);
+  --nutui-input-color: var(--nutui-gray-7);
+  --nutui-input-font-size: var(--nutui-font-size-3);
+  --nutui-input-padding: 10px 25px;
+
+  // --- inputnumber ---
+  --nutui-inputnumber-button-width: 14px;
+  --nutui-inputnumber-icon-size: 8px;
+  --nutui-inputnumber-input-border: 0;
+  --nutui-inputnumber-input-height: 24px;
+  --nutui-inputnumber-input-margin: 0;
+  --nutui-inputnumber-input-width: 40px;
+
+  // --- list ---
+  --nutui-list-item-margin: 0 0 10px 0;
+
+  // --- loading ---
+  --nutui-loading-icon-color: var(--nutui-gray-5);
+
+  // --- menu ---
+  --nutui-menu-bar-line-height: 48px;
+  --nutui-menu-bar-opened-z-index: 1000;
+  --nutui-menu-container-z-index: 1000;
+  --nutui-menu-content-max-height: 214px;
+  --nutui-menu-content-padding: 12px 24px;
+  --nutui-menu-item-icon-margin: 8px;
+  --nutui-menu-item-padding: 12px 0;
+  --nutui-menu-scroll-fixed-top: 0;
+  --nutui-menu-title-padding: 0 8px;
+
+  // --- navbar ---
+  --nutui-navbar-background: var(--nutui-gray-3);
+  --nutui-navbar-box-shadow: 0px;
+  --nutui-navbar-color: var(--nutui-gray-7);
+  --nutui-navbar-height: 44px;
+  --nutui-navbar-margin-bottom: 20px;
+
+  // --- noticebar ---
+  --nutui-noticebar-border-radius: 0;
+  --nutui-noticebar-box-padding: 0 16px;
+  --nutui-noticebar-color: #d9500b;
+  --nutui-noticebar-height: 36px;
+  --nutui-noticebar-icon-gap: 4px;
+  --nutui-noticebar-line-height: 24px;
+
+  // --- notify ---
+  --nutui-notify-height: 40px;
+  --nutui-notify-padding: 0px 10px;
+
+  // --- pagination ---
+  --nutui-pagination-lite-height: 20px;
+  --nutui-pagination-lite-radius: 12px;
+  --nutui-pagination-lite-width: 40px;
+
+  // --- picker ---
+  --nutui-picker-item-height: 36px;
+  --nutui-picker-list-height: 252px;
+
+  // --- popover ---
+  --nutui-popover-border-color: #ffffff;
+  --nutui-popover-border-radius: 8px;
+  --nutui-popover-menu-item-width: 160px;
+  --nutui-popover-text-color: #1a1a1a;
+
+  // --- popup ---
+  --nutui-popup-border-radius: 24px;
+  --nutui-popup-title-border-bottom: 0;
+  --nutui-popup-title-height: 50px;
+  --nutui-popup-title-padding: 16px;
+
+  // --- price ---
+  --nutui-price-decimal-big-size: 18px;
+  --nutui-price-decimal-small-size: 10px;
+  --nutui-price-integer-big-size: 24px;
+  --nutui-price-integer-small-size: 12px;
+  --nutui-price-line-font-size: 12px;
+  --nutui-price-symbol-big-size: 18px;
+  --nutui-price-symbol-medium-size: 14px;
+  --nutui-price-symbol-small-size: 10px;
+
+  // --- progress ---
+  --nutui-progress-border-radius: 12px;
+  --nutui-progress-height: 10px;
+  --nutui-progress-text-font-size: 9px;
+  --nutui-progress-text-padding: 0 5px;
+
+  // --- pulltorefresh ---
+  --nutui-pulltorefresh-icon-width: 36px;
+
+  // --- radio ---
+  --nutui-radio-button-padding: 5px 18px;
+  --nutui-radio-label-margin-left: 4px;
+
+  // --- radiogroup ---
+  --nutui-radiogroup-radio-margin: 20px;
+
+  // --- range ---
+  --nutui-range-button-height: 24px;
+  --nutui-range-button-width: 24px;
+  --nutui-range-height: 4px;
+  --nutui-range-margin: 15px;
+
+  // --- rate ---
+  --nutui-rate-item-margin: 14px;
+
+  // --- row ---
+  --nutui-row-content-color: #fff;
+  --nutui-row-content-height: 50px;
+  --nutui-row-content-line-height: 40px;
+
+  // --- searchbar ---
+  --nutui-searchbar-gap: 16px;
+  --nutui-searchbar-input-height: 32px;
+  --nutui-searchbar-input-padding: 0 4px;
+  --nutui-searchbar-padding: 6px 16px;
+
+  // --- sidenavbar ---
+  --nutui-sidenavbar-item-height: 40px;
+
+  // --- signature ---
+  --nutui-signature-border-width: 1px;
+
+  // --- skeleton ---
+  --nutui-skeleton-line-height: 15px;
+
+  // --- space ---
+  --nutui-space-gap: 8px;
+
+  // --- steps ---
+  --nutui-steps-base-icon-height: 25px;
+  --nutui-steps-base-icon-width: 25px;
+  --nutui-steps-base-line-height: 1px;
+  --nutui-steps-dot-head-margin: 10px 0;
+  --nutui-steps-dot-icon-height: 6px;
+  --nutui-steps-dot-icon-width: 6px;
+
+  // --- swiper ---
+  --nutui-swiper-indicator-bottom: 12px;
+
+  // --- switch ---
+  --nutui-switch-border-radius: 24px;
+  --nutui-switch-box-shadow: none;
+  --nutui-switch-height: 24px;
+  --nutui-switch-inside-height: 20px;
+  --nutui-switch-inside-width: 20px;
+  --nutui-switch-line-height: 24px;
+  --nutui-switch-width: 40px;
+
+  // --- tabbar ---
+  --nutui-tabbar-active-color: var(--nutui-brand-6);
+  --nutui-tabbar-border-top: 1px solid #eee;
+  --nutui-tabbar-box-shadow: none;
+  --nutui-tabbar-height: 50px;
+  --nutui-tabbar-text-line-height: 20px;
+  --nutui-tabbar-text-margin-top: 3px;
+
+  // --- table ---
+  --nutui-table-cols-padding: 10px;
+
+  // --- tabs ---
+  --nutui-tabs-button-active-background-color: var(--nutui-brand-6);
+  --nutui-tabs-button-active-border: none;
+  --nutui-tabs-button-border-radius: var(--nutui-button-border-radius);
+  --nutui-tabs-line-border-radius: 0;
+  --nutui-tabs-line-bottom: 0;
+  --nutui-tabs-tab-line-color: transparent;
+  --nutui-tabs-tab-line-height: 0;
+  --nutui-tabs-tab-line-opacity: 0;
+  --nutui-tabs-tab-line-width: 0;
+  --nutui-tabs-tabpane-background-color: transparent;
+  --nutui-tabs-tabpane-backgroundColor: transparent;
+  --nutui-tabs-tabpane-padding: 0;
+  --nutui-tabs-titles-background-color: transparent;
+  --nutui-tabs-titles-font-size: var(--nutui-font-size-2);
+  --nutui-tabs-titles-gap: 8px;
+  --nutui-tabs-titles-height: 50px;
+  --nutui-tabs-titles-item-active-background-color: transparent;
+  --nutui-tabs-titles-item-active-color: var(--nutui-color-primary-text);
+  --nutui-tabs-titles-item-active-font-size: var(--nutui-font-size-2);
+  --nutui-tabs-titles-item-active-font-weight: 500;
+  --nutui-tabs-titles-item-color: var(--nutui-gray-5);
+  --nutui-tabs-titles-item-min-width: 60px;
+  --nutui-tabs-titles-item-smile-bottom: 0;
+  --nutui-tabs-vertical-tab-line-color: var(--nutui-brand-6);
+  --nutui-tabs-vertical-tab-line-height: 0;
+  --nutui-tabs-vertical-tab-line-width: 0;
+  --nutui-tabs-vertical-titles-item-height: 40px;
+  --nutui-tabs-vertical-titles-width: 100px;
+
+  // --- tag ---
+  --nutui-tag-background-color: var(--sw-palette-tag-bg);
+  --nutui-tag-border-radius: 2px;
+  --nutui-tag-border-width: 1px;
+  --nutui-tag-color: var(--sw-palette-tag-text);
+  --nutui-tag-font-size: var(--nutui-font-size-2);
+  --nutui-tag-height: 20px;
+  --nutui-tag-padding: 4px 10px;
+  --nutui-tag-round-border-radius: 8px;
+
+  // --- textarea ---
+  --nutui-textarea-font: var(--nutui-font-size-3);
+  --nutui-textarea-padding: 10px 25px;
+  --nutui-textarea-text-color: var(--nutui-gray-7);
+
+  // --- timeselect ---
+  --nutui-timeselect-date-height: 40px;
+  --nutui-timeselect-date-width: 140px;
+  --nutui-timeselect-time-height: 50px;
+  --nutui-timeselect-time-width: 100px;
+
+  // --- toast ---
+  --nutui-toast-inner-padding: 16px 24px;
+  --nutui-toast-text-font-size: 14px;
+  --nutui-toast-title-font-size: 16px;
+
+  // --- tour ---
+  --nutui-tour-content-min-width: 200px;
+  --nutui-tour-content-padding: 10px 12px;
+  --nutui-tour-mask-border-radius: 10px;
+
+  // --- trendarrow ---
+  --nutui-trendarrow-font-size: 14px;
+  --nutui-trendarrow-icon-margin: 4px;
+
+  // --- uploader ---
+  --nutui-uploader-image-border: 0px;
+  --nutui-uploader-image-height: 100px;
+  --nutui-uploader-image-width: 100px;
+
+}

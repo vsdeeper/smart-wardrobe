@@ -3,12 +3,9 @@
 // 图标字体
 @use "./styles/iconfont.scss";
 
-// 全局字体（DESIGN.md 字体排印）
-// Plus Jakarta Sans → 标题，Be Vietnam Pro → 正文
+// 全局字体：系统字体栈（西文字体未打包，继承 page 即可）
 page {
   font-family:
-    "Be Vietnam Pro",
-    "Plus Jakarta Sans",
     PingFang SC,
     Microsoft YaHei,
     Helvetica,
@@ -18,18 +15,6 @@ page {
   -webkit-font-smoothing: antialiased;
   color: var(--nutui-gray-7);
   background-color: var(--nutui-gray-3);
-}
-
-// 标题使用 Plus Jakarta Sans
-h1,
-h2,
-h3,
-h4 {
-  font-family:
-    "Plus Jakarta Sans",
-    PingFang SC,
-    Microsoft YaHei,
-    sans-serif;
 }
 
 // ========== 图片占位底色（唯一入口：--sw-color-image-bg） ==========
@@ -46,7 +31,7 @@ page .nut-image .nut-img-error {
   border: none;
   border-radius: var(--sw-radius-card);
   background: var(--nutui-gray-1);
-  box-shadow: var(--sw-shadow-card);
+  box-shadow: var(--nutui-shadow-light);
   &.border-radius-unset {
     border-radius: unset;
   }
@@ -56,7 +41,7 @@ page .nut-image .nut-img-error {
 .chip {
   border-radius: var(--sw-radius-pill);
   border: 1px solid var(--nutui-gray-4);
-  background: var(--sw-color-secondary-container);
+  background: var(--nutui-color-secondary-container);
   color: var(--nutui-secondary-1);
   padding: 4px 12px;
   font-size: 13px; // DESIGN.md label-sm
@@ -68,10 +53,10 @@ page .nut-image .nut-img-error {
   flex-shrink: 0;
   height: auto !important;
   box-sizing: border-box;
-  font-size: var(--sw-tag-font-size) !important;
-  font-weight: var(--sw-tag-font-weight);
+  font-size: var(--nutui-tag-font-size) !important;
+  font-weight: 500;
   line-height: 1 !important;
-  padding: var(--sw-tag-padding-y) var(--sw-tag-padding-x) !important;
+  padding: var(--nutui-tag-padding) !important;
 
   &__text {
     font-size: inherit;
@@ -85,13 +70,13 @@ page .nut-image .nut-img-error {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    height: var(--sw-tag-icon-size);
+    height: 10px;
     line-height: 1;
 
     .nut-icon {
-      width: var(--sw-tag-icon-size) !important;
-      height: var(--sw-tag-icon-size) !important;
-      font-size: var(--sw-tag-icon-size) !important;
+      width: 10px !important;
+      height: 10px !important;
+      font-size: 10px !important;
       line-height: 1;
       margin-left: 8px !important;
     }
@@ -102,10 +87,10 @@ page .nut-image .nut-img-error {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border-radius: var(--sw-tag-radius);
-    color: var(--sw-color-tag-text);
+    border-radius: var(--nutui-tag-round-border-radius);
+    color: var(--nutui-tag-color);
     background: transparent;
-    border: 1px dashed var(--sw-color-tag-text);
+    border: 1px dashed var(--nutui-tag-color);
 
     &:active:not(.sw-tag--disabled) {
       opacity: 0.85;
@@ -155,14 +140,13 @@ page .nut-image .nut-img-error {
   }
 
   &__text {
-    font-family: var(--sw-font-heading);
     font-size: var(--nutui-font-size-4);
     font-weight: var(--nutui-font-weight-bold);
     color: var(--nutui-gray-7);
     line-height: 1.2;
 
     &--primary {
-      color: var(--sw-color-on-primary);
+      color: var(--nutui-color-primary-text);
     }
   }
 }
@@ -173,7 +157,7 @@ page .nut-image .nut-img-error {
   align-items: center;
   justify-content: center;
   --nutui-loading-icon-size: var(--sw-btn-loading-size);
-  --nutui-loading-icon-color: var(--sw-color-on-primary);
+  --nutui-loading-icon-color: var(--nutui-color-primary-text);
 
   .nut-loading {
     display: inline-flex;
@@ -190,7 +174,7 @@ page .nut-image .nut-img-error {
 
   .nut-loading-icon,
   .nut-icon {
-    color: var(--sw-color-on-primary);
+    color: var(--nutui-color-primary-text);
     background-color: currentColor;
   }
 }
@@ -306,7 +290,7 @@ page .nut-image .nut-img-error {
     line-height: 1.2;
 
     &--confirm {
-      color: var(--sw-color-on-primary);
+      color: var(--nutui-color-primary-text);
     }
   }
 }
@@ -319,7 +303,6 @@ page .nut-image .nut-img-error {
 }
 
 .sw-form-label {
-  font-family: var(--sw-font-body);
   font-size: var(--nutui-font-size-2);
   color: var(--nutui-gray-5);
   line-height: 1.4;
@@ -353,10 +336,6 @@ page .nut-image .nut-img-error {
     --nutui-input-font-size: var(--sw-field-font-size-sm);
   }
 
-  // H5 字体增强（小程序走 CSS 变量）
-  .nut-input-native {
-    font-family: var(--sw-font-body);
-  }
 }
 
 // NutUI TextArea 外壳（须包裹 <TextArea />；置于 .sw-field-box 内时可省略）
@@ -404,7 +383,6 @@ page .nut-image .nut-img-error {
   &__text {
     flex: 1;
     min-width: 0;
-    font-family: var(--sw-font-body);
     font-size: var(--sw-field-font-size);
     color: var(--sw-field-color);
     line-height: var(--sw-field-line-height);
@@ -454,7 +432,6 @@ page {
       min-height: 32px;
       padding: var(--sw-tabs-title-padding);
       line-height: 1.2;
-      font-family: var(--sw-font-body);
       font-size: var(--nutui-tabs-titles-font-size);
       font-weight: 500;
       box-sizing: border-box;
@@ -462,15 +439,15 @@ page {
 
     .nut-tabs-titles-item:not(.nut-tabs-titles-item-active)
       .nut-tabs-titles-item-text {
-      background: var(--sw-tabs-title-inactive-bg);
+      background: var(--nutui-gray-1);
       border: none;
-      color: var(--sw-tabs-title-inactive-color);
+      color: var(--nutui-gray-5);
       border-radius: var(--nutui-tabs-button-border-radius);
     }
 
     .nut-tabs-titles-item-active .nut-tabs-titles-item-text {
-      color: var(--sw-tabs-title-active-color);
-      background: var(--sw-tabs-title-active-bg);
+      color: var(--nutui-color-primary-text);
+      background: var(--nutui-brand-6);
       border: none;
       border-radius: var(--nutui-tabs-button-border-radius);
       box-shadow: var(--sw-shadow-tab-active);

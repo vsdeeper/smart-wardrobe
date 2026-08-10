@@ -47,8 +47,6 @@ export default function WardrobeDetailInfo({ item }: WardrobeDetailInfoProps) {
                 key={tag}
                 round
                 className="sw-tag"
-                background="var(--sw-color-tag-bg)"
-                color="var(--sw-color-tag-text)"
               >
                 {tag}
               </Tag>

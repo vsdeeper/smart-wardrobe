@@ -11,7 +11,6 @@
   }
 
   &__label {
-    font-family: var(--sw-font-body);
     font-size: var(--nutui-font-size-2);
     color: var(--nutui-gray-5);
     line-height: 1.4;
@@ -22,7 +21,6 @@
   }
 
   &__text {
-    font-family: var(--sw-font-body);
     font-size: var(--nutui-font-size-3);
     color: var(--nutui-gray-7);
     line-height: 1.5;
@@ -53,7 +51,6 @@
   }
 
   &__outfit-text {
-    font-family: var(--sw-font-body);
     font-size: var(--nutui-font-size-3);
     color: var(--nutui-gray-7);
     line-height: 1.6;

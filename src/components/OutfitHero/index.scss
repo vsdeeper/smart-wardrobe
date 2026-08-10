@@ -27,7 +27,6 @@
   }
 
   &__error-title {
-    font-family: var(--sw-font-heading);
     font-size: var(--nutui-font-size-6);
     font-weight: var(--nutui-font-weight-bold);
     color: var(--nutui-gray-7);
@@ -53,10 +52,9 @@
   }
 
   &__error-retry-text {
-    font-family: var(--sw-font-heading);
     font-size: var(--nutui-font-size-3);
     font-weight: 500;
-    color: var(--sw-color-on-primary);
+    color: var(--nutui-color-primary-text);
   }
 }
 
@@ -86,7 +84,6 @@
   &__temp,
   &__label,
   &__text {
-    font-family: var(--sw-font-heading);
     font-size: var(--nutui-font-size-2);
     font-weight: 500;
     color: var(--nutui-gray-7);

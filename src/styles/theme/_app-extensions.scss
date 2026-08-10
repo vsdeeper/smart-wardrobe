@@ -1,0 +1,52 @@
+// L4：App-only 扩展（NutUI / L2 无法表达的业务令牌）
+// 禁止新增纯 alias 型 --sw-color-*
+
+@mixin tokens {
+  // 图片占位
+  --sw-color-image-bg: var(--nutui-gray-2);
+
+  // 进度条轨道
+  --sw-color-progress-track: var(--sw-palette-progress-track);
+
+  // 圆角语义（DESIGN 组件规范名）
+  --sw-radius-card: var(--nutui-radius-2);
+  --sw-radius-banner: 16px;
+  --sw-radius-pill: 9999px;
+  --sw-radius-field: var(--nutui-radius-2);
+
+  // 表单控件（.sw-field / Input 封装）
+  --sw-field-bg: var(--nutui-gray-1);
+  --sw-field-bg-muted: var(--nutui-gray-2);
+  --sw-field-border-color: var(--nutui-gray-4);
+  --sw-field-color: var(--nutui-gray-7);
+  --sw-field-placeholder-color: var(--nutui-gray-5);
+  --sw-field-padding-y: var(--nutui-spacing-3);
+  --sw-field-padding-x: var(--nutui-spacing-4);
+  --sw-field-padding: var(--sw-field-padding-y) var(--sw-field-padding-x);
+  --sw-field-padding-sm: var(--nutui-spacing-2) var(--nutui-spacing-3);
+  --sw-field-font-size: var(--nutui-font-size-3);
+  --sw-field-font-size-sm: var(--nutui-font-size-2);
+  --sw-field-line-height: 1.5;
+
+  // 交互按钮（.sw-btn / .sw-fab，非 NutUI Button）
+  --sw-btn-height: 48px;
+  --sw-btn-height-sm: 44px;
+  --sw-btn-disabled-opacity: 0.75;
+  --sw-btn-active-opacity: 0.92;
+  --sw-btn-loading-size: 24px;
+  --sw-fab-size: 56px;
+  --sw-fab-icon-size: 30px;
+  --sw-fab-loading-size: 30px;
+
+  // 品牌阴影
+  --sw-shadow-tabbar: 0 -10px 40px rgba(176, 196, 222, 0.15);
+  --sw-shadow-tab-active: 0 4px 12px rgba(54, 107, 0, 0.2);
+  --sw-shadow-fab: 0 8px 24px rgba(54, 107, 0, 0.3);
+
+  // Tabs 胶囊（app.scss 自定义 capsule 逻辑）
+  --sw-tabs-title-padding: 8px 22px;
+  --sw-tabs-title-inactive-border: transparent;
+
+  // NavBar 运行时（AppNavbar.tsx 注入）
+  --sw-navbar-inset-top: 0px;
+}

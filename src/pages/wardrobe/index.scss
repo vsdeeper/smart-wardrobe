@@ -59,14 +59,12 @@
   min-height: 200px;
 
   &__title {
-    font-family: var(--sw-font-heading);
     font-size: var(--nutui-font-size-6);
     font-weight: var(--nutui-font-weight-bold);
     color: var(--nutui-gray-7);
   }
 
   &__desc {
-    font-family: var(--sw-font-body);
     font-size: var(--nutui-font-size-4);
     color: var(--nutui-gray-5);
     text-align: center;

@@ -69,7 +69,7 @@ export default function OutfitPanel({
                       onRemovePiece(piece);
                     }}
                   >
-                    <Close size={8} color="var(--sw-color-on-primary)" />
+                    <Close size={8} color="var(--nutui-color-primary-text)" />
                   </View>
                 </View>
               </View>

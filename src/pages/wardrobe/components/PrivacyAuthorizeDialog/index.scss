@@ -28,7 +28,6 @@
   &__title {
     display: block;
     margin-bottom: var(--nutui-spacing-5);
-    font-family: var(--sw-font-heading);
     font-size: var(--nutui-font-size-5);
     font-weight: var(--nutui-font-weight-bold);
     color: var(--nutui-gray-7);
@@ -39,7 +38,6 @@
   &__desc {
     display: block;
     margin-bottom: var(--nutui-spacing-4);
-    font-family: var(--sw-font-body);
     font-size: var(--nutui-font-size-3);
     color: var(--nutui-gray-6);
     line-height: 1.6;
@@ -81,7 +79,7 @@
     &--agree {
       border: none;
       background: var(--nutui-brand-6);
-      color: var(--sw-color-on-primary);
+      color: var(--nutui-color-primary-text);
       font-size: var(--nutui-font-size-3);
       font-weight: var(--nutui-font-weight-bold);
       line-height: 40px;

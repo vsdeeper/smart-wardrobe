@@ -35,8 +35,6 @@ export default function RecognitionItemCard({ item }: RecognitionItemCardProps) 
                   key={tag}
                   round
                   className="recognition-card__tag"
-                  background="var(--sw-color-tag-bg)"
-                  color="var(--sw-color-tag-text)"
                 >
                   {tag}
                 </Tag>

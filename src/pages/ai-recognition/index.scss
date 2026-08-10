@@ -12,7 +12,6 @@
   }
 
   &__status-text {
-    font-family: var(--sw-font-body);
     font-size: var(--nutui-font-size-2);
     color: var(--nutui-gray-5);
   }
@@ -38,10 +37,9 @@
   }
 
   &__edit-text {
-    font-family: var(--sw-font-body);
     font-size: var(--nutui-font-size-3);
     font-weight: 500;
-    color: var(--sw-color-on-primary);
+    color: var(--nutui-color-primary-text);
   }
 
   &__delete {
@@ -54,10 +52,9 @@
   }
 
   &__delete-text {
-    font-family: var(--sw-font-body);
     font-size: var(--nutui-font-size-3);
     font-weight: 500;
-    color: var(--sw-color-on-primary);
+    color: var(--nutui-color-primary-text);
   }
 
   &__empty {

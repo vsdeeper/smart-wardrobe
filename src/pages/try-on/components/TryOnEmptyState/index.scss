@@ -13,14 +13,12 @@
   }
 
   &__title {
-    font-family: var(--sw-font-heading);
     font-size: var(--nutui-font-size-5);
     font-weight: var(--nutui-font-weight-bold);
     color: var(--nutui-gray-7);
   }
 
   &__desc {
-    font-family: var(--sw-font-body);
     font-size: var(--nutui-font-size-3);
     color: var(--nutui-gray-5);
   }
@@ -39,9 +37,8 @@
   }
 
   &__cta-text {
-    font-family: var(--sw-font-heading);
     font-size: var(--nutui-font-size-4);
     font-weight: 500;
-    color: var(--sw-color-on-primary);
+    color: var(--nutui-color-primary-text);
   }
 }

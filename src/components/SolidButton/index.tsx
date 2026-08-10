@@ -40,7 +40,7 @@ function SolidButton({
       {loading ? (
         <Loading
           type="circular"
-          color="var(--sw-color-on-primary)"
+          color="var(--nutui-color-primary-text)"
           className="solid-button__loading"
         />
       ) : (

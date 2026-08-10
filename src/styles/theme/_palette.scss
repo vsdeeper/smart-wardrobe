@@ -1,0 +1,44 @@
+// L0：原始调色板 —— 换主题只需改本文件中的 hex/rgba
+// DESIGN.md colors → --sw-palette-* 映射：
+//   primary → brand 主色    primary-pressed → 按压态
+//   primary-container → brand-5    primary-accent → brand-4
+//   on-primary → 主色上文字    secondary / secondary-container / tertiary → L2 语义色
+//   surface / surface-elevated / surface-dim / surface-container → 表面层级
+//   on-surface / on-surface-muted / on-surface-variant → 文字层级
+//   outline → gray-4    tag-bg / tag-text → NutUI Tag
+//   error → danger
+
+@mixin tokens {
+  --sw-palette-primary: #366b00;
+  --sw-palette-primary-pressed: #2d5a00;
+  --sw-palette-primary-container: #7bc043;
+  --sw-palette-primary-accent: #92d959;
+  --sw-palette-on-primary: #ffffff;
+
+  --sw-palette-secondary: #b0c4de;
+  --sw-palette-secondary-text: #4d6077;
+  --sw-palette-secondary-container: #cde1fc;
+  --sw-palette-tertiary: #ffb74d;
+  --sw-palette-tertiary-container: #e5a139;
+
+  --sw-palette-surface: #f7f7f7;
+  --sw-palette-surface-elevated: #ffffff;
+  --sw-palette-surface-dim: #ebeff2;
+  --sw-palette-surface-container: #daeaf7;
+
+  --sw-palette-on-surface: #36454f;
+  --sw-palette-on-surface-muted: #6a7a87;
+  --sw-palette-on-surface-variant: #4f606d;
+  --sw-palette-outline: #c4ccd2;
+
+  --sw-palette-tag-bg: #e8f2ff;
+  --sw-palette-tag-text: #5b9bd5;
+  --sw-palette-image-placeholder: #ebeff2;
+
+  --sw-palette-info: #5b9bd5;
+  --sw-palette-success: #7bc043;
+  --sw-palette-warning: #e5a139;
+  --sw-palette-error: #ba1a1a;
+
+  --sw-palette-progress-track: #d5e5f1;
+}

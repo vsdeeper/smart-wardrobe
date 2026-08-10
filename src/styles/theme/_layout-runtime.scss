@@ -1,0 +1,13 @@
+// L5：运行时布局常量（非换肤项，由页面/布局组件覆盖）
+
+@mixin tokens {
+  --sw-status-bar-height: 0px;
+  --sw-safe-area-bottom: 0px;
+  --sw-tabbar-offset: 56px;
+  --sw-outfit-panel-height: 298px;
+  --sw-outfit-panel-collapsed-height: 120px;
+  --sw-bottom-inset: calc(
+    var(--sw-tabbar-offset, 56px) +
+      max(env(safe-area-inset-bottom, 0px), var(--sw-safe-area-bottom, 0px))
+  );
+}
