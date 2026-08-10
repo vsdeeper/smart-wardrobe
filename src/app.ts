@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useDidShow, useDidHide } from '@tarojs/taro'
 import { initCloud } from '@/services/cloud'
-import { prefetchUserProfile } from '@/services/profileCache'
+import { prefetchUserProfile } from "@/services/profile-cache"
 // 全局样式
 import './app.scss'
 

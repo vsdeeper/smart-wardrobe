@@ -1,6 +1,7 @@
+import { RecognizedPreviewItem } from "@/types/wardrobe";
 import { View, Text, ScrollView } from "@tarojs/components";
 import { Tag, Image } from "@nutui/nutui-react-taro";
-import type { RecognizedPreviewItem } from "@/data/wardrobe";
+
 import "./index.scss";
 
 export interface RecognitionItemCardProps {

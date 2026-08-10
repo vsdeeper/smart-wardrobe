@@ -1,7 +1,9 @@
+import { RecognitionBatch } from "@/types/recognition";
+import { getRecognitionBatchStatusLabel } from "@/utils/recognition-batch";
 import MediaListCard from "@/components/MediaListCard";
-import type { RecognitionBatch } from "@/data/recognition";
-import { getRecognitionBatchStatusLabel } from "@/data/recognition";
-import { formatDateTime } from "@/utils/formatDateTime";
+
+
+import { formatDateTime } from "@/utils/format-date-time";
 import { normalizeRecognitionErrorMessage } from "@/utils/recognition";
 
 export interface RecognitionBatchCardProps {

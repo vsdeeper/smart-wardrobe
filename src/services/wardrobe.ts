@@ -1,19 +1,18 @@
+import { ClothingType, RecognizedPreviewItem, WardrobeItem } from "@/types/wardrobe";
+import { isGenderSet } from "@/utils/profile";
+import { WARDROBE_PAGE_SIZE } from "@/constants/wardrobe";
 import Taro from "@tarojs/taro";
-import { isGenderSet } from "@/data/profile";
-import type {
-  ClothingType,
-  RecognizedPreviewItem,
-  WardrobeItem,
-} from "@/data/wardrobe";
-import { WARDROBE_PAGE_SIZE } from "@/data/wardrobe";
-import { attachImageUrls, resolveTempFileUrls } from "@/services/cloudFile";
+
+
+
+import { attachImageUrls, resolveTempFileUrls } from "@/services/cloud-file";
 import {
   getFreshUrlMap,
   mergeImageUrlCache,
   resolvedUrlMapToEntries,
-} from "@/services/imageUrlCache";
+} from "@/services/image-url-cache";
 import { fetchUserProfile } from "@/services/profile";
-import { readProfileCache } from "@/services/profileCache";
+import { readProfileCache } from "@/services/profile-cache";
 import { createTempId, RECOGNITION_FAIL_MESSAGE } from "@/utils/recognition";
 
 export interface FetchWardrobeItemsOptions {

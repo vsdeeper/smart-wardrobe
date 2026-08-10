@@ -1,8 +1,10 @@
+import { WeatherCardViewModel } from "@/types/weather";
+import { TryOnPreviewStatus } from "@/types/try-on";
 import { View, Text } from "@tarojs/components";
 import { Image } from "@nutui/nutui-react-taro";
 import OverlayLoading from "@/components/OverlayLoading";
-import type { TryOnPreviewStatus } from "@/data/tryOn";
-import type { WeatherCardViewModel } from "@/data/weather";
+
+
 import type { WeatherLoadStatus } from "@/services/weather";
 import "./index.scss";
 

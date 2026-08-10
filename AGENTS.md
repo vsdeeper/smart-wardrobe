@@ -1,5 +1,7 @@
 # AGENTS.md
 
+> AI 对话语言默认使用中文简体。
+
 面向在本仓库工作的 AI 编码代理的操作指南。与 `CLAUDE.md` 内容一致，并补充可执行命令与约束。
 
 ## 概述与适用范围
@@ -35,9 +37,12 @@ pnpm build:h5
 其他平台构建/开发脚本见 `package.json` 的 `scripts`（`build:alipay`、`dev:tt` 等）。
 
 ```bash
-# 代码检查（ESLint 已配置于 .eslintrc，package.json 无 eslint 脚本）
-pnpm exec eslint .
+# 代码检查与格式化
+pnpm lint
+pnpm format
 ```
+
+`pnpm install` 会通过 `prepare` 脚本初始化 Husky；提交时 `pre-commit` 对暂存文件跑 lint-staged（ESLint + Prettier），`commit-msg` 由 commitlint 校验 Conventional Commits。
 
 当前仓库**未配置**测试 runner 与 `test` 脚本；不要臆造测试命令。完整平台命令以 `package.json` 为准。
 
@@ -56,17 +61,36 @@ src/
   pages/wardrobe/     # 单词页面同样合法
   layouts/Main/       # 布局组件，目录名大驼峰
   components/AppNavbar/  # 跨页复用 UI，目录名大驼峰
-  hooks/              # 可复用状态与副作用
-  services/           # 云/API 调用
-  utils/              # 纯函数
-  data/               # 类型、枚举、常量
+  hooks/              # 可复用状态与副作用（kebab-case 文件名）
+  services/           # 云/API 调用（kebab-case 文件名）
+  utils/              # 纯函数（kebab-case 文件名）
+  types/              # 跨模块业务类型（kebab-case 文件名）
+  constants/          # 跨模块常量与枚举配置（kebab-case 文件名）
   styles/             # 全局主题等
 config/
   index.ts            # Taro 构建（designWidth: 375）
   dev.ts / prod.ts
-types/
+types/                # 环境/global 类型声明（如 global.d.ts），非业务 types
   global.d.ts
 ```
+
+根目录 `types/` 仅放环境/global 声明；业务领域类型放 `src/types/`，勿混用。
+
+### 全局目录命名规范
+
+全局非组件文件 **kebab-case**（`-` 连接）；组件目录 **PascalCase**（大驼峰）。
+
+| 职责 | 目录 | 文件命名 | 约束 |
+|------|------|----------|------|
+| 纯函数 / 格式化 | `src/utils/` | kebab-case，如 `format-date-time.ts` | 无 UI、无请求副作用 |
+| 跨模块类型 | `src/types/` | kebab-case，如 `wardrobe.ts` | 仅类型导出 |
+| 跨模块常量 | `src/constants/` | kebab-case，如 `wardrobe.ts` | 字面量、枚举配置 |
+| 可复用 hooks | `src/hooks/` | kebab-case，如 `use-weather.ts` | 导出名仍为 `useWeather` |
+| API / 云请求 | `src/services/` | kebab-case，如 `wardrobe.ts` | 不写 JSX |
+| 全局样式令牌 | `src/styles/` | 主题/变量 | 组件样式 colocation |
+
+- **禁止**新建 `src/data/`、`common/`、`misc/` 等无归属目录。
+- 单组件/单页专属内容留在该目录内，勿提升到全局。
 
 ### 页面组织
 
@@ -104,10 +128,10 @@ types/
 | --------------------------------------------------- | ---------------------------------------------------------------------------------------- |
 | 独立 UI 区块（卡片、Banner、表单段）且 JSX > ~40 行 | `pages/<page>/components/<Name>/index.tsx` + `index.scss`                                |
 | 同一 UI 被 ≥2 个页面使用                            | `src/components/<Name>/`（大驼峰，如 [`AppNavbar`](src/components/AppNavbar/index.tsx)） |
-| 可复用状态/副作用（分页、轮询、表单）               | `src/hooks/useXxx.ts`（如 [`useWeather`](src/hooks/useWeather.ts)）                      |
+| 可复用状态/副作用（分页、轮询、表单）               | `src/hooks/use-xxx.ts`（如 [`use-weather.ts`](src/hooks/use-weather.ts)）                      |
 | 云函数 / HTTP / 数据库访问                          | `src/services/`（如 [`wardrobe.ts`](src/services/wardrobe.ts)）                          |
-| 无 UI 的纯计算/格式化                               | `src/utils/`（如 [`outfitSelection.ts`](src/utils/outfitSelection.ts)）                  |
-| 类型、枚举、分页常量                                | `src/data/`（如 [`wardrobe.ts`](src/data/wardrobe.ts)）                                  |
+| 无 UI 的纯计算/格式化                               | `src/utils/`（如 [`outfit-selection.ts`](src/utils/outfit-selection.ts)）                  |
+| 跨模块类型 / 常量                                   | `src/types/`、`src/constants/`（如 [`types/wardrobe.ts`](src/types/wardrobe.ts)）          |
 
 - **页面私有组件**：仅单页使用时放 `src/pages/<page>/components/<ComponentName>/`（大驼峰 + `index.tsx` / `index.scss`）；页面内 `import X from "./components/X"`。样式遵守上文「组件样式收窄」。
 - **平衡**：为可读性与职责分离而拆；一次任务若新增 >1 个独立 UI 块，优先抽组件。不要为 5–10 行 JSX 单独建目录；不要为「可能复用」提前抽到 `components/`（YAGNI）；不要在小修复中顺带大规模重构无关页面。
@@ -153,6 +177,13 @@ types/
 ### 搜索范围
 
 排查代码时排除：`node_modules/`、`dist/`、`.git/`。
+
+## 编码约定
+
+- 对话、注释、提交说明默认中文简体。
+- 目录与页面/组件开发遵循上文全局目录命名与组件规范。
+- 改动后暂存文件由 lint-staged 自动 ESLint + Prettier。
+- **修复 BUG 后须标注**：在相关代码处简短注释说明原因与改法；仅修代码不留说明视为未完成。
 
 ## 应做与不应做
 
@@ -221,6 +252,7 @@ fix: 修复衣橱列表图片链接解析失败的问题
 - 描述部分**用简体中文**，动词开头（如「添加」「修复」「更新」「移除」），概括本次改动做了什么、以及必要时说明为什么。
 - 一次 commit 聚焦一个主题；避免把多个不相关改动混在一条提交信息里。
 - 不使用 `feat(scope):` 这类带 scope 的写法（保持与历史提交一致的简单格式），除非用户明确要求。
+- commit-msg 由 Husky + commitlint（`@commitlint/config-conventional`）校验；description 须为中文简体。
 
 ## 其他规则
 

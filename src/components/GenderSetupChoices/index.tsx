@@ -1,6 +1,7 @@
+import { Gender } from "@/types/profile";
 import { View, Text } from "@tarojs/components";
 import { Loading } from "@nutui/nutui-react-taro";
-import type { Gender } from "@/data/profile";
+
 import "./index.scss";
 
 export interface GenderSetupChoicesProps {

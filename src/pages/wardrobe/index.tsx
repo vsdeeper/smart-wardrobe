@@ -1,3 +1,4 @@
+import { WARDROBE_ITEM_ACTION_OPTIONS } from "@/constants/wardrobe";
 import { useRef } from "react";
 import { View, Text } from "@tarojs/components";
 import { Add } from "@nutui/icons-react-taro";
@@ -5,15 +6,15 @@ import { ActionSheet, Loading, Tabs } from "@nutui/nutui-react-taro";
 import AppNavbar from "@/components/AppNavbar";
 import GenderSetupDialog from "@/components/GenderSetupDialog";
 import PageLoading from "@/components/PageLoading";
+import WardrobeRefreshHint from "@/components/WardrobeRefreshHint";
 import Main from "@/layouts/Main";
-import { WARDROBE_ITEM_ACTION_OPTIONS } from "@/data/wardrobe";
-import { useGenderSetup } from "@/hooks/useGenderSetup";
-import { useWardrobeList } from "@/hooks/useWardrobeList";
-import { useWardrobeUpload } from "@/hooks/useWardrobeUpload";
-import { useMainTabNavigation } from "@/hooks/useMainTabNavigation";
+
+import { useGenderSetup } from "@/hooks/use-gender-setup";
+import { useWardrobeList } from "@/hooks/use-wardrobe-list";
+import { useWardrobeUpload } from "@/hooks/use-wardrobe-upload";
+import { useMainTabNavigation } from "@/hooks/use-main-tab-navigation";
 import PrivacyAuthorizeDialog from "./components/PrivacyAuthorizeDialog";
 import WardrobeItemCard from "./components/WardrobeItemCard";
-import WardrobeRefreshHint from "@/components/WardrobeRefreshHint";
 import "./index.scss";
 
 function WardrobePage() {

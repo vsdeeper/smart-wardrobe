@@ -1,0 +1,10 @@
+node_modules/
+dist/
+output/
+.swc/
+cloudfunctions/
+scripts/
+commitlint.config.js
+.eslintrc.js
+babel.config.js
+config/

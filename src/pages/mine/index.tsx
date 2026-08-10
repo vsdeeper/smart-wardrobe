@@ -1,3 +1,8 @@
+import { canOpenRecognitionBatch } from "@/utils/recognition-batch";
+import { MINE_RECOGNITION_PREVIEW_LIMIT } from "@/constants/recognition";
+import { type RecognitionBatch } from "@/types/recognition";
+import { MINE_DIARY_PREVIEW_LIMIT } from "@/constants/try-on";
+import { getUserDisplayName, isMetricsSet } from "@/utils/profile";
 import { useCallback, useState } from "react";
 import { View, Text } from "@tarojs/components";
 import Taro from "@tarojs/taro";
@@ -7,19 +12,15 @@ import DefaultAvatar from "@/components/DefaultAvatar";
 import MediaListCard from "@/components/MediaListCard";
 import PageLoading from "@/components/PageLoading";
 import RecognitionBatchCard from "@/components/RecognitionBatchCard";
-import {
-  canOpenRecognitionBatch,
-  MINE_RECOGNITION_PREVIEW_LIMIT,
-  type RecognitionBatch,
-} from "@/data/recognition";
-import { MINE_DIARY_PREVIEW_LIMIT } from "@/data/tryOn";
-import { getUserDisplayName, isMetricsSet } from "@/data/profile";
-import { useMainTabNavigation } from "@/hooks/useMainTabNavigation";
-import { useRecognitionBatches } from "@/hooks/useRecognitionBatches";
-import { useUserProfile } from "@/hooks/useUserProfile";
-import { useVisualDiary } from "@/hooks/useVisualDiary";
+
+
+
+import { useMainTabNavigation } from "@/hooks/use-main-tab-navigation";
+import { useRecognitionBatches } from "@/hooks/use-recognition-batches";
+import { useUserProfile } from "@/hooks/use-user-profile";
+import { useVisualDiary } from "@/hooks/use-visual-diary";
 import Main from "@/layouts/Main";
-import { formatDateTime } from "@/utils/formatDateTime";
+import { formatDateTime } from "@/utils/format-date-time";
 import { normalizeRecognitionErrorMessage } from "@/utils/recognition";
 import "./index.scss";
 

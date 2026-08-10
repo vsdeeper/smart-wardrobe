@@ -3,7 +3,7 @@ import AppNavbar from "@/components/AppNavbar";
 import OutlineButton from "@/components/OutlineButton";
 import PageLoading from "@/components/PageLoading";
 import SolidButton from "@/components/SolidButton";
-import { useMineProfileFieldEdit } from "@/hooks/useMineProfileFieldEdit";
+import { useMineProfileFieldEdit } from "@/hooks/use-mine-profile-field-edit";
 import Main from "@/layouts/Main";
 import FieldInput from "./components/FieldInput";
 import "./index.scss";

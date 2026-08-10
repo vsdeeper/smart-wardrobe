@@ -1,14 +1,15 @@
+import { Gender } from "@/types/profile";
 import { useCallback, useState } from "react";
 import Taro from "@tarojs/taro";
 import AppNavbar from "@/components/AppNavbar";
 import PageLoading from "@/components/PageLoading";
-import { useMainTabNavigation } from "@/hooks/useMainTabNavigation";
-import { useTryOnPreview } from "@/hooks/useTryOnPreview";
-import { useTryOnRecommend } from "@/hooks/useTryOnRecommend";
-import { useTryOnWear } from "@/hooks/useTryOnWear";
-import { useWeather } from "@/hooks/useWeather";
-import type { Gender } from "@/data/profile";
-import { applyGenderSetupWithToast } from "@/services/applyGenderSetup";
+import { useMainTabNavigation } from "@/hooks/use-main-tab-navigation";
+import { useTryOnPreview } from "@/hooks/use-try-on-preview";
+import { useTryOnRecommend } from "@/hooks/use-try-on-recommend";
+import { useTryOnWear } from "@/hooks/use-try-on-wear";
+import { useWeather } from "@/hooks/use-weather";
+
+import { applyGenderSetupWithToast } from "@/services/apply-gender-setup";
 import Main from "@/layouts/Main";
 import TryOnEmptyState from "./components/TryOnEmptyState";
 import TryOnResult from "./components/TryOnResult";

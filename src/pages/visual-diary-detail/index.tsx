@@ -1,3 +1,5 @@
+import { buildWeatherCardView, formatLocationLabel } from "@/utils/weather";
+import { type WeatherSnapshot } from "@/types/weather";
 import { View, Text } from "@tarojs/components";
 import AppNavbar from "@/components/AppNavbar";
 import OutfitCard from "@/components/OutfitCard";
@@ -5,14 +7,10 @@ import OutfitHero from "@/components/OutfitHero";
 import OutfitMeta from "@/components/OutfitMeta";
 import OutfitPieceList from "@/components/OutfitPieceList";
 import PageLoading from "@/components/PageLoading";
-import {
-  buildWeatherCardView,
-  formatLocationLabel,
-  type WeatherSnapshot,
-} from "@/data/weather";
-import { useVisualDiaryDetail } from "@/hooks/useVisualDiaryDetail";
+
+import { useVisualDiaryDetail } from "@/hooks/use-visual-diary-detail";
 import Main from "@/layouts/Main";
-import { formatDateTime } from "@/utils/formatDateTime";
+import { formatDateTime } from "@/utils/format-date-time";
 import "./index.scss";
 
 function buildDiarySubtitle(

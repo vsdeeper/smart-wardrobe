@@ -1,6 +1,7 @@
+import { Gender } from "@/types/profile";
 import { View, Text } from "@tarojs/components";
 import GenderSetupChoices from "@/components/GenderSetupChoices";
-import type { Gender } from "@/data/profile";
+
 import "./index.scss";
 
 export type TryOnEmptyStateProps =

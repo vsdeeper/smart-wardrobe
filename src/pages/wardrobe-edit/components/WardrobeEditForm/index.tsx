@@ -1,3 +1,4 @@
+import { ClothingType } from "@/types/wardrobe";
 import {
   createContext,
   useCallback,
@@ -15,7 +16,7 @@ import {
   Input,
   Tag,
 } from "@nutui/nutui-react-taro";
-import type { ClothingType } from "@/data/wardrobe";
+
 import "./index.scss";
 
 function FormDialogFooter({

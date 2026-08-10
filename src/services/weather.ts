@@ -1,5 +1,6 @@
+import type { WeatherSnapshot } from "@/types/weather";
 import Taro from "@tarojs/taro";
-import type { WeatherSnapshot } from "@/data/weather";
+
 
 export type WeatherLoadStatus =
   | "idle"

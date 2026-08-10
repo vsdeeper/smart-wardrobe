@@ -1,12 +1,15 @@
+import { WeatherCardViewModel } from "@/types/weather";
+import { WardrobeItem } from "@/types/wardrobe";
+import { TryOnPreviewStatus, TryOnRecommendation } from "@/types/try-on";
 import { View, Text } from "@tarojs/components";
 import OutfitCard from "@/components/OutfitCard";
 import OutfitHero from "@/components/OutfitHero";
 import OutfitMeta from "@/components/OutfitMeta";
 import OutfitPieceList from "@/components/OutfitPieceList";
 import OutlineButton from "@/components/OutlineButton";
-import type { TryOnPreviewStatus, TryOnRecommendation } from "@/data/tryOn";
-import type { WardrobeItem } from "@/data/wardrobe";
-import type { WeatherCardViewModel } from "@/data/weather";
+
+
+
 import type { WeatherLoadStatus } from "@/services/weather";
 import WearCta from "../WearCta";
 import "./index.scss";

@@ -1,8 +1,9 @@
+import { WardrobeItem } from "@/types/wardrobe";
 import { View } from "@tarojs/components";
 import { Check } from "@nutui/icons-react-taro";
 import { Image } from "@nutui/nutui-react-taro";
-import type { WardrobeItem } from "@/data/wardrobe";
-import { getCachedImageUrl } from "@/services/imageUrlCache";
+
+import { getCachedImageUrl } from "@/services/image-url-cache";
 import "./index.scss";
 
 export interface MatchItemCardProps {

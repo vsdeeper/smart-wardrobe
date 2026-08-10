@@ -1,10 +1,8 @@
+import { DEFAULT_USER_PROFILE } from "@/constants/profile";
+import { isGenderSet } from "@/utils/profile";
+import { type Gender, type UserProfile } from "@/types/profile";
 import Taro from "@tarojs/taro";
-import {
-  DEFAULT_USER_PROFILE,
-  isGenderSet,
-  type Gender,
-  type UserProfile,
-} from "@/data/profile";
+
 
 function normalizeGender(raw: unknown): Gender | undefined {
   if (raw === "male" || raw === "female") {

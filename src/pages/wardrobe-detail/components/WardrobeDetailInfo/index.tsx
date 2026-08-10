@@ -1,7 +1,8 @@
+import { WardrobeItem } from "@/types/wardrobe";
 import { View, Text } from "@tarojs/components";
 import { Tag } from "@nutui/nutui-react-taro";
-import type { WardrobeItem } from "@/data/wardrobe";
-import { formatDateTime, formatUpdatedAt } from "@/utils/formatDateTime";
+
+import { formatDateTime, formatUpdatedAt } from "@/utils/format-date-time";
 import "./index.scss";
 
 const STYLING_ADVICE_PLACEHOLDER = "暂无穿搭建议，将在 AI 识别阶段生成";

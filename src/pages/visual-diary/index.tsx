@@ -4,9 +4,9 @@ import { Swipe } from "@nutui/nutui-react-taro";
 import AppNavbar from "@/components/AppNavbar";
 import MediaListCard from "@/components/MediaListCard";
 import PageLoading from "@/components/PageLoading";
-import { useVisualDiaryList } from "@/hooks/useVisualDiaryList";
+import { useVisualDiaryList } from "@/hooks/use-visual-diary-list";
 import Main from "@/layouts/Main";
-import { formatDateTime } from "@/utils/formatDateTime";
+import { formatDateTime } from "@/utils/format-date-time";
 import "./index.scss";
 
 function VisualDiaryPage() {

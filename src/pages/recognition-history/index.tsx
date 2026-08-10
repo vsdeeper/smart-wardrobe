@@ -1,15 +1,14 @@
+import { canOpenRecognitionBatch } from "@/utils/recognition-batch";
+import { RECOGNITION_HISTORY_PAGE_SIZE } from "@/constants/recognition";
+import { type RecognitionBatch } from "@/types/recognition";
 import { useCallback } from "react";
 import { View, Text } from "@tarojs/components";
 import Taro from "@tarojs/taro";
 import AppNavbar from "@/components/AppNavbar";
 import PageLoading from "@/components/PageLoading";
 import RecognitionBatchCard from "@/components/RecognitionBatchCard";
-import {
-  canOpenRecognitionBatch,
-  RECOGNITION_HISTORY_PAGE_SIZE,
-  type RecognitionBatch,
-} from "@/data/recognition";
-import { useRecognitionBatches } from "@/hooks/useRecognitionBatches";
+
+import { useRecognitionBatches } from "@/hooks/use-recognition-batches";
 import Main from "@/layouts/Main";
 import { normalizeRecognitionErrorMessage } from "@/utils/recognition";
 import "./index.scss";

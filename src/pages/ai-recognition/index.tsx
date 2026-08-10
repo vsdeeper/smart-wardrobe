@@ -5,7 +5,7 @@ import AppNavbar from "@/components/AppNavbar";
 import OutlineButton from "@/components/OutlineButton";
 import PageLoading from "@/components/PageLoading";
 import SolidButton from "@/components/SolidButton";
-import { useAiRecognitionList } from "@/hooks/useAiRecognitionList";
+import { useAiRecognitionList } from "@/hooks/use-ai-recognition-list";
 import Main from "@/layouts/Main";
 import RecognitionItemCard from "./components/RecognitionItemCard";
 import "./index.scss";

@@ -1,9 +1,10 @@
+import { getUserDisplayName } from "@/utils/profile";
 import { View, Text } from "@tarojs/components";
 import Taro from "@tarojs/taro";
 import { NavBar } from "@nutui/nutui-react-taro";
 import DefaultAvatar from "@/components/DefaultAvatar";
-import { getUserDisplayName } from "@/data/profile";
-import { useUserProfile } from "@/hooks/useUserProfile";
+
+import { useUserProfile } from "@/hooks/use-user-profile";
 
 import "./index.scss";
 

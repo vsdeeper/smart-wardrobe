@@ -1,10 +1,8 @@
+import { GENDER_OPTIONS } from "@/constants/profile";
+import { type Gender, type ProfileEditableField } from "@/types/profile";
 import { View, Text } from "@tarojs/components";
 import { Cell, Input as NutInput } from "@nutui/nutui-react-taro";
-import {
-  GENDER_OPTIONS,
-  type Gender,
-  type ProfileEditableField,
-} from "@/data/profile";
+
 import "./index.scss";
 
 interface FieldInputProps {

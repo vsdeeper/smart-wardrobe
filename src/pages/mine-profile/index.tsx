@@ -1,15 +1,12 @@
+import { formatHeightLabel, formatWeightLabel, getGenderLabel } from "@/utils/profile";
 import { View, Text, Button, Input } from "@tarojs/components";
 import { ArrowRight } from "@nutui/icons-react-taro";
 import { Cell } from "@nutui/nutui-react-taro";
 import AppNavbar from "@/components/AppNavbar";
 import DefaultAvatar from "@/components/DefaultAvatar";
 import PageLoading from "@/components/PageLoading";
-import {
-  formatHeightLabel,
-  formatWeightLabel,
-  getGenderLabel,
-} from "@/data/profile";
-import { useMineProfileEdit } from "@/hooks/useMineProfileEdit";
+
+import { useMineProfileEdit } from "@/hooks/use-mine-profile-edit";
 import Main from "@/layouts/Main";
 import "./index.scss";
 

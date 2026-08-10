@@ -1,5 +1,5 @@
 import { View, Text, Button } from "@tarojs/components";
-import { openPrivacyContract } from "@/utils/mediaPickerError";
+import { openPrivacyContract } from "@/utils/media-picker-error";
 import "./index.scss";
 
 export interface PrivacyAuthorizeDialogProps {

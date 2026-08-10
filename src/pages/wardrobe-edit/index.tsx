@@ -4,7 +4,7 @@ import OutlineButton from "@/components/OutlineButton";
 import PageLoading from "@/components/PageLoading";
 import SolidButton from "@/components/SolidButton";
 import WardrobeDetailHero from "@/components/WardrobeDetailHero";
-import { useWardrobeEdit } from "@/hooks/useWardrobeEdit";
+import { useWardrobeEdit } from "@/hooks/use-wardrobe-edit";
 import Main from "@/layouts/Main";
 import {
   WardrobeEditFormFields,

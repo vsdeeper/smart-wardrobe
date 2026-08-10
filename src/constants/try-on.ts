@@ -1,0 +1,2 @@
+export const MINE_DIARY_PREVIEW_LIMIT = 6;
+export const VISUAL_DIARY_PAGE_SIZE = 20;

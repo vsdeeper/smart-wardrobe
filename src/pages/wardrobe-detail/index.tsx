@@ -2,7 +2,7 @@ import { View, Text } from "@tarojs/components";
 import AppNavbar from "@/components/AppNavbar";
 import PageLoading from "@/components/PageLoading";
 import WardrobeDetailHero from "@/components/WardrobeDetailHero";
-import { useWardrobeDetail } from "@/hooks/useWardrobeDetail";
+import { useWardrobeDetail } from "@/hooks/use-wardrobe-detail";
 import Main from "@/layouts/Main";
 import WardrobeDetailInfo from "./components/WardrobeDetailInfo";
 import "./index.scss";
