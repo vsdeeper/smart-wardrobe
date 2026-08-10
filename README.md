@@ -36,10 +36,18 @@ pnpm dev:weapp
 pnpm dev:h5
 
 # 代码检查
-pnpm exec eslint .
+pnpm lint
 ```
 
 构建后在微信开发者工具中打开项目根目录即可预览。
+
+部署或修改云函数前，须先同步跨函数共享代码：
+
+```bash
+pnpm cf:sync-shared
+```
+
+详见 [云函数部署说明](./cloudfunctions/README.md)。
 
 ## 目录结构
 
@@ -52,13 +60,21 @@ smart-wardrobe/
 │   ├── hooks/              # 可复用状态与副作用
 │   ├── services/           # 云/API 调用
 │   ├── utils/              # 纯函数
-│   ├── data/               # 类型、枚举、常量
+│   ├── types/              # 跨模块业务类型
+│   ├── constants/          # 跨模块常量与枚举
 │   ├── styles/             # 全局主题变量
 │   ├── app.ts              # 根组件
 │   └── app.config.ts       # 路由与窗口配置
 ├── cloudfunctions/         # 微信云函数
+│   ├── shared/             # 跨函数共享源码（utils/、constants/）
+│   ├── providers/          # 第三方静态配置（如 ark/constants.js）
+│   ├── chat/               # 各云函数：index.js 仅编排
+│   ├── weather/            # utils/、constants/ 为函数专属或 sync 注入
+│   └── …/
+├── scripts/
+│   └── sync-cloud-shared.js  # 将 shared/、providers/ 同步进各函数包
 ├── config/                 # Taro 构建配置
-├── types/                  # 全局类型声明
+├── types/                  # 全局类型声明（非业务 types）
 ├── PRODUCT.md              # 产品战略文档
 ├── DESIGN.md               # 设计体系文档
 └── AGENTS.md               # AI 代理操作指南
