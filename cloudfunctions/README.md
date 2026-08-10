@@ -208,25 +208,36 @@ wx.cloud
 
 云函数 `save-wardrobe-items` / `process-recognition-batch` 写入时会显式设置或校验 `_openid`；小程序端查询时规则自动过滤当前用户数据。
 
-## 6. 共享代码同步（部署衣橱相关云函数前必读）
+## 6. 共享代码同步（部署相关云函数前必读）
 
-`recognize-clothing` 使用 [`cloudfunctions/common/recognitionRules.js`](common/recognitionRules.js)（Seed 多件 JSON）；`generate-wardrobe-display` 使用 [`itemDisplayImageRules.js`](common/itemDisplayImageRules.js)（Seedream 展示图 Prompt）、[`doubaoVision.js`](common/doubaoVision.js)（Seedream 组图）；`process-recognition-batch` 同时需要识别与出图 common；`save-wardrobe-items` 共用 [`wardrobeSave.js`](common/wardrobeSave.js)。微信云函数**按单目录独立打包上传**，同级 `common/` 不会随函数部署，须在本地同步进各函数目录：
+跨函数共用代码位于 [`cloudfunctions/shared/`](shared/) 与 [`cloudfunctions/providers/`](providers/)（kebab-case）。微信云函数**按单目录独立打包**，须在本地同步进各函数包：
 
 ```bash
-pnpm cf:sync-common
+pnpm cf:sync-shared
 ```
 
-同步后：`recognize-clothing/common/` 含 `recognitionRules.js`、`wardrobeSave.js`；`generate-wardrobe-display/common/` 含 `doubaoVision.js`、`itemDisplayImageRules.js`、`providers/ark/`；`process-recognition-batch/common/` 含 `recognitionRules.js`、`doubaoVision.js`、`itemDisplayImageRules.js`、`providers/ark/`；`save-wardrobe-items/common/` 仅含 `wardrobeSave.js`；`generate-tryon-image/common/` 含 `doubaoVision.js`、`tryonImageRules.js`、`modelTemplateMatch.js`、`modelTemplateFileIds.js`、`providers/ark/`；`recommend-outfit/common/` 含 `recommendOutfitRules.js`。**修改 `cloudfunctions/common/` 下源码后，须重新执行上述命令再上传部署。**
+**源码树（节选）**
 
-业务约束（typeName 白名单、name 长度、tags 规则、name/tags 互斥）由 **Prompt** 负责；云函数侧仅做 JSON 解析与非空 trim，不再做白名单归并或截断兜底。
+| 源码路径 | 同步到函数包内 |
+| ---- | -------------- |
+| `shared/utils/env.js` | `./utils/env.js` |
+| `shared/utils/doubao-vision.js` | `./utils/doubao-vision.js` |
+| `shared/constants/recognition-rules.js` | `./constants/recognition-rules.js` |
+| `providers/ark/constants.js` | `./providers/ark/constants.js` |
+
+**各函数 sync 范围**（见 [`scripts/sync-cloud-shared.js`](../scripts/sync-cloud-shared.js) 的 `SHARED_SYNC_MAP` / `PROVIDERS_SYNC_MAP`）。
+
+**主路径**：小程序上传走 `process-recognition-batch`（异步批次）；`recognize-clothing` + `generate-wardrobe-display` 保留为薄封装 / Console 调试。
+
+修改 `cloudfunctions/shared/` 或 `cloudfunctions/providers/` 后须重新 `pnpm cf:sync-shared` 再上传部署。
 
 | 错误信息 | 常见原因 |
 | -------- | -------- |
-| `Cannot find module '../common/wardrobeSave'` | 未同步 common 或使用了旧的 `../common/` 引用；运行 `pnpm cf:sync-common` 后重新「上传并部署：云端安装依赖」 |
+| `Cannot find module './utils/...'` 或 `./constants/...` | 未 sync；运行 `pnpm cf:sync-shared` 后重新「上传并部署：云端安装依赖」 |
 
 ## 7. 部署 recognize-clothing 云函数
 
-1. 执行 `pnpm cf:sync-common`（若刚修改过 common 或首次部署）
+1. 执行 `pnpm cf:sync-shared`（若刚修改过 common 或首次部署）
 2. 微信开发者工具展开 `cloudfunctions/recognize-clothing`
 3. 右键 → **上传并部署：云端安装依赖**
 
@@ -249,7 +260,7 @@ tcb fn deploy recognize-clothing -e cloudbase-d6gkz1xlx9adbfe51
 
 在[火山方舟控制台](https://console.volcengine.com/ark)模型列表中查看模型 ID，填入 `DOUBAO_SEED_MODEL`。
 
-识别规则（typeName 白名单、Prompt 文案）见 [`cloudfunctions/common/recognitionRules.js`](common/recognitionRules.js)。修改后须 `pnpm cf:sync-common` 并重新部署 `recognize-clothing`。
+识别规则（typeName 白名单、Prompt 文案）见 [`cloudfunctions/shared/constants/recognition-rules.js`](shared/constants/recognition-rules.js)。修改 shared 后须 `pnpm cf:sync-shared` 并重新部署相关云函数。
 
 **超时**：`config.json` 为 `timeout: 60`（仅 Seed 识别，通常 5–15s 内完成）。展示图生成已拆至 `generate-wardrobe-display`（见第 8 节）。
 
@@ -274,7 +285,7 @@ wx.cloud
 | 返回 message | 常见原因 |
 | ------------ | -------- |
 | `145 code exit unexpected` | SDK 在 `cloud.init()` 前调用 `cloud.database()`；确保已部署最新代码后重新「上传并部署：云端安装依赖」 |
-| `Cannot find module '../common/wardrobeSave'` | 未同步 common；见第 6 节，运行 `pnpm cf:sync-common` 后重新部署 |
+| `Cannot find module './utils/...'` | 未 sync；见第 6 节，运行 `pnpm cf:sync-shared` 后重新部署 |
 | `未配置 DOUBAO_SEED_MODEL` | 未设置 Seed 全模态模型 ID 环境变量 |
 | `未识别到衣物单品` | 原图中 Seed 未识别到衣物 |
 | `-504003` / 云函数超时 | 若仍出现在识别阶段，检查是否误将 Seedream 逻辑合并在本函数；生图超时见第 8 节 `generate-wardrobe-display` |
@@ -288,7 +299,7 @@ wx.cloud
 
 识别与生图已拆分为两个云函数，避免 Seed + Seedream 合计超过 60s 导致 `-504003`。
 
-1. 执行 `pnpm cf:sync-common`
+1. 执行 `pnpm cf:sync-shared`
 2. 微信开发者工具展开 `cloudfunctions/generate-wardrobe-display`
 3. 右键 → **上传并部署：云端安装依赖**
 
@@ -308,7 +319,7 @@ tcb fn deploy generate-wardrobe-display -e cloudbase-d6gkz1xlx9adbfe51
 | `DOUBAO_API_BASE_URL` | 可选，默认 `https://ark.cn-beijing.volces.com/api/v3` |
 | `DOUBAO_VISION_MODEL` | Seedream 模型 ID，示例 `doubao-seedream-5-0-260128`（按 items 从原图生成展示图） |
 
-出图尺寸由 [`common/providers/ark`](common/providers/ark/index.js) 的 `VISION_SIZE`（`1920x1920`）静态配置，与试穿图共用，无需环境变量。
+出图尺寸由 [`providers/ark/constants.js`](../providers/ark/constants.js) 的 `VISION_SIZE`（`1920x1920`）静态配置，与试穿图共用，无需环境变量。
 
 **超时**：`config.json` 为 `timeout: 120`（Seedream 组图常需 40–90s）。客户端 `callFunction` 须设 `config.timeout: 120000` 与之对齐。
 
@@ -346,11 +357,11 @@ wx.cloud
 
 异步处理 `recognition_batches`：对 `coverFileId` 单张原图执行识别 + 展示图生成，写回 `status` / `items`（一图一批次，原图保留作列表封面）。
 
-1. 执行 `pnpm cf:sync-common`
+1. 执行 `pnpm cf:sync-shared`
 2. 微信开发者工具展开 `cloudfunctions/process-recognition-batch`
 3. 右键 → **上传并部署：云端安装依赖**
 
-环境变量与 `recognize-clothing` + `generate-wardrobe-display` 相同：`DOUBAO_API_KEY`、`DOUBAO_SEED_MODEL`、`DOUBAO_VISION_MODEL`（及可选 Base URL / Temperature）。出图尺寸见 `common/providers/ark` 的 `VISION_SIZE`。
+环境变量与 `recognize-clothing` + `generate-wardrobe-display` 相同：`DOUBAO_API_KEY`、`DOUBAO_SEED_MODEL`、`DOUBAO_VISION_MODEL`（及可选 Base URL / Temperature）。出图尺寸见 `providers/ark/constants.js` 的 `VISION_SIZE`。
 
 **超时**：`config.json` 为 `timeout: 300`。
 
@@ -372,7 +383,7 @@ wx.cloud
 
 ## 9. 部署 save-wardrobe-items 云函数
 
-1. 执行 `pnpm cf:sync-common`（与 recognize-clothing 共用 common 模块）
+1. 执行 `pnpm cf:sync-shared`（save-wardrobe-items 无 shared 依赖，可跳过 sync）
 2. 微信开发者工具展开 `cloudfunctions/save-wardrobe-items`
 3. 右键 → **上传并部署：云端安装依赖**
 
@@ -409,7 +420,7 @@ wx.cloud
 
 | 返回 message | 常见原因 |
 | ------------ | -------- |
-| `Cannot find module '../common/wardrobeSave'` | 未同步 common；见第 6 节 |
+| `Cannot find module './utils/wardrobe-save'` | 函数目录缺少 utils；确认已部署最新代码 |
 | `缺少待入库衣物数据` | `items` 为空或非数组 |
 | `无法获取用户身份` | 未登录或未初始化云开发 |
 
@@ -442,11 +453,11 @@ LLM 失败时回退规则推荐 `buildFallbackRecommendation`。
 
 右键 `cloudfunctions/generate-tryon-image` → **上传并部署：云端安装依赖**。
 
-部署前若修改过 `cloudfunctions/common/` 下 `doubaoVision.js`、`tryonImageRules.js`、`modelTemplateMatch.js`、`modelTemplateFileIds.js` 或 `providers/ark/`，须先执行 `pnpm cf:sync-common`。
+部署前若修改过 `cloudfunctions/shared/` 下 vision / 上传模块，或 `generate-tryon-image/constants/` 下试穿规则 / 模特配置，须先执行 `pnpm cf:sync-shared`（仅改 tryon 专属 constants 时可只部署该函数）。
 
-调用火山方舟 **Seedream 图像生成 API**：`POST {DOUBAO_API_BASE_URL}/images/generations`（非 `/chat/completions`）。参考图通过 `image` 传入：若已配置固定模特模板，则 **图1 = 模特人物参考**（锁定脸型/发型/肤质，姿势不沿用模板），其后为衣物参考图；文本需求通过 `prompt` 描述。输出尺寸来自 [`common/providers/ark`](common/providers/ark/index.js) 的 `VISION_SIZE`（`1920x1920`，1:1，满足 Seedream 5.0 像素下限）。
+调用火山方舟 **Seedream 图像生成 API**：`POST {DOUBAO_API_BASE_URL}/images/generations`（非 `/chat/completions`）。参考图通过 `image` 传入：若已配置固定模特模板，则 **图1 = 模特人物参考**（锁定脸型/发型/肤质，姿势不沿用模板），其后为衣物参考图；文本需求通过 `prompt` 描述。输出尺寸来自 [`providers/ark/constants.js`](../providers/ark/constants.js) 的 `VISION_SIZE`（`1920x1920`，1:1，满足 Seedream 5.0 像素下限）。
 
-场景约定（`tryonImageRules.js`）：始终**全身**生活方式构图；身体略侧、一手插袋；背景为简洁浅色纹理墙 + 中性地面；光影按 `weatherConditionCode` 调节（缺省按晴天暖日光）。
+场景约定（`tryon-image-rules.js`）：始终**全身**生活方式构图；身体略侧、一手插袋；背景为简洁浅色纹理墙 + 中性地面；光影按 `weatherConditionCode` 调节（缺省按晴天暖日光）。
 
 环境变量（云开发控制台 → `generate-tryon-image` → 配置）：
 
@@ -469,13 +480,13 @@ LLM 失败时回退规则推荐 `buildFallbackRecommendation`。
 
 - 匹配规则：仅按 `gender` 选择 `female-standard-*` / `male-standard-*`；发型变体 `01/02/03` 由用户 `openid` 稳定哈希决定；**身高体重不参与选图**（仍写入 prompt 作文案提示）。
 - 缺图回退：目标变体无 fileID 时回退同性别 `*-standard-01`；仍无或临时链解析失败时降级为纯文案模式（不阻断试穿）。
-- fileID 清单：[`common/modelTemplateFileIds.js`](common/modelTemplateFileIds.js)。
+- fileID 清单：[`generate-tryon-image/constants/model-template-file-ids.js`](../generate-tryon-image/constants/model-template-file-ids.js)。
 
 上传并启用（一次性）：
 
 1. 将 [`output/model-templates/`](../output/model-templates/) 下 `female/male-standard-{01,02,03}.jpg` 上传到云存储目录 `model-templates/`（微信开发者工具 → 云开发 → 云存储）。
-2. 把各文件的 `cloud://...` fileID 填入 [`common/modelTemplateFileIds.js`](common/modelTemplateFileIds.js) 对应键。
-3. 执行 `pnpm cf:sync-common`，再重新部署 `generate-tryon-image`。
+2. 把各文件的 `cloud://...` fileID 填入 [`generate-tryon-image/constants/model-template-file-ids.js`](../generate-tryon-image/constants/model-template-file-ids.js) 对应键。
+3. 执行 `pnpm cf:sync-shared`，再重新部署 `generate-tryon-image`。
 
 **离线生成模特模板候选图**（非云函数部署）：
 
@@ -489,6 +500,6 @@ LLM 失败时回退规则推荐 `buildFallbackRecommendation`。
 | `--variant <n>` | 无 | 仅生成该 preset 第 n 个变体（1-based，不可与 `all` 同用） |
 | `--help` | - | 列出 preset 与示例 |
 
-可用 preset：`female-slim`、`female-standard`、`female-curvy`、`male-slim`、`male-standard`、`male-curvy`、`neutral`（1 变体）。Prompt 定义见 [`common/modelTemplatePrompts.js`](common/modelTemplatePrompts.js)。当前运行时仅使用 `*-standard-*`。
+可用 preset：`female-slim`、`female-standard`、`female-curvy`、`male-slim`、`male-standard`、`male-curvy`、`neutral`（1 变体）。Prompt 定义见 [`generate-tryon-image/constants/model-template-prompts.js`](../generate-tryon-image/constants/model-template-prompts.js)。当前运行时仅使用 `*-standard-*`。
 
 4. 本地预览后可将选定图提交 git；启用试穿前须按上文上传云存储并填写 fileID。

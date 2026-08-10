@@ -28,7 +28,7 @@
     "dev:qq": "npm run build:qq -- --watch",
     "dev:jd": "npm run build:jd -- --watch",
     "dev:quickapp": "npm run build:quickapp -- --watch",
-    "cf:sync-common": "node scripts/sync-cloud-common.js",
+    "cf:sync-shared": "node scripts/sync-cloud-shared.js",
     "generate:model-templates": "node scripts/generate-model-templates.js",
     "format": "prettier --write \"src/**/*.{ts,tsx,scss}\" \"config/**/*.{ts,js}\"",
     "prepare": "husky",

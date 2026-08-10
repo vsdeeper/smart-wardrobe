@@ -1,0 +1,8 @@
+{
+  "files": [
+    "providers/ark/constants.js",
+    "utils/doubao-vision.js",
+    "utils/env.js",
+    "utils/upload-generated-image.js"
+  ]
+}

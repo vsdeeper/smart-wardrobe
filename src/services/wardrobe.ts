@@ -1,9 +1,6 @@
 import { ClothingType, RecognizedPreviewItem, WardrobeItem } from "@/types/wardrobe";
-import { isGenderSet } from "@/utils/profile";
 import { WARDROBE_PAGE_SIZE } from "@/constants/wardrobe";
 import Taro from "@tarojs/taro";
-
-
 
 import { attachImageUrls, resolveTempFileUrls } from "@/services/cloud-file";
 import {
@@ -11,9 +8,6 @@ import {
   mergeImageUrlCache,
   resolvedUrlMapToEntries,
 } from "@/services/image-url-cache";
-import { fetchUserProfile } from "@/services/profile";
-import { readProfileCache } from "@/services/profile-cache";
-import { createTempId, RECOGNITION_FAIL_MESSAGE } from "@/utils/recognition";
 
 export interface FetchWardrobeItemsOptions {
   typeId?: string | null;
@@ -41,55 +35,6 @@ async function resolveWardrobeImageUrls(
   );
   mergeImageUrlCache("wardrobe", resolvedUrlMapToEntries(urlMap));
   return items.map(stripItemImageUrl);
-}
-
-interface RecognizeClothingError {
-  error: string;
-  message: string;
-  model?: string;
-}
-
-interface RecognizeItemPayload {
-  name: string;
-  typeName: string;
-  tags: string[];
-  stylingAdvice?: string;
-}
-
-interface RecognizeItemsCloudResult {
-  items: RecognizeItemPayload[];
-  sourceFileId: string;
-}
-
-interface GeneratePreviewItemPayload {
-  name: string;
-  typeName: string;
-  tags: string[];
-  imageFileId: string;
-  stylingAdvice?: string;
-}
-
-interface GenerateDisplayCloudResult {
-  previews: GeneratePreviewItemPayload[];
-  failed?: { index: number; message: string }[];
-}
-
-type RecognizeCloudResult = RecognizeItemsCloudResult | RecognizeClothingError;
-type GenerateCloudResult = GenerateDisplayCloudResult | RecognizeClothingError;
-
-async function resolveUserGenderForRecognition(): Promise<string | undefined> {
-  const cached = readProfileCache()?.profile.gender;
-  if (isGenderSet(cached)) {
-    return cached;
-  }
-  const profile = await fetchUserProfile();
-  return isGenderSet(profile.gender) ? profile.gender : undefined;
-}
-
-function isCloudFunctionError(
-  result: RecognizeCloudResult | GenerateCloudResult,
-): result is RecognizeClothingError {
-  return "error" in result && typeof result.error === "string";
 }
 
 interface SaveWardrobeItemsCloudResult {
@@ -200,118 +145,6 @@ export async function fetchWardrobeItems(
     normalizeWardrobeItem,
   );
   return resolveWardrobeImageUrls(items);
-}
-
-/** 上传图片并调用 AI 识别（预览模式，不入库） */
-export async function uploadAndRecognize(
-  filePath: string,
-  onPhase?: (phase: "uploading" | "recognizing" | "generating") => void,
-): Promise<RecognizedPreviewItem[]> {
-  const ext = filePath.includes(".")
-    ? filePath.slice(filePath.lastIndexOf("."))
-    : ".jpg";
-  const cloudPath = `wardrobe/${Date.now()}-${Math.random().toString(36).slice(2)}${ext}`;
-
-  onPhase?.("uploading");
-  const uploadRes = await Taro.cloud.uploadFile({
-    cloudPath,
-    filePath,
-  });
-  const sourceFileId = uploadRes.fileID;
-
-  onPhase?.("recognizing");
-  const userGender = await resolveUserGenderForRecognition();
-  const { result: recognizeResult } = await Taro.cloud.callFunction({
-    name: "recognize-clothing",
-    data: { fileID: sourceFileId, userGender },
-  });
-
-  const recognizeData = recognizeResult as RecognizeCloudResult;
-  if (isCloudFunctionError(recognizeData)) {
-    throw new Error(recognizeData.message || recognizeData.error);
-  }
-
-  const items = recognizeData.items ?? [];
-  if (items.length === 0) {
-    throw new Error("没认出衣物，请换张更清晰的照片试试");
-  }
-
-  onPhase?.("generating");
-  let generateData: GenerateCloudResult;
-  try {
-    const generateRes = (await Taro.cloud.callFunction({
-      name: "generate-wardrobe-display",
-      data: { fileID: sourceFileId, items },
-      config: { timeout: 120000 },
-    } as Parameters<typeof Taro.cloud.callFunction>[0] & {
-      config?: { timeout?: number };
-    })) as { result: unknown };
-    generateData = generateRes.result as GenerateCloudResult;
-  } catch (err) {
-    await deleteCloudFiles([sourceFileId]);
-    throw err;
-  }
-
-  if (isCloudFunctionError(generateData)) {
-    await deleteCloudFiles([sourceFileId]);
-    throw new Error(generateData.message || generateData.error);
-  }
-
-  const rawPreviews = generateData.previews ?? [];
-  if (rawPreviews.length === 0) {
-    await deleteCloudFiles([sourceFileId]);
-    const partialMsg = generateData.failed?.[0]?.message;
-    throw new Error(partialMsg || "展示图没能生成，请稍后重试");
-  }
-
-  const previews: RecognizedPreviewItem[] = rawPreviews.map((item) => ({
-    tempId: createTempId(),
-    name: item.name,
-    typeName: item.typeName,
-    tags: item.tags,
-    imageFileId: item.imageFileId,
-    stylingAdvice: item.stylingAdvice,
-  }));
-
-  return attachImageUrls(previews);
-}
-
-export interface BatchRecognizeProgress {
-  current: number;
-  total: number;
-  phase: "uploading" | "recognizing" | "generating";
-}
-
-export interface BatchRecognizeResult {
-  succeeded: RecognizedPreviewItem[];
-  failed: { index: number; message: string }[];
-}
-
-/** 串行批量上传并识别，单张失败不影响后续 */
-export async function uploadAndRecognizeBatch(
-  filePaths: string[],
-  onProgress?: (progress: BatchRecognizeProgress) => void,
-): Promise<BatchRecognizeResult> {
-  const total = filePaths.length;
-  const succeeded: RecognizedPreviewItem[] = [];
-  const failed: { index: number; message: string }[] = [];
-
-  for (let i = 0; i < filePaths.length; i++) {
-    const current = i + 1;
-
-    try {
-      const results = await uploadAndRecognize(filePaths[i], (phase) => {
-        onProgress?.({ current, total, phase });
-      });
-      succeeded.push(...results);
-    } catch (err) {
-      const message =
-        err instanceof Error ? err.message : RECOGNITION_FAIL_MESSAGE;
-      failed.push({ index: current, message });
-    }
-  }
-
-  return { succeeded, failed };
 }
 
 export interface SaveWardrobeItemsResult {

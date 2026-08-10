@@ -51,12 +51,12 @@ try {
 
 const {
   generateSeedreamImage,
-} = require("../cloudfunctions/common/doubaoVision");
+} = require("../cloudfunctions/shared/utils/doubao-vision");
 const {
   MODEL_TEMPLATE_SIZE,
   listModelTemplatePresets,
   resolveGenerationJobs,
-} = require("../cloudfunctions/common/modelTemplatePrompts");
+} = require("../cloudfunctions/generate-tryon-image/constants/model-template-prompts");
 
 const REQUEST_DELAY_MS = 1500;
 const TEMPLATE_OUTPUT_SIZE = "4K";

@@ -1,0 +1,7 @@
+{
+  "files": [
+    "constants/recognition-rules.js",
+    "utils/env.js",
+    "utils/seed-recognize.js"
+  ]
+}

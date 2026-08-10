@@ -1,0 +1,10 @@
+{
+  "files": [
+    "constants/item-display-rules.js",
+    "providers/ark/constants.js",
+    "utils/doubao-vision.js",
+    "utils/env.js",
+    "utils/upload-generated-image.js",
+    "utils/wardrobe-display-pipeline.js"
+  ]
+}

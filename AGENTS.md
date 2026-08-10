@@ -160,6 +160,15 @@ types/                # 环境/global 类型声明（如 global.d.ts），非业
 
 ### 云函数（cloudfunctions/）
 
+#### 目录约定
+
+- **跨函数共享**（源码真相）：[`cloudfunctions/shared/`](cloudfunctions/shared/)（`utils/`、`constants/`）与 [`cloudfunctions/providers/`](cloudfunctions/providers/)（第三方静态配置，如 `ark/constants.js`）；文件 **kebab-case**；禁止再建 `cloudfunctions/common/`。
+- **单函数专属**：`cloudfunctions/<fn>/utils/`、`constants/`；`index.js` **仅编排**（`cloud.init` + `exports.main`），业务逻辑下沉 utils/constants。
+- **部署前同步**：修改 `shared/` 或 `providers/` 后执行 `pnpm cf:sync-shared`，复制进各函数包的 `./utils/`、`./constants/`、`./providers/`（由 `.sync-manifest.json` 追踪同步文件）。
+- 主识别路径：`process-recognition-batch`（异步批次）；`recognize-clothing` / `generate-wardrobe-display` 为同一套 shared 的薄封装 / 调试入口。
+
+#### 运行时与请求
+
 - 云函数内发起**外部 HTTP 请求统一使用 Node 18 原生 `fetch()`**，与 [`cloudfunctions/chat/index.js`](cloudfunctions/chat/index.js) 保持一致。
 - 各云函数 [`config.json`](cloudfunctions/weather/config.json) 须声明 `"runtime": "Nodejs18.15"`；部署后云端须为 Node 18（原生 `fetch` 可用且自动解压 Gzip）。
 - **禁止**使用 `require('https')` / `https.get`、旧版 `request` 库或 axios 等额外依赖（除非用户明确要求）。

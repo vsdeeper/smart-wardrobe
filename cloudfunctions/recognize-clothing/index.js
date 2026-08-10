@@ -1,69 +1,10 @@
 const cloud = require('wx-server-sdk')
-const {
-  buildSystemPrompt,
-  USER_PROMPT,
-  parseRecognitionContent,
-  filterItemsByUserGender,
-} = require('./common/recognitionRules')
-const { requireEnv } = require('./common/env')
+const { filterItemsByUserGender } = require('./constants/recognition-rules')
+const { resolveImageUrl } = require('./utils/doubao-vision')
+const { recognizeItemsFromImage } = require('./utils/seed-recognize')
+const { requireEnv } = require('./utils/env')
 
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
-
-const DEFAULT_TEMPERATURE = 0.1
-
-async function resolveImageUrl(fileID) {
-  const res = await cloud.getTempFileURL({ fileList: [fileID] })
-  const file = res.fileList?.[0]
-  if (!file || file.status !== 0) {
-    throw new Error('无法获取图片临时链接')
-  }
-  return file.tempFileURL
-}
-
-function resolveVisionTemperature() {
-  const raw = process.env.DOUBAO_SEED_TEMPERATURE
-  const parsed = raw === undefined || raw === '' ? DEFAULT_TEMPERATURE : parseFloat(raw)
-  if (Number.isNaN(parsed)) return DEFAULT_TEMPERATURE
-  return Math.min(2, Math.max(0, parsed))
-}
-
-async function recognizeItemsFromImage(imageUrl, apiKey, baseUrl, model) {
-  const temperature = resolveVisionTemperature()
-  const response = await fetch(`${baseUrl}/chat/completions`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model,
-      temperature,
-      response_format: { type: 'json_object' },
-      messages: [
-        { role: 'system', content: buildSystemPrompt() },
-        {
-          role: 'user',
-          content: [
-            { type: 'image_url', image_url: { url: imageUrl } },
-            { type: 'text', text: USER_PROMPT },
-          ],
-        },
-      ],
-    }),
-  })
-
-  const data = await response.json()
-  if (!response.ok) {
-    const errMsg = data?.error?.message || data?.message || `HTTP ${response.status}`
-    const err = new Error(errMsg)
-    err.code = 'LLM_API_ERROR'
-    err.model = model
-    throw err
-  }
-
-  const content = data?.choices?.[0]?.message?.content ?? ''
-  return parseRecognitionContent(content)
-}
 
 exports.main = async (event) => {
   const { fileID, userGender } = event || {}
@@ -90,17 +31,17 @@ exports.main = async (event) => {
       return { error: 'PROVIDER_CONFIG', message: '未配置 DOUBAO_SEED_MODEL 环境变量' }
     }
 
-    const imageUrl = await resolveImageUrl(fileID)
+    const imageUrl = await resolveImageUrl(cloud, fileID)
     const rawItems = await recognizeItemsFromImage(imageUrl, apiKey, baseUrl, seedModel)
-
     const { items, filteredCount } = filterItemsByUserGender(rawItems, userGender)
 
     if (items.length === 0) {
       return {
         error: 'RECOGNIZE_FAILED',
-        message: filteredCount > 0
-          ? '未识别到符合您性别的衣物'
-          : '未识别到衣物单品',
+        message:
+          filteredCount > 0
+            ? '未识别到符合您性别的衣物'
+            : '未识别到衣物单品',
       }
     }
 

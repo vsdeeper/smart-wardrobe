@@ -6,62 +6,11 @@ const {
   buildFallbackRecommendation,
   buildSelectionFallbackRecommendation,
   isSelectionRecommendationValid,
-} = require('./common/recommendOutfitRules')
-const { requireEnv } = require('./common/env')
+} = require('./constants/recommend-outfit-rules')
+const { callSeedChat } = require('./utils/call-seed-chat')
+const { summarizeWardrobe } = require('./utils/summarize-wardrobe')
 
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
-
-const DEFAULT_TEMPERATURE = 0.3
-
-function resolveSeedTemperature() {
-  const raw = process.env.DOUBAO_SEED_TEMPERATURE
-  const parsed = raw === undefined || raw === '' ? DEFAULT_TEMPERATURE : parseFloat(raw)
-  if (Number.isNaN(parsed)) return DEFAULT_TEMPERATURE
-  return Math.min(2, Math.max(0, parsed))
-}
-
-async function callSeedChat(systemPrompt, userPrompt) {
-  const apiKey = process.env.DOUBAO_API_KEY
-  const baseUrl = requireEnv('DOUBAO_API_BASE_URL')
-  const model = process.env.DOUBAO_SEED_MODEL
-  if (!apiKey) throw new Error('未配置 DOUBAO_API_KEY')
-  if (!model) throw new Error('未配置 DOUBAO_SEED_MODEL')
-
-  const res = await fetch(`${baseUrl}/chat/completions`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model,
-      temperature: resolveSeedTemperature(),
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-      ],
-    }),
-  })
-  const data = await res.json()
-  if (!res.ok) {
-    throw new Error(data?.error?.message || data?.message || `HTTP ${res.status}`)
-  }
-  return data?.choices?.[0]?.message?.content ?? ''
-}
-
-function summarizeWardrobe(wardrobeByType) {
-  const result = {}
-  for (const [typeName, items] of Object.entries(wardrobeByType || {})) {
-    if (!Array.isArray(items)) continue
-    result[typeName] = items.map((item) => ({
-      id: String(item.id ?? item._id ?? ''),
-      name: String(item.name ?? ''),
-      tags: Array.isArray(item.tags) ? item.tags : [],
-      stylingAdvice: typeof item.stylingAdvice === 'string' ? item.stylingAdvice : '',
-    })).filter((item) => item.id)
-  }
-  return result
-}
 
 exports.main = async (event) => {
   const { mode = 'recommend', weather, season, profile, wardrobeByType } = event || {}
@@ -82,7 +31,12 @@ exports.main = async (event) => {
 
     const payload = {
       mode: requestMode,
-      weather: weather || { temperature: 20, humidity: 50, conditionCode: 'sunny', city: '当前位置' },
+      weather: weather || {
+        temperature: 20,
+        humidity: 50,
+        conditionCode: 'sunny',
+        city: '当前位置',
+      },
       season: season || '春',
       profile: profile || { occupation: '', styleTags: [] },
       wardrobeByType: summarized,
