@@ -17,7 +17,6 @@ import "./index.scss";
 export interface TryOnResultProps {
   recommendation: TryOnRecommendation | null;
   selectedPieces: WardrobeItem[];
-  isManualOutfit: boolean;
   heroImageUrl?: string | null;
   heroCoverFileId?: string | null;
   previewStatus: TryOnPreviewStatus;
@@ -30,13 +29,11 @@ export interface TryOnResultProps {
   saving: boolean;
   wearConfirmed: boolean;
   onWearOutfit: () => void;
-  onRefreshRecommend: () => void;
 }
 
 function TryOnResult({
   recommendation,
   selectedPieces,
-  isManualOutfit,
   heroImageUrl,
   heroCoverFileId,
   previewStatus,
@@ -49,7 +46,6 @@ function TryOnResult({
   saving,
   wearConfirmed,
   onWearOutfit,
-  onRefreshRecommend,
 }: TryOnResultProps) {
   const styleTags = (recommendation?.tips ?? [])
     .map((tip) => tip.label)
@@ -90,15 +86,13 @@ function TryOnResult({
           }
           onWear={onWearOutfit}
         />
-        {!isManualOutfit ? (
-          <OutlineButton
-            block
-            disabled={saving || previewStatus === "loading"}
-            onClick={onRefreshRecommend}
-          >
-            换一套推荐
-          </OutlineButton>
-        ) : null}
+        <OutlineButton
+          block
+          disabled={saving || previewStatus === "loading"}
+          onClick={onRetryPreview}
+        >
+          重新试穿
+        </OutlineButton>
         <Text className="try-on-actions__ai-hint">
           效果由 AI 生成，仅供参考
         </Text>

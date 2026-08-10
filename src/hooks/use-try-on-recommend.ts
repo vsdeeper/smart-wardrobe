@@ -23,7 +23,6 @@ import { fetchUserProfile } from "@/services/profile";
 import { fetchWeather } from "@/services/weather";
 import {
   allPieceUrlsFresh,
-  clearTryOnCache,
   getInitialTryOnCache,
   isTryOnCacheValid,
   writeTryOnCache,
@@ -303,12 +302,6 @@ export function useTryOnRecommend() {
     void handleShow();
   });
 
-  const refreshRecommend = useCallback(() => {
-    manualDraftRef.current = null;
-    clearTryOnCache();
-    loadFresh(true);
-  }, [loadFresh]);
-
   const retryRecommend = useCallback(() => {
     const manualDraft = manualDraftRef.current;
     if (manualDraft) {
@@ -327,7 +320,6 @@ export function useTryOnRecommend() {
     savedReturn,
     isManualOutfit: savedReturn !== null,
     weatherSnapshot,
-    refreshRecommend,
     retryRecommend,
     allItems: allItemsRef.current,
   };

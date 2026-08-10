@@ -32,7 +32,6 @@ function TryOnPage() {
     fromCache,
     savedReturn,
     isManualOutfit,
-    refreshRecommend,
     retryRecommend,
     weatherSnapshot,
   } = useTryOnRecommend();
@@ -121,7 +120,6 @@ function TryOnPage() {
           <TryOnResult
             recommendation={recommendation}
             selectedPieces={selectedPieces}
-            isManualOutfit={isManualOutfit}
             heroImageUrl={heroImageUrl}
             heroCoverFileId={heroCoverFileId}
             previewStatus={previewStatus}
@@ -134,7 +132,6 @@ function TryOnPage() {
             saving={saving}
             wearConfirmed={wearConfirmed}
             onWearOutfit={handleWearCta}
-            onRefreshRecommend={refreshRecommend}
           />
         );
     }
