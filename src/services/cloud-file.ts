@@ -1,5 +1,5 @@
 import Taro from "@tarojs/taro";
-import { CLOUD_TEMP_URL_MAX_AGE_S, CLOUD_TEMP_URL_TTL_MS } from "@/config/cloud";
+import { CLOUD_TEMP_URL_MAX_AGE_S, CLOUD_TEMP_URL_TTL_MS } from "@/constants/cloud";
 
 /** getTempFileURL 单次调用的文件数上限 */
 const TEMP_URL_BATCH_SIZE = 50;

@@ -1,5 +1,5 @@
 import Taro from '@tarojs/taro'
-import { CLOUD_ENV_ID } from '@/config/cloud'
+import { CLOUD_ENV_ID } from '@/constants/cloud'
 import { isWeapp } from '@/utils/platform'
 
 let initialized = false
