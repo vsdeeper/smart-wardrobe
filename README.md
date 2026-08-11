@@ -13,7 +13,7 @@
 | 包管理   | pnpm                                         |
 | 目标平台 | 微信小程序（主）、H5、支付宝、抖音等         |
 | 后端     | 微信云开发（云函数 + 云数据库 + 云存储）     |
-| AI 集成  | 火山方舟 Seed / Seedream、DeepSeek           |
+| AI 集成  | 火山方舟 Seed / Seedream                             |
 
 ## 功能概览
 
@@ -92,5 +92,6 @@ smart-wardrobe/
 
 - [产品战略（PRODUCT.md）](./PRODUCT.md)
 - [设计体系（DESIGN.md）](./DESIGN.md)
+- [积分定价方案（CREDITS.md）](./CREDITS.md)
 - [代理操作指南（AGENTS.md）](./AGENTS.md)
 - [云函数部署说明（cloudfunctions/README.md）](./cloudfunctions/README.md)
