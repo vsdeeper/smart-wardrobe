@@ -30,7 +30,7 @@
     "dev:quickapp": "npm run build:quickapp -- --watch",
     "cf:sync-shared": "node scripts/sync-cloud-shared.js",
     "generate:model-templates": "node scripts/generate-model-templates.js",
-    "generate:display-templates": "node scripts/generate-display-templates.js",
+    "test:recognize-display": "node scripts/test-recognize-display.js",
     "format": "prettier --write \"src/**/*.{ts,tsx,scss}\" \"config/**/*.{ts,js}\"",
     "prepare": "husky",
     "lint": "eslint ."

@@ -1,0 +1,75 @@
+{
+  "rawItems": [
+    {
+      "typeName": "连衣裙",
+      "name": "短款吊带连衣裙",
+      "tags": [
+        "白色",
+        "夏季",
+        "碎花",
+        "雪纺"
+      ],
+      "audienceGender": "female",
+      "stylingAdvice": "清新碎花风格，适合户外出游约会，可搭配小白鞋和草编配饰。"
+    },
+    {
+      "typeName": "配饰",
+      "name": "宽檐遮阳帽",
+      "tags": [
+        "米色",
+        "夏季",
+        "草编"
+      ],
+      "audienceGender": "unisex",
+      "stylingAdvice": "草编透气防晒，适合户外出行，搭配裙装休闲感十足。"
+    },
+    {
+      "typeName": "鞋靴",
+      "name": "低帮休闲鞋",
+      "tags": [
+        "白色",
+        "四季",
+        "轻便"
+      ],
+      "audienceGender": "unisex",
+      "stylingAdvice": "轻便舒适，适合户外漫步，搭配裙装清爽自然。"
+    }
+  ],
+  "items": [
+    {
+      "typeName": "连衣裙",
+      "name": "短款吊带连衣裙",
+      "tags": [
+        "白色",
+        "夏季",
+        "碎花",
+        "雪纺"
+      ],
+      "audienceGender": "female",
+      "stylingAdvice": "清新碎花风格，适合户外出游约会，可搭配小白鞋和草编配饰。"
+    },
+    {
+      "typeName": "配饰",
+      "name": "宽檐遮阳帽",
+      "tags": [
+        "米色",
+        "夏季",
+        "草编"
+      ],
+      "audienceGender": "unisex",
+      "stylingAdvice": "草编透气防晒，适合户外出行，搭配裙装休闲感十足。"
+    },
+    {
+      "typeName": "鞋靴",
+      "name": "低帮休闲鞋",
+      "tags": [
+        "白色",
+        "四季",
+        "轻便"
+      ],
+      "audienceGender": "unisex",
+      "stylingAdvice": "轻便舒适，适合户外漫步，搭配裙装清爽自然。"
+    }
+  ],
+  "filteredCount": 0
+}
