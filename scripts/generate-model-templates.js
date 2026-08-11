@@ -17,7 +17,7 @@ const fs = require("fs");
 const path = require("path");
 
 const ROOT = path.resolve(__dirname, "..");
-const OUTPUT_DIR = path.join(ROOT, "output", "model-templates");
+const OUTPUT_DIR = path.join(ROOT, "output", "models");
 
 function loadEnvFile(filePath) {
   if (!fs.existsSync(filePath)) return;

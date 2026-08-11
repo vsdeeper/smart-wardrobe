@@ -23,7 +23,9 @@ const SHARED_SYNC_MAP = {
     'utils/doubao-vision.js',
     'utils/upload-generated-image.js',
     'utils/wardrobe-display-pipeline.js',
+    'utils/resolve-display-bg-url.js',
     'constants/item-display-rules.js',
+    'constants/display-bg-file-ids.js',
   ],
   'process-recognition-batch': [
     'utils/env.js',
@@ -31,8 +33,10 @@ const SHARED_SYNC_MAP = {
     'utils/seed-recognize.js',
     'utils/upload-generated-image.js',
     'utils/wardrobe-display-pipeline.js',
+    'utils/resolve-display-bg-url.js',
     'constants/recognition-rules.js',
     'constants/item-display-rules.js',
+    'constants/display-bg-file-ids.js',
   ],
   'generate-tryon-image': [
     'utils/env.js',

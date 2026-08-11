@@ -1,10 +1,12 @@
-const ITEM_DISPLAY_BG = '#F5F2ED' // 与 src/styles/theme.scss --sw-color-image-bg 一致
+const BG_REF_BACKGROUND_RULES = `【背景与合成硬性要求 — 最高优先级】
+- 背景必须严格沿用图1的场景：色调、明暗、光向、地面/墙面关系不得被替换为其他风格
+- 单品与背景光向一致；允许极轻、边缘柔和的接触投影（soft contact shadow），使单品呈 flat-lay 贴台感；禁止硬阴影、长投影、黑色阴影块
+- 禁止改变背景构图、添加新道具、家具、植物、文字、水印或 UI`
 
-const BACKGROUND_RULES = `【背景硬性要求 — 最高优先级】
-- 背景必须是均匀暖米白 RGB(245,242,237) / ${ITEM_DISPLAY_BG}，全图可见区域均为该底色，不得有冷灰、纯白过曝或色相漂移
-- 目录风产品图布光：高调、漫射、柔和；背景为暖米白/浅奶油灰，禁止冷灰工作室底（如 #F0F0F0）、纯白过曝（#FFFFFF）、深灰底、米色斑块或明显色调偏移
+const FALLBACK_BACKGROUND_RULES = `【背景硬性要求 — 最高优先级】
+- 目录风产品图布光：高调、漫射、柔和；背景为浅色柔和质感墙面或台面，简洁无杂物
 - 允许极轻、边缘柔和的接触投影（soft contact shadow），使单品呈 flat-lay 贴台感；禁止硬阴影、长投影、黑色阴影块
-- 禁止：背景渐变、晕影、明显纹理/纸纹、噪点、环境光染色`
+- 禁止：明显渐变、晕影、环境光染色、文字、水印或 UI`
 
 /** 临时限制：Seedream 每次只生成 1 张展示图，避免云函数超时 */
 const DISPLAY_IMAGE_MAX_COUNT = 1
@@ -64,26 +66,53 @@ function selectItemsForDisplayGeneration(items) {
   return list.slice(0, DISPLAY_IMAGE_MAX_COUNT)
 }
 
-function buildItemsDisplayPrompt(items) {
+const EXTRACTION_RULES = `- 从原图中对应位置/区域提取，保留原图该件的款式、颜色、材质、图案，以及衣物上的品牌 logo、标贴、印花文字等细节（须与原图一致，不得抹除或篡改）
+- 单品居中，约占画面 85–90%；四边各留约 5–8% 空白，画面饱满，不得留大片空边，也不得贴边裁切衣物
+- 平铺或挂拍，无模特
+- 画面中不得出现原图以外的叠加文字、照片水印、边框或 UI 元素；衣物本体上的 logo/印花除外
+- 只含清单中的那件单品，不含原图中其他衣物`
+
+/**
+ * 构造衣物单品展示图 Seedream prompt。
+ * @param {Array<{ typeName: string; name: string; tags?: string[] }>} items 待生成展示图的单品
+ * @param {{ hasBgRef?: boolean }} [options] hasBgRef 为 true 时图1=背景参考、图2=原图
+ * @returns {string}
+ */
+function buildItemsDisplayPrompt(items, options = {}) {
+  const { hasBgRef = false } = options
   const list = selectItemsForDisplayGeneration(items)
   const itemLines = list.map((item, index) => formatItemLine(index, item)).join('\n')
   const count = list.length
 
-  return `参考附带原图（图1），请从原图中提取下列衣物单品，生成 ${count} 张 RGB(245,242,237) 暖米白目录风产品展示图（background color exactly ${ITEM_DISPLAY_BG}）。
+  if (hasBgRef) {
+    return `参考附带图片：
+- 图1：目标背景场景（空场景，保持其色调、光感、地面/墙面透视与质感）
+- 图2：衣物原图（从中提取指定单品）
+
+请从图2原图中提取下列衣物单品，生成 ${count} 张产品展示图，将各单品自然放置于图1背景场景的中央区域（平铺或挂拍均可）。
 不得自行识别、增删或调换顺序；不得脱离原图凭空生成。
 
 <items>
 ${itemLines}
 </items>
 
-${BACKGROUND_RULES}
+${BG_REF_BACKGROUND_RULES}
 
 提取要求：
-- 从原图中对应位置/区域提取，保留原图该件的款式、颜色、材质、图案，以及衣物上的品牌 logo、标贴、印花文字等细节（须与原图一致，不得抹除或篡改）
-- 单品居中，约占画面 85–90%；四边各留约 5–8% ${ITEM_DISPLAY_BG} 空白，画面饱满，不得留大片空边，也不得贴边裁切衣物
-- 平铺或挂拍，无模特
-- 画面中不得出现原图以外的叠加文字、照片水印、边框或 UI 元素；衣物本体上的 logo/印花除外
-- 只含清单中的那件单品，不含原图中其他衣物`
+${EXTRACTION_RULES.replace(/从原图中/g, '从图2原图中').replace(/不含原图中/g, '不含图2中')}`
+  }
+
+  return `参考附带原图（图1），请从原图中提取下列衣物单品，生成 ${count} 张目录风产品展示图。
+不得自行识别、增删或调换顺序；不得脱离原图凭空生成。
+
+<items>
+${itemLines}
+</items>
+
+${FALLBACK_BACKGROUND_RULES}
+
+提取要求：
+${EXTRACTION_RULES}`
 }
 
 module.exports = {

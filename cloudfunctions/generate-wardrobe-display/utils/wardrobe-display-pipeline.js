@@ -4,6 +4,7 @@ const {
   selectItemsForDisplayGeneration,
 } = require('../constants/item-display-rules')
 const { generateSeedreamImages, resolveImageUrl } = require('./doubao-vision')
+const { resolveDisplayBgUrl } = require('./resolve-display-bg-url')
 const { uploadSeedreamImageToCloud } = require('./upload-generated-image')
 
 function createTempId() {
@@ -35,9 +36,19 @@ async function generateDisplayImages(cloud, items, sourceUrl, openid, options = 
   }
 
   const count = displayItems.length
+  const bgUrl = await resolveDisplayBgUrl(cloud)
+  const hasBgRef = Boolean(bgUrl)
+  const imageUrls = hasBgRef ? [bgUrl, sourceUrl] : [sourceUrl]
+
+  if (!hasBgRef) {
+    console.warn(
+      `[${logTag}] 背景参考图未配置或解析失败，降级为无背景参考模式`,
+    )
+  }
+
   const { images } = await generateSeedreamImages({
-    prompt: buildItemsDisplayPrompt(displayItems),
-    imageUrls: [sourceUrl],
+    prompt: buildItemsDisplayPrompt(displayItems, { hasBgRef }),
+    imageUrls,
     maxImages: count,
   })
 

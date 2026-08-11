@@ -1,10 +1,12 @@
 {
   "files": [
+    "constants/display-bg-file-ids.js",
     "constants/item-display-rules.js",
     "constants/recognition-rules.js",
     "providers/ark/constants.js",
     "utils/doubao-vision.js",
     "utils/env.js",
+    "utils/resolve-display-bg-url.js",
     "utils/seed-recognize.js",
     "utils/upload-generated-image.js",
     "utils/wardrobe-display-pipeline.js"

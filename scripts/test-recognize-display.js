@@ -10,7 +10,7 @@
  *
  * 示例：
  *   pnpm test:recognize-display --image ./sample.jpg
- *   pnpm test:recognize-display --image ./sample.jpg --bg output/model-templates/clothing-wall-bg-1920.jpg
+ *   pnpm test:recognize-display --image ./sample.jpg --bg output/item-bgs/clothing-wall-bg-1920-light.jpg
  *   pnpm test:recognize-display --image ./sample.jpg --gender female --limit 2
  *   pnpm test:recognize-display --help
  */
@@ -21,8 +21,8 @@ const ROOT = path.resolve(__dirname, "..");
 const DEFAULT_BG = path.join(
   ROOT,
   "output",
-  "model-templates",
-  "clothing-wall-bg-1920.jpg",
+  "item-bgs",
+  "clothing-wall-bg-1920-light.jpg",
 );
 const DEFAULT_OUTPUT_ROOT = path.join(ROOT, "output", "recognition-bg-test");
 const MAX_ITEMS = 5;
@@ -219,7 +219,7 @@ function printHelp() {
 
 示例:
   pnpm test:recognize-display --image ./sample.jpg
-  pnpm test:recognize-display --image ./sample.jpg --bg output/model-templates/clothing-wall-bg-1920.jpg
+  pnpm test:recognize-display --image ./sample.jpg --bg output/item-bgs/clothing-wall-bg-1920-light.jpg
   pnpm test:recognize-display --image ./sample.jpg --gender female --limit 2`);
 }
 

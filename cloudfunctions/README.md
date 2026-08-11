@@ -321,6 +321,17 @@ tcb fn deploy generate-wardrobe-display -e cloudbase-d6gkz1xlx9adbfe51
 
 出图尺寸由 [`providers/ark/constants.js`](../providers/ark/constants.js) 的 `VISION_SIZE`（`1920x1920`）静态配置，与试穿图共用，无需环境变量。
 
+**预设参考图目录**（本地 `output/` 与云存储根目录一致）：
+
+| 分类 | 本地 | 云存储 | 用途 |
+| ---- | ---- | ------ | ---- |
+| 模特 | `output/models/` | `models/` | 试穿固定模特模板 |
+| Pose | `output/poses/` | `poses/` | 试穿姿势库（后续） |
+| 试穿背景 | `output/tryon-bgs/` | `tryon-bgs/` | 试穿 Hero 场景底图（如 `light-scene-bg-1920.jpg`） |
+| 衣物单品背景 | `output/item-bgs/` | `item-bgs/` | 识别后单品展示图底图 |
+
+单品展示图采用双参考：图1 预设背景（[`shared/constants/display-bg-file-ids.js`](../shared/constants/display-bg-file-ids.js)）+ 图2 用户原图。上传 `output/item-bgs/clothing-wall-bg-1920-light.jpg` 至云存储 `item-bgs/` 后，将 fileID 填入该常量，执行 `pnpm cf:sync-shared` 并重新部署 `process-recognition-batch` / `generate-wardrobe-display`。
+
 **超时**：`config.json` 为 `timeout: 120`（Seedream 组图常需 40–90s）。客户端 `callFunction` 须设 `config.timeout: 120000` 与之对齐。
 
 ### Console 验证
@@ -484,14 +495,19 @@ LLM 失败时回退规则推荐 `buildFallbackRecommendation`。
 
 上传并启用（一次性）：
 
-1. 将 [`output/model-templates/`](../output/model-templates/) 下 `female/male-standard-{01,02,03}.jpg` 上传到云存储目录 `model-templates/`（微信开发者工具 → 云开发 → 云存储）。
+1. 将 [`output/models/`](../output/models/) 下 `female/male-standard-{01,02,03}-1920.jpg` 上传到云存储目录 `models/`（微信开发者工具 → 云开发 → 云存储）。
 2. 把各文件的 `cloud://...` fileID 填入 [`generate-tryon-image/constants/model-template-file-ids.js`](../generate-tryon-image/constants/model-template-file-ids.js) 对应键。
 3. 执行 `pnpm cf:sync-shared`，再重新部署 `generate-tryon-image`。
+
+**试穿场景背景**（后续接入 Hero 双参考时使用）：
+
+- 本地目录 [`output/tryon-bgs/`](../output/tryon-bgs/)，云存储 `tryon-bgs/`；示例 `light-scene-bg-1920.jpg`（浅色场景墙 + 地面）。
+- 接入试穿流水线前须上传至云存储；fileID 清单待 `generate-tryon-image/constants/` 扩展（与模特模板模式一致）。
 
 **离线生成模特模板候选图**（非云函数部署）：
 
 1. 在项目根目录 `.env.local` 配置与 `generate-tryon-image` 相同的 `DOUBAO_API_KEY`、`DOUBAO_VISION_MODEL`（脚本固定竖版 `1600x2304`）。
-2. 执行 `pnpm generate:model-templates`，默认生成 `female-standard` 的 3 张变体，输出至 `output/model-templates/`（如 `female-standard-01.jpg`）。
+2. 执行 `pnpm generate:model-templates`，默认生成 `female-standard` 的 3 张变体，输出至 `output/models/`（如 `female-standard-01-1920.jpg`）。
 3. 可选 CLI 参数（直接追加在 `pnpm generate:model-templates` 后）：
 
 | 参数 | 默认 | 说明 |
