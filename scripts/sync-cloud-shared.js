@@ -12,7 +12,6 @@ const MANIFEST_NAME = '.sync-manifest.json'
 
 /** 各云函数需要同步的 shared 文件（相对 shared/） */
 const SHARED_SYNC_MAP = {
-  chat: ['utils/env.js'],
   'recognize-clothing': [
     'utils/env.js',
     'utils/seed-recognize.js',

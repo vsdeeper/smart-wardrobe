@@ -1,93 +1,22 @@
 # 云函数部署说明
 
-## 1. 部署 chat 云函数
+勿在云开发控制台网页「新建云函数」。使用本地目录上传：`pnpm dev:weapp` 构建后，微信开发者工具打开**项目根目录**，展开对应云函数目录，右键 → **上传并部署：云端安装依赖**。
 
-勿在云开发控制台网页「新建云函数」。使用本地目录上传：
-
-1. `pnpm dev:weapp` 构建后，微信开发者工具打开**项目根目录**
-2. 左侧文件树展开 `cloudfunctions/chat`
-3. 右键 → **上传并部署：云端安装依赖**
-
-各云函数 [`config.json`](cloudfunctions/weather/config.json) 已声明 `"runtime": "Nodejs18.15"`；若控制台显示版本不一致，重新上传部署后应与配置对齐。
+各云函数 [`config.json`](weather/config.json) 已声明 `"runtime": "Nodejs18.15"`；若控制台显示版本不一致，重新上传部署后应与配置对齐。
 
 若上传失败（ECONNRESET），可关闭 VPN 后重试，或使用 CLI：
 
 ```bash
 npm i -g @cloudbase/cli
 tcb login
-tcb fn deploy chat -e cloudbase-d6gkz1xlx9adbfe51
+tcb fn deploy <函数名> -e cloudbase-d6gkz1xlx9adbfe51
 ```
 
-## 2. 配置环境变量
-
-云开发控制台 → **云函数** → `chat` → **配置** → **环境变量**：
-
-| 变量名                  | 说明                                                  |
-| ----------------------- | ----------------------------------------------------- |
-| `LLM_DEFAULT_PROVIDER`  | 默认 `deepseek`                                       |
-| `DEEPSEEK_API_KEY`      | DeepSeek API Key                                      |
-| `DEEPSEEK_API_BASE_URL` | 可选，默认 `https://api.deepseek.com`                 |
-| `DEEPSEEK_MODEL`        | 可选，默认 `deepseek-v4-flash`（简单对话）            |
-| `DOUBAO_API_KEY`        | 火山方舟 API Key                                      |
-| `DOUBAO_API_BASE_URL`   | 可选，默认 `https://ark.cn-beijing.volces.com/api/v3` |
-| `DOUBAO_MODEL`          | 方舟文本对话模型 ID（`/chat/completions` 的 `model` 字段） |
+开发者工具 **Console 运行在小程序原生上下文**，仅识别 `wx` / `wx.cloud`，**没有** Taro 全局对象；勿在 Console 使用 `Taro.cloud`。若 App 尚未执行云初始化（或刚清缓存），需先调用 `wx.cloud.init`；App 已 `initCloud` 时可跳过。
 
 API Key 仅配置在控制台，勿提交到 Git。
 
-## 3. Console 验证
-
-开发者工具 **Console 运行在小程序原生上下文**，仅识别 `wx` / `wx.cloud`，**没有** Taro 全局对象；勿在 Console 使用 `Taro.cloud`，否则会报 `Taro is not defined`。
-
-若 App 尚未执行云初始化（或刚清缓存），需先在 Console 调用 `wx.cloud.init`；App 已 `initCloud` 时可跳过 init。
-
-| 场景               | API                                            |
-| ------------------ | ---------------------------------------------- |
-| 开发者工具 Console | `wx.cloud.*`                                   |
-| 页面 / 业务代码    | `chatWithLLM` → 内部 `Taro.cloud.callFunction` |
-
-开发者工具 Console：
-
-```javascript
-// 若尚未初始化（可选，App 已 initCloud 时可跳过）
-wx.cloud.init({
-  env: "cloudbase-d6gkz1xlx9adbfe51",
-  traceUser: true,
-});
-
-// DeepSeek（默认）
-wx.cloud
-  .callFunction({
-    name: "chat",
-    data: { messages: [{ role: "user", content: "你好" }] },
-  })
-  .then(console.log)
-  .catch(console.error);
-
-// 豆包
-wx.cloud
-  .callFunction({
-    name: "chat",
-    data: {
-      provider: "doubao",
-      messages: [{ role: "user", content: "用三句话介绍秋季穿搭" }],
-    },
-  })
-  .then(console.log)
-  .catch(console.error);
-```
-
-预期返回 `{ provider, model, content, usage }`（默认 `model` 为 `deepseek-v4-flash`）。
-
-或在页面代码中（Taro 项目内用法）：
-
-```typescript
-import { chatWithLLM } from "@/services/ai";
-
-const res = await chatWithLLM([{ role: "user", content: "你好" }]);
-console.log(res.content);
-```
-
-## 4. 部署 weather 云函数
+## 1. 部署 weather 云函数
 
 1. 微信开发者工具展开 `cloudfunctions/weather`
 2. 右键 → **上传并部署：云端安装依赖**
@@ -145,7 +74,7 @@ wx.cloud
 
 页面内通过 `useWeather` hook 调用，定位失败时卡片引导「开启定位」。
 
-## 5. 云数据库（衣橱 AI 分类）
+## 2. 云数据库（衣橱 AI 分类）
 
 云开发控制台 → **数据库** → 新建以下集合，并配置安全规则（仅创建者可读写）：
 
@@ -208,7 +137,7 @@ wx.cloud
 
 云函数 `save-wardrobe-items` / `process-recognition-batch` 写入时会显式设置或校验 `_openid`；小程序端查询时规则自动过滤当前用户数据。
 
-## 6. 共享代码同步（部署相关云函数前必读）
+## 3. 共享代码同步（部署相关云函数前必读）
 
 跨函数共用代码位于 [`cloudfunctions/shared/`](shared/) 与 [`cloudfunctions/providers/`](providers/)（kebab-case）。微信云函数**按单目录独立打包**，须在本地同步进各函数包：
 
@@ -235,7 +164,7 @@ pnpm cf:sync-shared
 | -------- | -------- |
 | `Cannot find module './utils/...'` 或 `./constants/...` | 未 sync；运行 `pnpm cf:sync-shared` 后重新「上传并部署：云端安装依赖」 |
 
-## 7. 部署 recognize-clothing 云函数
+## 4. 部署 recognize-clothing 云函数
 
 1. 执行 `pnpm cf:sync-shared`（若刚修改过 common 或首次部署）
 2. 微信开发者工具展开 `cloudfunctions/recognize-clothing`
@@ -253,7 +182,7 @@ tcb fn deploy recognize-clothing -e cloudbase-d6gkz1xlx9adbfe51
 
 | 变量名                | 说明                                               |
 | --------------------- | -------------------------------------------------- |
-| `DOUBAO_API_KEY`      | 火山方舟 API Key（可与 chat 共用）                 |
+| `DOUBAO_API_KEY`      | 火山方舟 API Key                                   |
 | `DOUBAO_API_BASE_URL` | 可选，默认 `https://ark.cn-beijing.volces.com/api/v3` |
 | `DOUBAO_SEED_MODEL` | 方舟 Seed 全模态模型 ID，示例 `doubao-seed-2-0-lite-260428`（从原图提取 `items[]` JSON） |
 | `DOUBAO_SEED_TEMPERATURE` | 可选，识别采样温度，默认 `0.1`，范围 0–2 |
@@ -262,7 +191,7 @@ tcb fn deploy recognize-clothing -e cloudbase-d6gkz1xlx9adbfe51
 
 识别规则（typeName 白名单、Prompt 文案）见 [`cloudfunctions/shared/constants/recognition-rules.js`](shared/constants/recognition-rules.js)。修改 shared 后须 `pnpm cf:sync-shared` 并重新部署相关云函数。
 
-**超时**：`config.json` 为 `timeout: 60`（仅 Seed 识别，通常 5–15s 内完成）。展示图生成已拆至 `generate-wardrobe-display`（见第 8 节）。
+**超时**：`config.json` 为 `timeout: 60`（仅 Seed 识别，通常 5–15s 内完成）。展示图生成已拆至 `generate-wardrobe-display`（见第 5 节）。
 
 ### Console 验证
 
@@ -278,24 +207,24 @@ wx.cloud
   .catch(console.error);
 ```
 
-预期返回 `{ items: [{ name, typeName, tags }], sourceFileId }`。失败时返回 `{ error, message }`。展示图须再调 `generate-wardrobe-display`（见第 8 节）。
+预期返回 `{ items: [{ name, typeName, tags }], sourceFileId }`。失败时返回 `{ error, message }`。展示图须再调 `generate-wardrobe-display`（见第 5 节）。
 
 ### 故障排查
 
 | 返回 message | 常见原因 |
 | ------------ | -------- |
 | `145 code exit unexpected` | SDK 在 `cloud.init()` 前调用 `cloud.database()`；确保已部署最新代码后重新「上传并部署：云端安装依赖」 |
-| `Cannot find module './utils/...'` | 未 sync；见第 6 节，运行 `pnpm cf:sync-shared` 后重新部署 |
+| `Cannot find module './utils/...'` | 未 sync；见第 3 节，运行 `pnpm cf:sync-shared` 后重新部署 |
 | `未配置 DOUBAO_SEED_MODEL` | 未设置 Seed 全模态模型 ID 环境变量 |
 | `未识别到衣物单品` | 原图中 Seed 未识别到衣物 |
-| `-504003` / 云函数超时 | 若仍出现在识别阶段，检查是否误将 Seedream 逻辑合并在本函数；生图超时见第 8 节 `generate-wardrobe-display` |
+| `-504003` / 云函数超时 | 若仍出现在识别阶段，检查是否误将 Seedream 逻辑合并在本函数；生图超时见第 5 节 `generate-wardrobe-display` |
 | `无法获取图片临时链接` | fileID 无效或云存储权限问题 |
 | `AI 返回格式无效` | Vision 模型未按 JSON 格式返回，检查 prompt 或换模型 |
 | `LLM_API_ERROR` | API Key 无效、模型 ID 错误或 API 与模型不匹配、或配额用尽 |
 
 页面内通过衣橱页 FAB 上传触发：`chooseMedia` → `uploadFile` → 创建 `recognition_batches` → `callFunction('process-recognition-batch')`（云端异步识别 + 出图）；结果在「我的」识别记录中确认后由 `save-wardrobe-items` 入库。
 
-## 8. 部署 generate-wardrobe-display 云函数
+## 5. 部署 generate-wardrobe-display 云函数
 
 识别与生图已拆分为两个云函数，避免 Seed + Seedream 合计超过 60s 导致 `-504003`。
 
@@ -364,7 +293,7 @@ wx.cloud
 | `image size must be at least 3686400 pixels` | 展示图 `size` 过小；检查 `providers/ark` 的 `VISION_SIZE`（须 ≥3686400 像素） |
 | `-504003` / 云函数超时 | 确认 `config.json` 为 `timeout: 120` 且客户端 `callFunction` timeout 为 120000 |
 
-## 8.1 部署 process-recognition-batch 云函数
+## 5.1 部署 process-recognition-batch 云函数
 
 异步处理 `recognition_batches`：对 `coverFileId` 单张原图执行识别 + 展示图生成，写回 `status` / `items`（一图一批次，原图保留作列表封面）。
 
@@ -392,7 +321,7 @@ wx.cloud
 
 预期返回 `{ batchId, itemCount }`；失败时 batch 文档 `status` 为 `failed`。
 
-## 9. 部署 save-wardrobe-items 云函数
+## 6. 部署 save-wardrobe-items 云函数
 
 1. 执行 `pnpm cf:sync-shared`（save-wardrobe-items 无 shared 依赖，可跳过 sync）
 2. 微信开发者工具展开 `cloudfunctions/save-wardrobe-items`

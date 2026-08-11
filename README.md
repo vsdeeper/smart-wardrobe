@@ -68,8 +68,7 @@ smart-wardrobe/
 ├── cloudfunctions/         # 微信云函数
 │   ├── shared/             # 跨函数共享源码（utils/、constants/）
 │   ├── providers/          # 第三方静态配置（如 ark/constants.js）
-│   ├── chat/               # 各云函数：index.js 仅编排
-│   ├── weather/            # utils/、constants/ 为函数专属或 sync 注入
+│   ├── weather/            # 各云函数：index.js 仅编排；utils/、constants/ 为专属或 sync 注入
 │   └── …/
 ├── scripts/
 │   └── sync-cloud-shared.js  # 将 shared/、providers/ 同步进各函数包
@@ -83,7 +82,6 @@ smart-wardrobe/
 ## 待办
 
 - [x] 搭配、我的新缓存策略重构（业务数据应用级内存；临时链统一 `imageUrlCache`，含 avatar；已移除 `sw_user_profile_cache`）
-- [ ] AI 出图固定参考图（预设离线图）：试穿/单品展示等场景统一采用离线预设参考图 + 云存储 fileID 清单（对齐固定模特模板模式），替代运行时生成或纯 prompt 约束
 - [x] 试穿图姿势与场景背景（离线参考图）：图1 模特身份 + 图2 随机姿势库（`output/poses/`）+ 图3 场景背景（`output/tryon-bgs/light-scene-bg-1920.jpg`）+ 图4 起衣物；已改 `generate-tryon-image` 与 `tryon-image-rules`
 - [x] 衣物单品展示图稳定（离线预设底图）：图1 离线预设底图（`output/item-bgs/clothing-wall-bg-1920-light.jpg`）+ 图2 用户原图；改 `wardrobe-display-pipeline` 与 `item-display-rules`
 - [ ] **Flux Art 国外生图模型接入**：评估并接入 Flux Art 生图 API，用于试穿/单品展示等场景；云函数侧抽象 Provider（与现有 Seedream 并列或可切换），环境变量配置密钥与模型参数，按场景选型与降级策略

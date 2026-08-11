@@ -174,12 +174,12 @@ types/                # 环境/global 类型声明（如 global.d.ts），非业
 
 #### 运行时与请求
 
-- 云函数内发起**外部 HTTP 请求统一使用 Node 18 原生 `fetch()`**，与 [`cloudfunctions/chat/index.js`](cloudfunctions/chat/index.js) 保持一致。
+- 云函数内发起**外部 HTTP 请求统一使用 Node 18 原生 `fetch()`**，与 [`cloudfunctions/recommend-outfit/utils/call-seed-chat.js`](cloudfunctions/recommend-outfit/utils/call-seed-chat.js) 保持一致。
 - 各云函数 [`config.json`](cloudfunctions/weather/config.json) 须声明 `"runtime": "Nodejs18.15"`；部署后云端须为 Node 18（原生 `fetch` 可用且自动解压 Gzip）。
 - **禁止**使用 `require('https')` / `https.get`、旧版 `request` 库或 axios 等额外依赖（除非用户明确要求）。
 - 原因：`https.get` 需手动解压 Gzip，易导致 `Unexpected end of JSON input`。
 - GET：`const res = await fetch(url)` → 检查 `res.ok` → `await res.text()` / `res.json()`。
-- POST：见 chat 云函数 `fetch(url, { method, headers, body })`。
+- POST：见 recommend-outfit 的 `callSeedChat`：`fetch(url, { method, headers, body })`。
 - 环境变量中的 API Host **必须含 `https://` 协议前缀**；Key 仅配在云函数环境变量，勿写入小程序端或提交 `.env`。
 - 和风天气：Geo / Weather / Air **共用控制台分配的单一 API Host**；不同 endpoint 参数位置不同，勿假设统一格式：
   - Geo：`/geo/v2/city/lookup?location=经度,纬度`

@@ -1,7 +1,0 @@
-{
-  "runtime": "Nodejs18.15",
-  "permissions": {
-    "openapi": []
-  },
-  "timeout": 60
-}
