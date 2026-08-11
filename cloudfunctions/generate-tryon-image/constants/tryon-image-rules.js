@@ -1,7 +1,7 @@
 const HEAD_COMPOSITION_HINT =
   '人物水平居中，头顶与画面上边缘留白适中；头部完整入镜，头顶与面部清晰可见，不得裁切或遮挡头部'
 
-/** 生活方式全身姿势（对齐试穿 Hero 参考构图） */
+/** 无姿势参考图时的文案回退 */
 const SCENE_POSE_HINT =
   '姿势：全身站立，身体略侧向画面呈四分之三角度；一手自然插于裤袋（或裤侧），另一臂自然下垂；目光略侧向画面外，表情放松自然，生活感 lookbook 姿态（非正面垂臂证件照姿势）'
 
@@ -57,8 +57,26 @@ const TRYON_PROMPT_TEMPLATE = `你的任务是根据用户提供的衣物单品�
 
 请直接生成并输出符合要求的试穿效果图。`
 
-function clothingImageStartIndex(hasModelTemplate) {
-  return hasModelTemplate ? 2 : 1
+/**
+ * 计算各固定参考图在 imageUrls 中的序号（1-based）。
+ * 顺序：图1 模特 → 图2 姿势 → 图3 背景。
+ */
+function resolveReferenceIndices({
+  hasModelTemplate = false,
+  hasPoseRef = false,
+  hasBgRef = false,
+}) {
+  let next = 1
+  const modelIndex = hasModelTemplate ? next++ : null
+  const poseIndex = hasPoseRef ? next++ : null
+  const bgIndex = hasBgRef ? next++ : null
+  const clothingStartIndex = next
+  return { modelIndex, poseIndex, bgIndex, clothingStartIndex }
+}
+
+function clothingImageStartIndex(hasModelTemplate, hasPoseRef, hasBgRef) {
+  return resolveReferenceIndices({ hasModelTemplate, hasPoseRef, hasBgRef })
+    .clothingStartIndex
 }
 
 function buildWeatherAtmosphereHint(conditionCode) {
@@ -66,8 +84,25 @@ function buildWeatherAtmosphereHint(conditionCode) {
   return WEATHER_ATMOSPHERE[code] || WEATHER_ATMOSPHERE.sunny
 }
 
-function buildSceneBackgroundRule(weatherConditionCode) {
-  return `${SCENE_BACKGROUND_BASE}。${buildWeatherAtmosphereHint(weatherConditionCode)}`
+/**
+ * 构造姿势提示：有姿势参考图时以图序号为准，否则回退文案。
+ */
+function buildPoseHint(hasPoseRef, poseIndex) {
+  if (hasPoseRef && poseIndex) {
+    return `姿势：以图${poseIndex} 为姿势/体态/构图参考，仅学习其站姿、肢体关系与全身构图；不得复制该图的面孔、发型、服装或人物身份`
+  }
+  return SCENE_POSE_HINT
+}
+
+/**
+ * 构造背景规则：有背景参考图时沿用图序号场景，否则回退文案。
+ */
+function buildSceneBackgroundRule(weatherConditionCode, hasBgRef, bgIndex) {
+  const atmosphere = buildWeatherAtmosphereHint(weatherConditionCode)
+  if (hasBgRef && bgIndex) {
+    return `场景须严格沿用图${bgIndex}：墙面色调、地面质感、墙地交界、景深与整体光向不得替换为其他风格；人物与衣物光影须与背景一致。${atmosphere}；禁止改变背景构图、添加新道具、家具、植物、文字、水印或 UI`
+  }
+  return `${SCENE_BACKGROUND_BASE}。${atmosphere}`
 }
 
 function buildCompositionHint() {
@@ -128,38 +163,73 @@ function buildClothingItemLines(
   return `- ${fallback}`
 }
 
+function buildFixedReferenceHints({
+  hasModelTemplate,
+  hasPoseRef,
+  hasBgRef,
+  modelIndex,
+  poseIndex,
+  bgIndex,
+}) {
+  const lines = []
+  if (hasModelTemplate && modelIndex) {
+    lines.push(
+      `图${modelIndex} 为固定模特人物参考图：须保持其脸型、发型、肤质与人物身份一致，仅将服装替换为下列单品，不得另造面孔或更换人物身份；姿势不沿用图${modelIndex}。`,
+    )
+  }
+  if (hasPoseRef && poseIndex) {
+    lines.push(
+      `图${poseIndex} 为姿势体态参考图：仅学习其站姿、肢体关系与全身构图，不得复制该图的面孔、发型、服装或人物身份。`,
+    )
+  }
+  if (hasBgRef && bgIndex) {
+    lines.push(
+      `图${bgIndex} 为场景背景参考图：输出须沿用该场景的墙面、地面、光向与整体氛围，不得替换为其他背景。`,
+    )
+  }
+  return lines.length > 0 ? `${lines.join('\n')}\n` : ''
+}
+
 function buildClothingItemsBlock({
   pieceLabels = [],
   pieceTypeNames = [],
   imageCount = 1,
   hasModelTemplate = false,
+  hasPoseRef = false,
+  hasBgRef = false,
 }) {
   const count = Math.max(1, imageCount)
-  const startIndex = clothingImageStartIndex(hasModelTemplate)
+  const { modelIndex, poseIndex, bgIndex, clothingStartIndex } =
+    resolveReferenceIndices({ hasModelTemplate, hasPoseRef, hasBgRef })
   const pieceCount = Math.max(
     (pieceLabels || []).filter(Boolean).length,
     count,
   )
-  const refHint = buildReferenceImageHint(count, startIndex)
+  const refHint = buildReferenceImageHint(count, clothingStartIndex)
   const itemLines = buildClothingItemLines(
     pieceLabels,
     pieceTypeNames,
     count,
-    startIndex,
+    clothingStartIndex,
   )
   const compositionHint = buildCompositionHint()
+  const poseHint = buildPoseHint(hasPoseRef, poseIndex)
+  const fixedHints = buildFixedReferenceHints({
+    hasModelTemplate,
+    hasPoseRef,
+    hasBgRef,
+    modelIndex,
+    poseIndex,
+    bgIndex,
+  })
 
-  const modelHint = hasModelTemplate
-    ? `图1 为固定模特人物参考图：须保持其脸型、发型、肤质与人物身份一致，仅将服装替换为下列单品，不得另造面孔或更换人物身份；姿势不沿用图1，须采用下文指定的生活方式姿势。\n`
-    : ''
-
-  return `${modelHint}${refHint}，需试穿搭配的单品如下：
+  return `${fixedHints}${refHint}，需试穿搭配的单品如下：
 ${itemLines}
 
 视觉细节说明：各单品的款式、颜色、材质、图案等以对应参考图为准，须高度还原。
 模特仅穿戴以上 ${pieceCount} 件单品，不得添加参考图以外的任何服装。
 ${compositionHint}。
-${SCENE_POSE_HINT}。
+${poseHint}。
 人物在画面中水平居中，头顶与画面上边缘距离适中、留白自然，避免头部贴顶或被裁切。`
 }
 
@@ -168,8 +238,11 @@ function buildPersonFeaturesBlock({
   weightKg,
   gender,
   hasModelTemplate = false,
+  hasPoseRef = false,
+  poseIndex,
 }) {
   const lines = []
+  const poseHint = buildPoseHint(hasPoseRef, poseIndex)
 
   if (hasModelTemplate) {
     lines.push('- 人物基准：以附带图1 固定模特为人物身份与外观基准，勿另造面孔')
@@ -189,7 +262,7 @@ function buildPersonFeaturesBlock({
       '- 体型：以图1 模特体态为主，可按上述身高体重作轻微自然比例调整，勿大幅改变身材或五官',
       '- 肤质：与图1 一致，真实自然，保留细腻肤质与柔和光影，避免蜡像感、过度磨皮或塑料感',
       '- 发型：与图1 保持一致',
-      `- ${SCENE_POSE_HINT}`,
+      `- ${poseHint}`,
       `- ${SCENE_COMPOSITION_HINT}`,
     )
   } else {
@@ -197,12 +270,29 @@ function buildPersonFeaturesBlock({
       '- 体型：符合上述身高体重的自然比例',
       '- 肤质：真实自然，保留细腻肤质与柔和光影，避免蜡像感、过度磨皮或塑料感',
       '- 发型：自然得体，与整体穿搭风格协调（无用户指定时由模型合理推断）',
-      `- ${SCENE_POSE_HINT}`,
+      `- ${poseHint}`,
       `- ${SCENE_COMPOSITION_HINT}`,
     )
   }
 
   return lines.join('\n')
+}
+
+function buildRule1({
+  hasModelTemplate,
+  hasPoseRef,
+  clothingStartIndex,
+  poseIndex,
+}) {
+  const clothingFrom = `图${clothingStartIndex} 起`
+  const posePart = hasPoseRef
+    ? `姿势以图${poseIndex} 体态参考为准，不沿用模特模板站姿`
+    : '姿势采用指定的生活方式全身姿势，不沿用模特模板站姿'
+
+  if (hasModelTemplate) {
+    return `以图1 固定模特为人物基准，将 ${clothingFrom} 提供的衣物单品合理搭配并试穿在其身上（纯摄影风格）；保持图1 的脸型、发型、肤质与人物身份，勿另造面孔；${posePart}`
+  }
+  return `将所有提供的衣物单品合理搭配并展示在符合人物特征的虚拟模特身上（纯摄影风格）；${hasPoseRef ? `姿势以图${poseIndex} 体态参考为准` : '姿势采用指定的生活方式全身姿势'}`
 }
 
 function buildTryonPrompt({
@@ -213,32 +303,49 @@ function buildTryonPrompt({
   pieceTypeNames = [],
   imageCount = 1,
   hasModelTemplate = false,
+  hasPoseRef = false,
+  hasBgRef = false,
   weatherConditionCode,
 }) {
+  const { modelIndex, poseIndex, bgIndex, clothingStartIndex } =
+    resolveReferenceIndices({ hasModelTemplate, hasPoseRef, hasBgRef })
+  const poseHint = buildPoseHint(hasPoseRef, poseIndex)
+
   const clothingItems = buildClothingItemsBlock({
     pieceLabels,
     pieceTypeNames,
     imageCount,
     hasModelTemplate,
+    hasPoseRef,
+    hasBgRef,
   })
   const personFeatures = buildPersonFeaturesBlock({
     heightCm,
     weightKg,
     gender,
     hasModelTemplate,
+    hasPoseRef,
+    poseIndex,
   })
 
-  const rule1 = hasModelTemplate
-    ? '以图1 固定模特为人物基准，将图2 起提供的衣物单品合理搭配并试穿在其身上（纯摄影风格）；保持图1 的脸型、发型、肤质与人物身份，勿另造面孔；姿势采用指定的生活方式全身姿势，不沿用图1 站姿'
-    : '将所有提供的衣物单品合理搭配并展示在符合人物特征的虚拟模特身上（纯摄影风格）'
+  const rule1 = buildRule1({
+    hasModelTemplate,
+    hasPoseRef,
+    clothingStartIndex,
+    poseIndex,
+  })
 
-  const rule2 = buildSceneBackgroundRule(weatherConditionCode)
+  const rule2 = buildSceneBackgroundRule(
+    weatherConditionCode,
+    hasBgRef,
+    bgIndex,
+  )
 
   const rule4 = hasModelTemplate
-    ? '人物须与图1 模特身份一致；可按人物特征中的身高体重作轻微体型调整，但不得更换面孔、发型或人物身份'
+    ? `人物须与图${modelIndex} 模特身份一致；可按人物特征中的身高体重作轻微体型调整，但不得更换面孔、发型或人物身份`
     : '人物的体型、肤质、发型等特征需匹配提供的人物信息'
 
-  const rule5 = `${SCENE_COMPOSITION_HINT}；${SCENE_POSE_HINT}；清晰展示衣物穿着效果与整体搭配`
+  const rule5 = `${SCENE_COMPOSITION_HINT}；${poseHint}；清晰展示衣物穿着效果与整体搭配`
 
   return TRYON_PROMPT_TEMPLATE
     .replace('{{CLOTHING_ITEMS}}', clothingItems)
@@ -252,4 +359,6 @@ function buildTryonPrompt({
 module.exports = {
   buildTryonPrompt,
   buildWeatherAtmosphereHint,
+  clothingImageStartIndex,
+  resolveReferenceIndices,
 }

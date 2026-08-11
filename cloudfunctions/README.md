@@ -326,8 +326,8 @@ tcb fn deploy generate-wardrobe-display -e cloudbase-d6gkz1xlx9adbfe51
 | 分类 | 本地 | 云存储 | 用途 |
 | ---- | ---- | ------ | ---- |
 | 模特 | `output/models/` | `models/` | 试穿固定模特模板 |
-| Pose | `output/poses/` | `poses/` | 试穿姿势库（后续） |
-| 试穿背景 | `output/tryon-bgs/` | `tryon-bgs/` | 试穿 Hero 场景底图（如 `light-scene-bg-1920.jpg`） |
+| Pose | `output/poses/` | `poses/` | 试穿姿势库（运行时随机选取） |
+| 试穿背景 | `output/tryon-bgs/` | `tryon-bgs/` | 试穿 Hero 场景底图（`light-scene-bg-1920.jpg`） |
 | 衣物单品背景 | `output/item-bgs/` | `item-bgs/` | 识别后单品展示图底图 |
 
 单品展示图采用双参考：图1 预设背景（[`shared/constants/display-bg-file-ids.js`](../shared/constants/display-bg-file-ids.js)）+ 图2 用户原图。上传 `output/item-bgs/clothing-wall-bg-1920-light.jpg` 至云存储 `item-bgs/` 后，将 fileID 填入该常量，执行 `pnpm cf:sync-shared` 并重新部署 `process-recognition-batch` / `generate-wardrobe-display`。
@@ -466,9 +466,9 @@ LLM 失败时回退规则推荐 `buildFallbackRecommendation`。
 
 部署前若修改过 `cloudfunctions/shared/` 下 vision / 上传模块，或 `generate-tryon-image/constants/` 下试穿规则 / 模特配置，须先执行 `pnpm cf:sync-shared`（仅改 tryon 专属 constants 时可只部署该函数）。
 
-调用火山方舟 **Seedream 图像生成 API**：`POST {DOUBAO_API_BASE_URL}/images/generations`（非 `/chat/completions`）。参考图通过 `image` 传入：若已配置固定模特模板，则 **图1 = 模特人物参考**（锁定脸型/发型/肤质，姿势不沿用模板），其后为衣物参考图；文本需求通过 `prompt` 描述。输出尺寸来自 [`providers/ark/constants.js`](../providers/ark/constants.js) 的 `VISION_SIZE`（`1920x1920`，1:1，满足 Seedream 5.0 像素下限）。
+调用火山方舟 **Seedream 图像生成 API**：`POST {DOUBAO_API_BASE_URL}/images/generations`（非 `/chat/completions`）。参考图通过 `image` 传入，顺序为：**图1 = 模特人物参考**（锁定脸型/发型/肤质，姿势不沿用模板）→ **图2 = 姿势体态参考**（每次从姿势库随机选取，仅管站姿与构图，不得复制面孔与服装）→ **图3 = 场景背景参考**（固定浅色工作室场景）→ **图4 起 = 衣物参考图**；缺任一参考时动态前移序号并降级为文案描述。文本需求通过 `prompt` 描述。输出尺寸来自 [`providers/ark/constants.js`](../providers/ark/constants.js) 的 `VISION_SIZE`（`1920x1920`，1:1，满足 Seedream 5.0 像素下限）。
 
-场景约定（`tryon-image-rules.js`）：始终**全身**生活方式构图；身体略侧、一手插袋；背景为简洁浅色纹理墙 + 中性地面；光影按 `weatherConditionCode` 调节（缺省按晴天暖日光）。
+场景约定（`tryon-image-rules.js`）：始终**全身**生活方式构图；有姿势参考时沿用图2 体态，无则回退文案姿势；有背景参考时严格沿用图3 场景，无则回退浅色纹理墙描述；光影按 `weatherConditionCode` 叠在背景之上（缺省按晴天暖日光）。固定参考 + 衣物合计不超过 10 张。
 
 环境变量（云开发控制台 → `generate-tryon-image` → 配置）：
 
@@ -499,10 +499,29 @@ LLM 失败时回退规则推荐 `buildFallbackRecommendation`。
 2. 把各文件的 `cloud://...` fileID 填入 [`generate-tryon-image/constants/model-template-file-ids.js`](../generate-tryon-image/constants/model-template-file-ids.js) 对应键。
 3. 执行 `pnpm cf:sync-shared`，再重新部署 `generate-tryon-image`。
 
-**试穿场景背景**（后续接入 Hero 双参考时使用）：
+**试穿姿势库（运行时随机选取）**：
 
-- 本地目录 [`output/tryon-bgs/`](../output/tryon-bgs/)，云存储 `tryon-bgs/`；示例 `light-scene-bg-1920.jpg`（浅色场景墙 + 地面）。
-- 接入试穿流水线前须上传至云存储；fileID 清单待 `generate-tryon-image/constants/` 扩展（与模特模板模式一致）。
+- 匹配规则：每次生成从已配置的 `unisex-pose-01` … `unisex-pose-06` 中 **随机** 选取一张；仅管体态/构图，不得复制该图面孔、发型或服装。
+- 缺图回退：全空或临时链解析失败时降级为文案姿势（不阻断试穿）。
+- fileID 清单：[`generate-tryon-image/constants/pose-file-ids.js`](../generate-tryon-image/constants/pose-file-ids.js)。
+
+上传并启用（一次性）：
+
+1. 将 [`output/poses/`](../output/poses/) 下 `unisex-pose-0{1-6}-1920.jpg` 上传到云存储目录 `poses/`。
+2. 把各文件的 `cloud://...` fileID 填入 [`generate-tryon-image/constants/pose-file-ids.js`](../generate-tryon-image/constants/pose-file-ids.js) 对应键。
+3. 重新部署 `generate-tryon-image`。
+
+**试穿场景背景**：
+
+- 本地目录 [`output/tryon-bgs/`](../output/tryon-bgs/)，云存储 `tryon-bgs/`；当前使用 `light-scene-bg-1920.jpg`（浅色场景墙 + 地面 + 侧向柔光）。
+- fileID 清单：[`generate-tryon-image/constants/tryon-bg-file-ids.js`](../generate-tryon-image/constants/tryon-bg-file-ids.js) 的 `LIGHT_SCENE_BG_FILE_ID`。
+- 缺图回退：未配置或解析失败时降级为文案背景描述（不阻断试穿）。
+
+上传并启用（一次性）：
+
+1. 将 [`output/tryon-bgs/light-scene-bg-1920.jpg`](../output/tryon-bgs/light-scene-bg-1920.jpg) 上传到云存储目录 `tryon-bgs/`。
+2. 把 `cloud://...` fileID 填入 [`generate-tryon-image/constants/tryon-bg-file-ids.js`](../generate-tryon-image/constants/tryon-bg-file-ids.js)。
+3. 重新部署 `generate-tryon-image`。
 
 **离线生成模特模板候选图**（非云函数部署）：
 

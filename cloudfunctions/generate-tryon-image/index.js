@@ -6,6 +6,10 @@ const {
 const { buildTryonPrompt } = require('./constants/tryon-image-rules')
 const { uploadSeedreamImageToCloud } = require('./utils/upload-generated-image')
 const { resolveModelTemplateUrl } = require('./utils/resolve-model-template-url')
+const { resolvePoseUrl } = require('./utils/resolve-pose-url')
+const { resolveTryonBgUrl } = require('./utils/resolve-tryon-bg-url')
+
+const MAX_REFERENCE_IMAGES = 10
 
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 
@@ -45,10 +49,15 @@ exports.main = async (event) => {
     }
 
     const modelUrl = await resolveModelTemplateUrl(cloud, openid, gender)
+    const poseUrl = await resolvePoseUrl(cloud)
+    const bgUrl = await resolveTryonBgUrl(cloud)
     const hasModelTemplate = Boolean(modelUrl)
-    const imageUrls = hasModelTemplate
-      ? [modelUrl, ...clothingUrls]
-      : clothingUrls
+    const hasPoseRef = Boolean(poseUrl)
+    const hasBgRef = Boolean(bgUrl)
+    const fixedRefs = [modelUrl, poseUrl, bgUrl].filter(Boolean)
+    const maxClothing = Math.max(0, MAX_REFERENCE_IMAGES - fixedRefs.length)
+    const clothingCount = Math.min(clothingUrls.length, maxClothing)
+    const imageUrls = [...fixedRefs, ...clothingUrls.slice(0, maxClothing)]
 
     try {
       const result = await generateSeedreamImage({
@@ -58,8 +67,10 @@ exports.main = async (event) => {
           gender,
           pieceLabels,
           pieceTypeNames,
-          imageCount: clothingUrls.length,
+          imageCount: clothingCount,
           hasModelTemplate,
+          hasPoseRef,
+          hasBgRef,
           weatherConditionCode,
         }),
         imageUrls,
