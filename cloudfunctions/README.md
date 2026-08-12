@@ -369,7 +369,9 @@ wx.cloud
   .catch(console.error);
 ```
 
-预期返回 `{ batchId, itemCount }`；失败时 batch 文档 `status` 为 `failed`。
+预期返回 `{ batchId, itemCount }`；失败时 batch 文档 `status` 为 `failed`，并按场景写入 `errorCode`：未识别到任何衣物 → `NOTHING_RECOGNIZED`；识别到的单品全部与资料性别不符 → `GENDER_MISMATCH`（两种情况均释放预占积分，不扣费）。
+
+**性别过滤**：识别结果按 `userGender` 过滤 `audienceGender === 相反性别` 的单品。若同图部分单品不符，保留相符单品并写 `genderFilteredCount`（前端结果页据此 Toast「已按性别过滤部分单品」）；全部不符则批次失败。
 
 ## 6. 部署 save-wardrobe-items 云函数
 
@@ -480,6 +482,8 @@ LLM 失败时回退规则推荐 `buildFallbackRecommendation`。
 
 成功时返回 `{ coverFileId, coverUrl }`，解析响应 `data[0].url` 或 `b64_json`。失败时返回 `{ error, message }`。
 
+**性别一致性校验**：出图前校验启用模特已知性别与资料 `gender` 是否一致——预设取 `templateId` 前缀；自定义取生成时检测并存库的 `gender`。已知且相反时返回 `{ error: 'GENDER_MISMATCH', message: '试穿模特与您的性别不符，请更换' }` 并释放预占积分（不扣费）；模特性别未知（旧自定义数据）不拦截。
+
 | 返回 message | 常见原因 |
 | ------------ | -------- |
 | `未配置 DOUBAO_VISION_MODEL` | 未在 `generate-tryon-image` 云函数配置 Hero 专用模型 ID |
@@ -536,3 +540,26 @@ LLM 失败时回退规则推荐 `buildFallbackRecommendation`。
 可用 preset：`female-slim`、`female-standard`、`female-curvy`、`male-slim`、`male-standard`、`male-curvy`、`neutral`（1 变体）。Prompt 定义见 [`generate-tryon-image/constants/model-template-prompts.js`](../generate-tryon-image/constants/model-template-prompts.js)。当前运行时仅使用 `*-standard-*`。
 
 4. 本地预览后可将选定图提交 git；启用试穿前须按上文上传云存储并填写 fileID。
+
+### generate-tryon-model
+
+「生成本人试穿模特」：上传本人照片（**全身照或清晰上半身照均可**）→ 严格校验照片人物性别 → Seedream 生成全身标准模特 → 写入 `user_profiles.customTryOnModels`（50 积分/次，失败不扣）。
+
+右键 `cloudfunctions/generate-tryon-model` → **上传并部署：云端安装依赖**。
+
+环境变量（云开发控制台 → `generate-tryon-model` → 配置）：
+
+| 变量名 | 说明 |
+| ------ | ---- |
+| `DOUBAO_API_KEY` | 火山方舟 API Key（可与其它云函数共用） |
+| `DOUBAO_API_BASE_URL` | 可选，默认 `https://ark.cn-beijing.volces.com/api/v3` |
+| `DOUBAO_VISION_MODEL` | Seedream 模型 ID，用于生成模特图 |
+| `DOUBAO_SEED_MODEL` | 视觉理解模型 ID（与 `process-recognition-batch` 相同），用于人物性别检测；**漏配会导致性别识别不可用、生成被全量阻断** |
+
+入参：`sourceFileId`（本人照片 fileID）、`gender`（资料性别 `male`/`female`）。成功返回 `{ fileId, coverUrl, gender }`；`gender` 为生成时检测的人物性别，前端写入 `customTryOnModels[].gender` 供试穿一致性校验。
+
+**严格性别校验**：出图前调用 `DOUBAO_SEED_MODEL` 检测照片人物性别，仅「确定性别 + 置信度 ≥ 0.7 + 与资料性别一致」放行；明确相反 → `{ error: 'GENDER_MISMATCH', message: '照片与您的性别不符，请更换照片' }`；无法识别 / 低置信 / 检测异常 / 缺模型 → `{ error: 'GENDER_UNKNOWN', ... }`。阻断均释放预占积分（不扣费）。
+
+**超时**：`config.json` 为 `timeout: 300`（检测 + 生图耗时较长）。
+
+**隐私**：上传的本人照片会发送至第三方视觉 API（识别链路本就如此），请在对外文档注明。

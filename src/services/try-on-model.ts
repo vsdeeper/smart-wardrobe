@@ -7,6 +7,8 @@ export interface GenerateTryOnModelResult {
   coverUrl?: string;
   error?: string;
   message?: string;
+  /** 生成时检测到的人物性别（仅成功且能明确判定时返回） */
+  gender?: Gender;
 }
 
 /**

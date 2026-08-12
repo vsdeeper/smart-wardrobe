@@ -43,6 +43,11 @@ function normalizeCustomTryOnModels(raw: unknown): CustomTryOnModel[] {
       return {
         fileId: item.fileId.trim(),
         createdAt: item.createdAt,
+        // 生成时检测的人物性别；旧数据无该字段 → undefined
+        gender:
+          item.gender === "male" || item.gender === "female"
+            ? item.gender
+            : undefined,
       };
     })
     .filter(Boolean) as CustomTryOnModel[];

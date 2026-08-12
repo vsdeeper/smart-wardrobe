@@ -94,7 +94,7 @@ function MineTryOnModelPage() {
                 {galleryItems.filter((item) => item.source === "custom")
                   .length === 0 ? (
                   <Text className="mine-try-on-model__custom-empty">
-                    上传全身照生成与预设同款着装的本人模特
+                    上传本人照片，可生成与预设同款着装的本人模特
                   </Text>
                 ) : (
                   <View className="mine-try-on-model__grid">
@@ -121,7 +121,7 @@ function MineTryOnModelPage() {
                   loading={generating}
                   onClick={handleGenerate}
                 >
-                  上传全身照生成（{creditCost} 积分）
+                  上传本人照片生成（{creditCost} 积分）
                 </OutlineButton>
               </View>
             </>

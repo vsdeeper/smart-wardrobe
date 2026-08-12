@@ -3,6 +3,8 @@ export function createTempId(): string {
 }
 
 export const RECOGNITION_FAIL_MESSAGE = "识别失败"
+/** 识别结果页：部分单品按性别过滤后的提示文案 */
+export const RECOGNITION_GENDER_FILTERED_TOAST = "已按性别过滤部分单品"
 const RECOGNITION_FAIL_MESSAGE_LEGACY = "这次没识别出来，请换张图试试"
 const RECOGNITION_TIMEOUT_MESSAGE = "识别时间有点长，请稍后再试"
 

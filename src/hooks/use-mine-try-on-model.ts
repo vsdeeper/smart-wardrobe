@@ -195,7 +195,12 @@ export function useMineTryOnModel() {
       }
 
       const nextCustom = [
-        { fileId: result.fileId, createdAt: Date.now() },
+        {
+          fileId: result.fileId,
+          createdAt: Date.now(),
+          // 记录生成时检测到的人物性别，供试穿时做性别一致性校验
+          ...(result.gender ? { gender: result.gender } : {}),
+        },
         ...(profile.customTryOnModels ?? []),
       ].slice(0, CUSTOM_TRYON_MODEL_MAX);
 

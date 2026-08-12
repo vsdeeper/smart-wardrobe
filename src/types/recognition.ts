@@ -24,6 +24,10 @@ export interface RecognitionBatch {
   items?: RecognizedPreviewItem[];
   itemCount?: number;
   errorMessage?: string;
+  /** 失败原因结构化错误码：NOTHING_RECOGNIZED / GENDER_MISMATCH 等 */
+  errorCode?: string;
+  /** 按用户性别过滤掉的单品数量（部分过滤 >0 时前端据此提示） */
+  genderFilteredCount?: number;
   createdAt: number;
   updatedAt?: number;
   confirmedAt?: number;

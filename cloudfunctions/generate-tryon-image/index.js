@@ -80,7 +80,25 @@ exports.main = async (event) => {
       return { error: 'NO_IMAGE_URL', message: '无法解析图片' }
     }
 
-    const modelUrl = await resolveModelTemplateUrl(cloud, db, openid, gender)
+    const { modelUrl, modelGender } = await resolveModelTemplateUrl(
+      cloud,
+      db,
+      openid,
+      gender,
+    )
+
+    // 严格校验：启用模特已知性别与资料性别相反时阻断（不扣费；未知性别放行）
+    if (modelGender && modelGender !== gender) {
+      if (creditHoldId) {
+        await release(db, openid, creditHoldId)
+      }
+      creditHoldId = null
+      return {
+        error: 'GENDER_MISMATCH',
+        message: '试穿模特与您的性别不符，请更换',
+      }
+    }
+
     const poseUrl = await resolvePoseUrl(cloud)
     const bgUrl = await resolveTryonBgUrl(cloud)
     const hasModelTemplate = Boolean(modelUrl)

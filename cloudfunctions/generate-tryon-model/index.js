@@ -13,10 +13,65 @@ const {
   release,
   ERROR_INSUFFICIENT: CREDITS_INSUFFICIENT,
 } = require('./utils/credits')
+const { requireEnv } = require('./utils/env')
+const {
+  analyzePersonGender,
+  resolveGenderBlock,
+} = require('./utils/analyze-person-gender')
 
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 
 const db = cloud.database()
+
+/**
+ * 严格性别校验守卫：检测照片人物性别，任何无法明确判断的情况都返回阻断结论。
+ * 仅「确定性别 + 高置信 + 与资料性别一致」才放行；detectedGender 供成功后入库存储。
+ */
+async function resolvePersonGenderGuard(imageUrl, profileGender) {
+  let baseUrl
+  try {
+    baseUrl = requireEnv('DOUBAO_API_BASE_URL')
+  } catch (err) {
+    console.warn('[generate-tryon-model] 缺 DOUBAO_API_BASE_URL:', err)
+    return {
+      blocked: true,
+      code: 'GENDER_UNKNOWN',
+      message: '性别识别暂不可用，请稍后重试',
+    }
+  }
+
+  const seedModel = process.env.DOUBAO_SEED_MODEL
+  if (!seedModel) {
+    console.warn('[generate-tryon-model] 未配置 DOUBAO_SEED_MODEL，性别识别不可用')
+    return {
+      blocked: true,
+      code: 'GENDER_UNKNOWN',
+      message: '性别识别暂不可用，请稍后重试',
+    }
+  }
+
+  try {
+    const analysis = await analyzePersonGender({
+      imageUrl,
+      apiKey: process.env.DOUBAO_API_KEY,
+      baseUrl,
+      model: seedModel,
+    })
+    const block = resolveGenderBlock(analysis, profileGender)
+    const detectedGender =
+      analysis.gender === 'male' || analysis.gender === 'female'
+        ? analysis.gender
+        : undefined
+    return { ...block, detectedGender }
+  } catch (err) {
+    console.warn('[generate-tryon-model] 性别检测异常，阻断:', err)
+    return {
+      blocked: true,
+      code: 'GENDER_UNKNOWN',
+      message: '性别识别暂不可用，请稍后重试',
+    }
+  }
+}
 
 exports.main = async (event) => {
   const { sourceFileId, gender } = event || {}
@@ -36,7 +91,7 @@ exports.main = async (event) => {
     }
 
     if (!sourceFileId || typeof sourceFileId !== 'string') {
-      return { error: 'NO_SOURCE_IMAGE', message: '缺少全身参考照' }
+      return { error: 'NO_SOURCE_IMAGE', message: '缺少参考照' }
     }
 
     try {
@@ -51,14 +106,25 @@ exports.main = async (event) => {
       return { error: 'CREDITS_HOLD_FAILED', message }
     }
 
-    const [sourceUrl, outfitUrl] = await Promise.all([
-      resolveImageUrls(cloud, [sourceFileId]).then((urls) => urls[0] || null),
-      resolveOutfitReferenceUrl(cloud, gender),
-    ])
+    const sourceUrl = await resolveImageUrls(cloud, [sourceFileId]).then(
+      (urls) => urls[0] || null,
+    )
 
     if (!sourceUrl) {
       await release(db, openid, creditHoldId)
-      return { error: 'NO_IMAGE_URL', message: '无法解析全身参考照' }
+      return { error: 'NO_IMAGE_URL', message: '无法解析参考照' }
+    }
+
+    // 严格性别校验：仅「确定且与资料性别一致」放行，否则阻断（不扣费）
+    const [outfitUrl, genderGuard] = await Promise.all([
+      resolveOutfitReferenceUrl(cloud, gender),
+      resolvePersonGenderGuard(sourceUrl, gender),
+    ])
+
+    if (genderGuard.blocked) {
+      await release(db, openid, creditHoldId)
+      creditHoldId = null
+      return { error: genderGuard.code, message: genderGuard.message }
     }
 
     const imageUrls = outfitUrl ? [sourceUrl, outfitUrl] : [sourceUrl]
@@ -94,7 +160,7 @@ exports.main = async (event) => {
         // 非致命：客户端可自行解析临时链
       }
 
-      return { fileId, coverUrl }
+      return { fileId, coverUrl, gender: genderGuard.detectedGender }
     } catch (err) {
       await release(db, openid, creditHoldId)
       const message = err instanceof Error ? err.message : '生成失败'

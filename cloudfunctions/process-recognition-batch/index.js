@@ -128,7 +128,7 @@ exports.main = async (event) => {
         progress: { current: 1, total: 1, phase: 'recognizing' },
       })
 
-      const items = await processCoverImage(
+      const { previews, filteredCount } = await processCoverImage(
         cloud,
         coverFileId,
         userGender,
@@ -146,21 +146,22 @@ exports.main = async (event) => {
         db,
         openid,
         creditHoldId,
-        calcRecognizeCharge(items.length),
+        calcRecognizeCharge(previews.length),
       )
       creditHoldId = null
 
       await updateBatch(batchId, {
         status: 'succeeded',
         progress: { current: 1, total: 1 },
-        items,
-        itemCount: items.length,
+        items: previews,
+        itemCount: previews.length,
+        genderFilteredCount: filteredCount,
         coverFileId,
       })
 
       return {
         batchId,
-        itemCount: items.length,
+        itemCount: previews.length,
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err)
@@ -176,12 +177,16 @@ exports.main = async (event) => {
         )
       }
 
-      await failBatch(batchId, message, {
+      const failExtra = {
         progress: { current: 1, total: 1 },
         itemCount: 0,
         items: [],
         coverFileId,
-      })
+      }
+      if (err instanceof RecognitionProcessError && err.errorCode) {
+        failExtra.errorCode = err.errorCode
+      }
+      await failBatch(batchId, message, failExtra)
       return {
         error: 'RECOGNIZE_FAILED',
         message,

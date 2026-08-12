@@ -14,6 +14,8 @@ export interface ActiveTryOnModel {
 export interface CustomTryOnModel {
   fileId: string;
   createdAt: number;
+  /** 生成时检测到的人物性别（旧数据可能缺失） */
+  gender?: Gender;
 }
 
 /** 用户画像（云数据库 user_profiles，每用户一条） */

@@ -102,6 +102,12 @@ function normalizeBatch(raw: Record<string, unknown>): RecognitionBatch {
   if (typeof raw.errorMessage === "string") {
     batch.errorMessage = raw.errorMessage;
   }
+  if (typeof raw.errorCode === "string" && raw.errorCode) {
+    batch.errorCode = raw.errorCode;
+  }
+  if (typeof raw.genderFilteredCount === "number") {
+    batch.genderFilteredCount = raw.genderFilteredCount;
+  }
   if (raw.updatedAt != null) {
     batch.updatedAt = normalizeCreatedAt(raw.updatedAt);
   }
@@ -292,6 +298,7 @@ function triggerProcessRecognitionBatch(
             : normalizeRecognitionErrorMessage(
                 result.message || result.error || RECOGNITION_FAIL_MESSAGE,
               ),
+          result.error,
         );
       }
     })
@@ -356,6 +363,7 @@ export async function createRecognitionBatchAndStart(
 export async function markRecognitionBatchFailed(
   batchId: string,
   errorMessage: string,
+  errorCode?: string,
 ): Promise<void> {
   const db = Taro.cloud.database();
   try {
@@ -368,6 +376,7 @@ export async function markRecognitionBatchFailed(
       data: {
         status: "failed",
         errorMessage: errorMessage || RECOGNITION_FAIL_MESSAGE,
+        ...(errorCode ? { errorCode } : {}),
         updatedAt: Date.now(),
       },
     });

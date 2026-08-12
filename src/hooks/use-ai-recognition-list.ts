@@ -22,6 +22,7 @@ import { afterToastNavigate } from "@/utils/after-toast-navigate";
 import {
   normalizeRecognitionErrorMessage,
   RECOGNITION_FAIL_MESSAGE,
+  RECOGNITION_GENDER_FILTERED_TOAST,
 } from "@/utils/recognition";
 
 export function useAiRecognitionList() {
@@ -77,6 +78,16 @@ export function useAiRecognitionList() {
         Taro.showToast({ title, icon: "none" });
         afterToastNavigate(() => Taro.navigateBack());
         return;
+      }
+
+      if (
+        typeof batch.genderFilteredCount === "number" &&
+        batch.genderFilteredCount > 0
+      ) {
+        Taro.showToast({
+          title: RECOGNITION_GENDER_FILTERED_TOAST,
+          icon: "none",
+        });
       }
 
       const rawItems = batch.items ?? [];
