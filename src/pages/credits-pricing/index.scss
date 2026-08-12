@@ -1,0 +1,104 @@
+.credits-page {
+  padding: var(--nutui-spacing-6) var(--nutui-spacing-8);
+  padding-bottom: calc(
+    var(--nutui-spacing-10) + env(safe-area-inset-bottom)
+  );
+}
+
+.credits-page__lead {
+  font-size: var(--nutui-font-size-3);
+  color: var(--nutui-gray-7);
+  line-height: 1.7;
+  margin-bottom: var(--nutui-spacing-8);
+}
+
+.credits-page__section {
+  margin-bottom: var(--nutui-spacing-8);
+}
+
+.credits-page__section-title {
+  display: block;
+  font-size: var(--nutui-font-size-5);
+  font-weight: var(--nutui-font-weight-bold);
+  color: var(--nutui-gray-7);
+  margin-bottom: var(--nutui-spacing-4);
+}
+
+.credits-page__p {
+  font-size: var(--nutui-font-size-3);
+  color: var(--nutui-gray-6);
+  line-height: 1.65;
+  margin-bottom: var(--nutui-spacing-3);
+}
+
+.credits-page__p:last-child {
+  margin-bottom: 0;
+}
+
+.credits-page__em {
+  font-weight: var(--nutui-font-weight-bold);
+  color: var(--nutui-gray-7);
+}
+
+.credits-page__table {
+  display: flex;
+  flex-direction: column;
+  gap: var(--nutui-spacing-4);
+  margin: var(--nutui-spacing-4) 0 var(--nutui-spacing-5);
+  padding: var(--nutui-spacing-5);
+  background: var(--nutui-gray-1);
+  border-radius: var(--sw-radius-card);
+}
+
+.credits-page__row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.credits-page__row-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--nutui-spacing-4);
+}
+
+.credits-page__row-name {
+  font-size: var(--nutui-font-size-3);
+  font-weight: var(--nutui-font-weight-bold);
+  color: var(--nutui-gray-7);
+}
+
+.credits-page__row-cost {
+  font-size: var(--nutui-font-size-3);
+  font-weight: var(--nutui-font-weight-bold);
+  color: var(--nutui-brand-6);
+  flex-shrink: 0;
+}
+
+.credits-page__row-desc {
+  font-size: var(--nutui-font-size-2);
+  color: var(--nutui-gray-5);
+  line-height: var(--nutui-line-height-base);
+}
+
+.credits-page__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--nutui-spacing-3);
+}
+
+.credits-page__li {
+  font-size: var(--nutui-font-size-3);
+  color: var(--nutui-gray-6);
+  line-height: 1.65;
+  padding-left: 0.9em;
+  position: relative;
+}
+
+.credits-page__li::before {
+  content: "·";
+  position: absolute;
+  left: 0;
+  color: var(--nutui-gray-5);
+}

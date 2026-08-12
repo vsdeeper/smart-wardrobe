@@ -12,6 +12,9 @@ export default defineAppConfig({
     "pages/visual-diary/index",
     "pages/visual-diary-detail/index",
     "pages/recognition-history/index",
+    "pages/about/index",
+    "pages/credits-pricing/index",
+    "pages/feedback/index",
   ],
   permission: {
     "scope.userLocation": {

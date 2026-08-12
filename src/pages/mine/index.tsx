@@ -92,6 +92,10 @@ function MinePage() {
   const showRecognitionViewAll =
     recognitionTotal > MINE_RECOGNITION_PREVIEW_LIMIT;
 
+  const handleOpenAbout = useCallback(() => {
+    Taro.navigateTo({ url: "/pages/about/index" });
+  }, []);
+
   return (
     <Main
       activeTab={activeTab}
@@ -223,6 +227,10 @@ function MinePage() {
                 ))}
               </View>
             )}
+          </View>
+
+          <View className="mine-about-link" onClick={handleOpenAbout}>
+            <Text className="mine-about-link__text">关于凡衣橱</Text>
           </View>
         </View>
       </Main.Scroll>

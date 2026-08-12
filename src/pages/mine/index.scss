@@ -128,7 +128,19 @@
   }
 
   &--recognition {
-    margin-bottom: 0;
+    margin-bottom: var(--nutui-spacing-8);
+  }
+}
+
+.mine-about-link {
+  display: flex;
+  justify-content: center;
+  padding: var(--nutui-spacing-6) 0 var(--nutui-spacing-10);
+
+  &__text {
+    font-size: var(--nutui-font-size-2);
+    color: var(--nutui-gray-5);
+    line-height: var(--nutui-line-height-base);
   }
 }
 
