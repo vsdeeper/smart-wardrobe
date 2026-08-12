@@ -80,7 +80,7 @@ exports.main = async (event) => {
       return { error: 'NO_IMAGE_URL', message: '无法解析图片' }
     }
 
-    const modelUrl = await resolveModelTemplateUrl(cloud, openid, gender)
+    const modelUrl = await resolveModelTemplateUrl(cloud, db, openid, gender)
     const poseUrl = await resolvePoseUrl(cloud)
     const bgUrl = await resolveTryonBgUrl(cloud)
     const hasModelTemplate = Boolean(modelUrl)

@@ -9,6 +9,7 @@ import { type ImageUrlCacheCategory, type ImageUrlCacheEntry, type ImageUrlCache
  * - `visualDiary` → `VisualDiaryEntry.coverFileId`、试穿 Hero `heroCoverFileId`（封面）
  * - `recognition` → `RecognitionBatch.coverFileId`（仅封面）
  * - `avatar` → `UserProfile.avatarFileId`
+ * - `tryOnModel` → 试穿预设/自定义模特 fileId
  *
  * 读模型：业务缓存只存 fileId；展示用 `getCachedImageUrl(category, fileId)` 查表。
  * 写模型：`resolveTempFileUrls` 后 `mergeImageUrlCache` / `putImageUrlCache`。
@@ -52,7 +53,9 @@ function isValidStore(raw: unknown): raw is ImageUrlCacheStore {
     Array.isArray(store.recognitionList) &&
     store.recognitionList.every(isValidEntry) &&
     Array.isArray(store.avatarList) &&
-    store.avatarList.every(isValidEntry)
+    store.avatarList.every(isValidEntry) &&
+    Array.isArray(store.tryOnModelList) &&
+    store.tryOnModelList.every(isValidEntry)
   );
 }
 

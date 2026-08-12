@@ -1,6 +1,7 @@
 import {
   CREDITS_ERROR_INSUFFICIENT,
   RECOGNIZE_HOLD_MAX,
+  TRYON_MODEL,
 } from "@/constants/credits";
 import type { CreditBalance, CreditCloudError } from "@/types/credits";
 
@@ -23,6 +24,11 @@ export function isInsufficientCreditsPayload(
  */
 export function canAffordRecognition(available: number): boolean {
   return available >= RECOGNIZE_HOLD_MAX;
+}
+
+/** 生成本人试穿模特前本地预检 */
+export function canAffordTryOnModel(available: number): boolean {
+  return available >= TRYON_MODEL;
 }
 
 /**

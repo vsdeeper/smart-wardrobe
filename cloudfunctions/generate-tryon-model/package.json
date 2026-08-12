@@ -1,0 +1,9 @@
+{
+  "name": "generate-tryon-model",
+  "version": "1.0.0",
+  "description": "根据用户全身照生成本人试穿模特",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

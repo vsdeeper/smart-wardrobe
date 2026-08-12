@@ -1,6 +1,11 @@
 import { DEFAULT_USER_PROFILE } from "@/constants/profile";
 import { isGenderSet } from "@/utils/profile";
-import { type Gender, type UserProfile } from "@/types/profile";
+import {
+  type ActiveTryOnModel,
+  type CustomTryOnModel,
+  type Gender,
+  type UserProfile,
+} from "@/types/profile";
 import Taro from "@tarojs/taro";
 
 
@@ -9,6 +14,38 @@ function normalizeGender(raw: unknown): Gender | undefined {
     return raw;
   }
   return undefined;
+}
+
+function normalizeActiveTryOnModel(raw: unknown): ActiveTryOnModel | undefined {
+  if (!raw || typeof raw !== "object") return undefined;
+  const item = raw as ActiveTryOnModel;
+  if (item.source !== "preset" && item.source !== "custom") return undefined;
+  if (typeof item.fileId !== "string" || !item.fileId.trim()) return undefined;
+  const templateId =
+    typeof item.templateId === "string" && item.templateId.trim()
+      ? item.templateId.trim()
+      : undefined;
+  return {
+    source: item.source,
+    templateId,
+    fileId: item.fileId.trim(),
+  };
+}
+
+function normalizeCustomTryOnModels(raw: unknown): CustomTryOnModel[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map((entry) => {
+      if (!entry || typeof entry !== "object") return null;
+      const item = entry as CustomTryOnModel;
+      if (typeof item.fileId !== "string" || !item.fileId.trim()) return null;
+      if (typeof item.createdAt !== "number") return null;
+      return {
+        fileId: item.fileId.trim(),
+        createdAt: item.createdAt,
+      };
+    })
+    .filter(Boolean) as CustomTryOnModel[];
 }
 
 function normalizeProfile(raw: Record<string, unknown>): UserProfile {
@@ -31,6 +68,8 @@ function normalizeProfile(raw: Record<string, unknown>): UserProfile {
         : undefined,
     nickname: typeof raw.nickname === "string" ? raw.nickname : undefined,
     gender: normalizeGender(raw.gender),
+    activeTryOnModel: normalizeActiveTryOnModel(raw.activeTryOnModel),
+    customTryOnModels: normalizeCustomTryOnModels(raw.customTryOnModels),
     updatedAt:
       typeof raw.updatedAt === "number"
         ? raw.updatedAt
@@ -68,6 +107,12 @@ export async function saveUserProfile(
   if (typeof profile.weightKg === "number") {
     data.weightKg = profile.weightKg;
   }
+  if (profile.activeTryOnModel) {
+    data.activeTryOnModel = profile.activeTryOnModel;
+  }
+  if (Array.isArray(profile.customTryOnModels)) {
+    data.customTryOnModels = profile.customTryOnModels;
+  }
 
   if (profile._id) {
     await db.collection("user_profiles").doc(profile._id).update({ data });
@@ -81,4 +126,21 @@ export async function saveUserProfile(
     _id: addRes._id as string,
     updatedAt: now,
   } as UserProfile;
+}
+
+/**
+ * 从 user_profiles 移除指定字段（如云数据库需 _.remove() 的场景）。
+ */
+export async function removeUserProfileFields(
+  profileId: string,
+  fields: Array<"activeTryOnModel">,
+): Promise<void> {
+  if (fields.length === 0) return;
+  const db = Taro.cloud.database();
+  const _ = db.command;
+  const data: Record<string, unknown> = { updatedAt: Date.now() };
+  for (const field of fields) {
+    data[field] = _.remove();
+  }
+  await db.collection("user_profiles").doc(profileId).update({ data });
 }

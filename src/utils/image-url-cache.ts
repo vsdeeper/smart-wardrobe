@@ -6,5 +6,6 @@ export function createEmptyImageUrlCacheStore(): ImageUrlCacheStore {
     visualDiaryList: [],
     recognitionList: [],
     avatarList: [],
+    tryOnModelList: [],
   };
 }

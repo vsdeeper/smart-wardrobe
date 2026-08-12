@@ -5,7 +5,7 @@ import { useCallback, useRef, useState } from "react";
 import Taro, { useDidShow } from "@tarojs/taro";
 
 
-import { saveUserProfile } from "@/services/profile";
+import { saveUserProfile, removeUserProfileFields } from "@/services/profile";
 import { resolveAvatarUrl } from "@/services/profile-avatar";
 import { clearTryOnCache } from "@/services/try-on-cache";
 import { putImageUrlCache } from "@/services/image-url-cache";
@@ -19,6 +19,7 @@ import {
   refreshAvatarUrl,
   writeProfileCache,
 } from "@/services/profile-cache";
+import { isActiveTryOnModelCompatibleWithGender } from "@/utils/try-on-model";
 
 export function useUserProfile() {
   const initial = getInitialProfileState();
@@ -83,8 +84,31 @@ export function useUserProfile() {
   const updateProfile = useCallback(async (patch: Partial<UserProfile>) => {
     setUpdating(true);
     try {
-      const next = { ...profileRef.current, ...patch };
-      const saved = await saveUserProfile(next);
+      let next = { ...profileRef.current, ...patch };
+
+      if (
+        patch.gender !== undefined &&
+        isGenderSet(patch.gender) &&
+        next.activeTryOnModel &&
+        !isActiveTryOnModelCompatibleWithGender(
+          next.activeTryOnModel,
+          patch.gender,
+        )
+      ) {
+        next = { ...next, activeTryOnModel: undefined };
+      }
+
+      let saved = await saveUserProfile(next);
+
+      if (
+        next.activeTryOnModel === undefined &&
+        profileRef.current.activeTryOnModel &&
+        saved._id
+      ) {
+        await removeUserProfileFields(saved._id, ["activeTryOnModel"]);
+        saved = { ...saved, activeTryOnModel: undefined };
+      }
+
       setProfile(saved);
 
       let nextAvatarUrl: string | undefined;

@@ -46,6 +46,13 @@ const SHARED_SYNC_MAP = {
     'utils/upload-generated-image.js',
     'constants/credits.js',
   ],
+  'generate-tryon-model': [
+    'utils/env.js',
+    'utils/credits.js',
+    'utils/doubao-vision.js',
+    'utils/upload-generated-image.js',
+    'constants/credits.js',
+  ],
   'recommend-outfit': ['utils/env.js', 'utils/credits.js', 'constants/credits.js'],
   credits: ['utils/credits.js', 'constants/credits.js'],
 }
@@ -55,6 +62,7 @@ const PROVIDERS_SYNC_MAP = {
   'generate-wardrobe-display': ['ark/constants.js'],
   'process-recognition-batch': ['ark/constants.js'],
   'generate-tryon-image': ['ark/constants.js'],
+  'generate-tryon-model': ['ark/constants.js'],
 }
 
 function readManifest(fnDir) {

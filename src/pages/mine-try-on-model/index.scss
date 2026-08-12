@@ -1,0 +1,101 @@
+.mine-try-on-model {
+  padding: var(--nutui-spacing-5) var(--nutui-spacing-5) 120px;
+
+  &__hint {
+    display: block;
+    margin-bottom: var(--nutui-spacing-5);
+    font-size: var(--nutui-font-size-2);
+    color: var(--nutui-gray-5);
+    line-height: 1.5;
+  }
+
+  &__section {
+    margin-bottom: var(--nutui-spacing-6);
+  }
+
+  &__section-title {
+    display: block;
+    margin-bottom: var(--nutui-spacing-4);
+    font-size: var(--nutui-font-size-4);
+    font-weight: 600;
+    color: var(--nutui-gray-7);
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--nutui-spacing-4);
+  }
+
+  &__custom-empty {
+    display: block;
+    padding: var(--nutui-spacing-6) var(--nutui-spacing-4);
+    font-size: var(--nutui-font-size-3);
+    color: var(--nutui-gray-5);
+    text-align: center;
+    line-height: 1.5;
+    background: var(--nutui-gray-1);
+    border-radius: var(--sw-radius-card);
+  }
+
+  &__generate {
+    margin-top: var(--nutui-spacing-2);
+  }
+
+  &__footer {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: var(--nutui-spacing-4);
+    padding: var(--nutui-spacing-4) var(--nutui-spacing-5)
+      calc(var(--nutui-spacing-4) + env(safe-area-inset-bottom));
+    background: var(--nutui-gray-1);
+    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.06);
+
+    .solid-button--block {
+      flex: 1;
+      min-width: 0;
+    }
+  }
+
+  &__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 320px;
+    padding: var(--nutui-spacing-10) var(--nutui-spacing-6);
+    text-align: center;
+  }
+
+  &__empty-title {
+    font-size: var(--nutui-font-size-7);
+    font-weight: 600;
+    color: var(--nutui-gray-7);
+  }
+
+  &__empty-desc {
+    margin-top: var(--nutui-spacing-4);
+    font-size: var(--nutui-font-size-3);
+    color: var(--nutui-gray-5);
+    line-height: 1.5;
+  }
+
+  &__empty-cta {
+    margin-top: var(--nutui-spacing-8);
+    padding: 12px 28px;
+    border-radius: var(--sw-radius-pill);
+    background: var(--nutui-brand-6);
+    box-shadow: var(--sw-shadow-fab);
+  }
+
+  &__empty-cta-text {
+    font-size: var(--nutui-font-size-3);
+    color: var(--nutui-color-primary-text);
+    font-weight: 600;
+  }
+}

@@ -1,5 +1,7 @@
 import { formatHeightLabel, formatWeightLabel, getGenderLabel } from "@/utils/profile";
+import { getActiveTryOnModelSummaryLabel } from "@/utils/try-on-model";
 import { View, Text, Button, Input } from "@tarojs/components";
+import Taro from "@tarojs/taro";
 import { ArrowRight } from "@nutui/icons-react-taro";
 import { Cell } from "@nutui/nutui-react-taro";
 import AppNavbar from "@/components/AppNavbar";
@@ -25,6 +27,14 @@ function MineProfilePage() {
   } = useMineProfileEdit();
 
   const cellArrow = <ArrowRight color="var(--nutui-gray-5)" size={14} />;
+
+  const handleOpenTryOnModel = () => {
+    Taro.navigateTo({ url: "/pages/mine-try-on-model/index" });
+  };
+
+  const tryOnModelSummary = getActiveTryOnModelSummaryLabel(
+    profile.activeTryOnModel,
+  );
 
   const occupationLabel = profile.occupation?.trim() || "未设置";
 
@@ -120,6 +130,20 @@ function MineProfilePage() {
                 }
                 align="center"
                 onClick={() => openFieldEdit("weight")}
+              />
+
+              <Cell
+                title="试穿模特"
+                extra={
+                  <View className="mine-profile-cell__extra">
+                    <Text className="mine-profile-cell__value">
+                      {tryOnModelSummary}
+                    </Text>
+                    {cellArrow}
+                  </View>
+                }
+                align="center"
+                onClick={handleOpenTryOnModel}
               />
 
               <Cell

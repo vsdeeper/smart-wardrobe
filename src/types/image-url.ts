@@ -1,9 +1,10 @@
-/** 缓存域：衣橱单品 / 视觉日记封面 / 识别批次封面 / 用户头像 */
+/** 缓存域：衣橱单品 / 视觉日记封面 / 识别批次封面 / 用户头像 / 试穿模特 */
 export type ImageUrlCacheCategory =
   | "wardrobe"
   | "visualDiary"
   | "recognition"
-  | "avatar";
+  | "avatar"
+  | "tryOnModel";
 
 /** 单条 URL 缓存；fileId 为云存储 ID，非业务 _id */
 export interface ImageUrlCacheEntry {
@@ -18,10 +19,12 @@ export interface ImageUrlCacheEntry {
  * - visualDiaryList：`VisualDiaryEntry.coverFileId`（仅封面）
  * - recognitionList：`RecognitionBatch.coverFileId`（仅封面，一图一批次）
  * - avatarList：`UserProfile.avatarFileId`
+ * - tryOnModelList：试穿预设/自定义模特 `fileId`
  */
 export interface ImageUrlCacheStore {
   wardrobeList: ImageUrlCacheEntry[];
   visualDiaryList: ImageUrlCacheEntry[];
   recognitionList: ImageUrlCacheEntry[];
   avatarList: ImageUrlCacheEntry[];
+  tryOnModelList: ImageUrlCacheEntry[];
 }

@@ -12,4 +12,5 @@ export const IMAGE_URL_CACHE_CATEGORY_KEYS: Record<
   visualDiary: "visualDiaryList",
   recognition: "recognitionList",
   avatar: "avatarList",
+  tryOnModel: "tryOnModelList",
 };

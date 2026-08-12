@@ -1,0 +1,84 @@
+.model-card {
+  min-width: 0;
+
+  &__inner {
+    overflow: hidden;
+    background: var(--nutui-gray-1);
+    border-radius: var(--sw-radius-card);
+    box-shadow: var(--nutui-shadow-light);
+    border: 2px solid transparent;
+    transition:
+      border-color 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+
+  &--selected &__inner {
+    border-color: var(--nutui-brand-6);
+    box-shadow: var(--sw-shadow-tab-active);
+  }
+
+  &__image-wrap {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 3 / 4;
+    background: var(--sw-color-image-bg);
+  }
+
+  &__image {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  &__check {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 20px;
+    height: 20px;
+    border-radius: var(--sw-radius-pill);
+    background: var(--nutui-brand-6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &__active-tag {
+    position: absolute;
+    left: 6px;
+    bottom: 6px;
+    padding: 2px 8px;
+    border-radius: var(--sw-radius-pill);
+    background: rgba(0, 0, 0, 0.45);
+  }
+
+  &__active-tag-text {
+    font-size: var(--nutui-font-size-1);
+    color: var(--nutui-color-primary-text);
+  }
+
+  &__delete {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    width: 22px;
+    height: 22px;
+    border-radius: var(--sw-radius-pill);
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &__label {
+    display: block;
+    padding: var(--nutui-spacing-3);
+    font-size: var(--nutui-font-size-2);
+    color: var(--nutui-gray-7);
+    text-align: center;
+  }
+
+  &:active {
+    opacity: 0.96;
+  }
+}
