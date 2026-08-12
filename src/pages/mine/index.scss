@@ -83,12 +83,24 @@
   margin-bottom: var(--nutui-spacing-1);
 }
 
-.mine-header__bio {
+.mine-header__credits {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--nutui-spacing-3);
+  padding: 0 var(--nutui-spacing-8);
+}
+
+.mine-header__credits-balance {
   font-size: var(--nutui-font-size-3);
   line-height: var(--nutui-line-height-base);
   color: var(--nutui-secondary-1);
-  max-width: 320px;
-  padding: 0 var(--nutui-spacing-8);
+}
+
+.mine-header__credits-action {
+  font-size: var(--nutui-font-size-3);
+  line-height: var(--nutui-line-height-base);
+  color: var(--nutui-brand-6);
 }
 
 // ========== 区块标题 ==========

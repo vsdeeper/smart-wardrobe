@@ -2,7 +2,7 @@ import { canOpenRecognitionBatch } from "@/utils/recognition-batch";
 import { MINE_RECOGNITION_PREVIEW_LIMIT } from "@/constants/recognition";
 import { type RecognitionBatch } from "@/types/recognition";
 import { MINE_DIARY_PREVIEW_LIMIT } from "@/constants/try-on";
-import { getUserDisplayName, isMetricsSet } from "@/utils/profile";
+import { getUserDisplayName } from "@/utils/profile";
 import { useCallback, useState } from "react";
 import { View, Text } from "@tarojs/components";
 import Taro from "@tarojs/taro";
@@ -96,6 +96,10 @@ function MinePage() {
     Taro.navigateTo({ url: "/pages/about/index" });
   }, []);
 
+  const handleOpenCredits = useCallback(() => {
+    Taro.navigateTo({ url: "/pages/credits-pricing/index" });
+  }, []);
+
   return (
     <Main
       activeTab={activeTab}
@@ -120,11 +124,10 @@ function MinePage() {
             <Text className="mine-header__name">
               {getUserDisplayName(profile)}
             </Text>
-            <Text className="mine-header__bio">
-              {profile.occupation && isMetricsSet(profile)
-                ? `${profile.occupation} · ${profile.heightCm}cm / ${profile.weightKg}kg`
-                : "完善个人画像，获得更精准的 AI 穿搭推荐。"}
-            </Text>
+            <View className="mine-header__credits" onClick={handleOpenCredits}>
+              <Text className="mine-header__credits-balance">积分 0</Text>
+              <Text className="mine-header__credits-action">充值</Text>
+            </View>
           </View>
 
           <View className="mine-section mine-section--diary">
