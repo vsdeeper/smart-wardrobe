@@ -21,7 +21,7 @@ import { useUserProfile } from "@/hooks/use-user-profile";
 import { useVisualDiary } from "@/hooks/use-visual-diary";
 import { fetchCreditBalance } from "@/services/credits";
 import Main from "@/layouts/Main";
-import { formatDateTime } from "@/utils/format-date-time";
+import { formatWearDateChipLabel } from "@/utils/wear-date";
 import { normalizeRecognitionErrorMessage } from "@/utils/recognition";
 import "./index.scss";
 
@@ -196,7 +196,11 @@ function MinePage() {
                     key={entry._id}
                     imageSrc={entry.coverUrl || entry.coverFileId || undefined}
                     title={entry.title}
-                    time={formatDateTime(entry.createdAt)}
+                    time={
+                      entry.plannedWearDateKey
+                        ? formatWearDateChipLabel(entry.plannedWearDateKey)
+                        : ""
+                    }
                     description={entry.description}
                     onClick={() => handleOpenDiaryDetail(entry._id)}
                   />

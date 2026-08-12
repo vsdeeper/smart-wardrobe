@@ -85,7 +85,7 @@ export function isWearDateKeySelectableInPicker(
   return getWearDateOffset(dateKey, today) >= 2;
 }
 
-/** Chip / 标题展示：今天 / 明天 / M月D日 */
+/** Chip / 标题展示：今天 / 明天 / M月D日（跨年带 YYYY 前缀） */
 export function formatWearDateChipLabel(
   dateKey: string,
   today = getDateKey(),
@@ -93,7 +93,12 @@ export function formatWearDateChipLabel(
   if (isTodayDateKey(dateKey, today)) return "今天";
   if (isTomorrowDateKey(dateKey, today)) return "明天";
   const date = parseDateKey(dateKey);
-  return `${date.getMonth() + 1}月${date.getDate()}日`;
+  const todayDate = parseDateKey(today);
+  const monthDay = `${date.getMonth() + 1}月${date.getDate()}日`;
+  if (date.getFullYear() !== todayDate.getFullYear()) {
+    return `${date.getFullYear()}年${monthDay}`;
+  }
+  return monthDay;
 }
 
 /** 视觉日记标题用搭配名 */

@@ -6,7 +6,7 @@ import MediaListCard from "@/components/MediaListCard";
 import PageLoading from "@/components/PageLoading";
 import { useVisualDiaryList } from "@/hooks/use-visual-diary-list";
 import Main from "@/layouts/Main";
-import { formatDateTime } from "@/utils/format-date-time";
+import { formatWearDateChipLabel } from "@/utils/wear-date";
 import "./index.scss";
 
 function VisualDiaryPage() {
@@ -110,7 +110,11 @@ function VisualDiaryPage() {
                       entry.coverUrl || entry.coverFileId || undefined
                     }
                     title={entry.title}
-                    time={formatDateTime(entry.createdAt)}
+                    time={
+                      entry.plannedWearDateKey
+                        ? formatWearDateChipLabel(entry.plannedWearDateKey)
+                        : ""
+                    }
                     description={entry.description}
                   />
                 </Swipe>
