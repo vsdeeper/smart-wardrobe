@@ -1,7 +1,7 @@
 import {
   CREDITS_ERROR_INSUFFICIENT,
   RECOGNIZE_HOLD_MAX,
-  TRYON_MODEL,
+  TRYON_MODEL_TOTAL,
 } from "@/constants/credits";
 import type { CreditBalance, CreditCloudError } from "@/types/credits";
 
@@ -26,9 +26,9 @@ export function canAffordRecognition(available: number): boolean {
   return available >= RECOGNIZE_HOLD_MAX;
 }
 
-/** 生成本人试穿模特前本地预检 */
+/** 生成本人试穿模特前本地预检（按单次预占上限，即成功价 60） */
 export function canAffordTryOnModel(available: number): boolean {
-  return available >= TRYON_MODEL;
+  return available >= TRYON_MODEL_TOTAL;
 }
 
 /**

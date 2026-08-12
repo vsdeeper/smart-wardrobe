@@ -1,4 +1,4 @@
-import { TRYON_MODEL } from "@/constants/credits";
+import { TRYON_MODEL_TOTAL } from "@/constants/credits";
 import { type Gender } from "@/types/profile";
 import Taro from "@tarojs/taro";
 
@@ -43,5 +43,5 @@ export async function generateTryOnModel(params: {
   return (result ?? {}) as GenerateTryOnModelResult;
 }
 
-/** 生成本人模特所需积分（与云函数 TRYON_MODEL 对齐） */
-export const TRYON_MODEL_CREDIT_COST = TRYON_MODEL;
+/** 生成本人模特所需积分（检测基础费 + 生成费，与云函数 TRYON_MODEL_TOTAL 对齐） */
+export const TRYON_MODEL_CREDIT_COST = TRYON_MODEL_TOTAL;

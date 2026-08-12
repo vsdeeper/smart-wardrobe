@@ -1,13 +1,28 @@
 /** 积分消耗与首赠常量（与 CREDITS.md、小程序 src/constants/credits.ts 对齐） */
 const INITIAL_GRANT = 1000
-const RECOGNIZE_BASE = 10
-const DISPLAY_IMAGE = 50
-const TRYON_MODEL = 50
-const OUTFIT_SESSION = 70
+
+/** 基础费：Seed 视觉/文本调用（识图、人物性别检测、搭评）收到 200 响应即收 */
+const BASE_FEE = 10
+/** 成果费：Seedream 成功出图每张（展示图、试穿图、模特生成图） */
+const IMAGE_FEE = 50
+
+/** 语义别名（识别保持原名，值 = BASE_FEE/IMAGE_FEE） */
+const RECOGNIZE_BASE = BASE_FEE
+const DISPLAY_IMAGE = IMAGE_FEE
 /** 与 item-display-rules DISPLAY_IMAGE_MAX_COUNT 一致 */
 const DISPLAY_IMAGE_MAX_COUNT = 1
 const RECOGNIZE_HOLD_MAX =
   RECOGNIZE_BASE + DISPLAY_IMAGE * DISPLAY_IMAGE_MAX_COUNT
+
+/** 生成本人模特：检测基础费 + 生成费 */
+const TRYON_MODEL_BASE = BASE_FEE
+const TRYON_MODEL_GEN = IMAGE_FEE
+const TRYON_MODEL_TOTAL = BASE_FEE + IMAGE_FEE
+
+/** AI 试穿：搭评基础费 + 试穿图费 */
+const OUTFIT_BASE = BASE_FEE
+const OUTFIT_IMAGE = IMAGE_FEE
+const OUTFIT_TOTAL = BASE_FEE + IMAGE_FEE
 
 const ERROR_INSUFFICIENT = 'INSUFFICIENT_CREDITS'
 
@@ -17,12 +32,18 @@ const COLLECTION_CREDIT_LEDGER = 'credit_ledger'
 
 module.exports = {
   INITIAL_GRANT,
+  BASE_FEE,
+  IMAGE_FEE,
   RECOGNIZE_BASE,
   DISPLAY_IMAGE,
-  TRYON_MODEL,
-  OUTFIT_SESSION,
   DISPLAY_IMAGE_MAX_COUNT,
   RECOGNIZE_HOLD_MAX,
+  TRYON_MODEL_BASE,
+  TRYON_MODEL_GEN,
+  TRYON_MODEL_TOTAL,
+  OUTFIT_BASE,
+  OUTFIT_IMAGE,
+  OUTFIT_TOTAL,
   ERROR_INSUFFICIENT,
   COLLECTION_USER_CREDITS,
   COLLECTION_CREDIT_HOLDS,

@@ -29,7 +29,6 @@ export interface RecommendSelectedOutfitInput {
 
 export interface RecommendOutfitResult {
   recommendation: TryOnRecommendation;
-  creditHoldId?: string;
 }
 
 interface RecommendCloudError {
@@ -39,7 +38,6 @@ interface RecommendCloudError {
 
 interface RecommendCloudSuccess {
   recommendation: TryOnRecommendation;
-  creditHoldId?: string;
 }
 
 function isError(
@@ -101,7 +99,6 @@ async function callRecommendOutfit(
   }
   return {
     recommendation: data.recommendation,
-    creditHoldId: data.creditHoldId,
   };
 }
 

@@ -8,7 +8,7 @@ const { uploadSeedreamImageToCloud } = require('./utils/upload-generated-image')
 const { resolveModelTemplateUrl } = require('./utils/resolve-model-template-url')
 const { resolvePoseUrl } = require('./utils/resolve-pose-url')
 const { resolveTryonBgUrl } = require('./utils/resolve-tryon-bg-url')
-const { OUTFIT_SESSION, ERROR_INSUFFICIENT } = require('./constants/credits')
+const { OUTFIT_IMAGE, ERROR_INSUFFICIENT } = require('./constants/credits')
 const {
   hold,
   settle,
@@ -34,7 +34,7 @@ exports.main = async (event) => {
     creditHoldId: inputHoldId,
   } = event || {}
 
-  let creditHoldId = inputHoldId || null
+  let creditHoldId = null
   let ownHold = false
   let openid = null
 
@@ -57,19 +57,30 @@ exports.main = async (event) => {
       return { error: 'NO_IMAGES', message: '缺少衣物图片' }
     }
 
-    if (!creditHoldId) {
+    // 旧客户端可能仍传 creditHoldId（旧版「搭评+出图捆绑一次结算」）：防御性释放，避免 hold 泄漏
+    if (inputHoldId) {
       try {
-        const held = await hold(db, openid, OUTFIT_SESSION, 'outfit_session', '')
-        creditHoldId = held.holdId
-        ownHold = true
-      } catch (holdErr) {
-        const message =
-          holdErr instanceof Error ? holdErr.message : '积分预占失败'
-        if (holdErr?.error === CREDITS_INSUFFICIENT) {
-          return { error: ERROR_INSUFFICIENT, message }
-        }
-        return { error: 'CREDITS_HOLD_FAILED', message }
+        await release(db, openid, inputHoldId)
+      } catch (releaseErr) {
+        console.warn(
+          '[generate-tryon-image] 释放旧版 creditHoldId 失败:',
+          releaseErr instanceof Error ? releaseErr.message : releaseErr,
+        )
       }
+    }
+
+    // 独立出图：搭评基础费已由 recommend-outfit 结算，这里仅预占/结算试穿图费
+    try {
+      const held = await hold(db, openid, OUTFIT_IMAGE, 'outfit_session', '')
+      creditHoldId = held.holdId
+      ownHold = true
+    } catch (holdErr) {
+      const message =
+        holdErr instanceof Error ? holdErr.message : '积分预占失败'
+      if (holdErr?.error === CREDITS_INSUFFICIENT) {
+        return { error: ERROR_INSUFFICIENT, message }
+      }
+      return { error: 'CREDITS_HOLD_FAILED', message }
     }
 
     const clothingUrls = await resolveImageUrls(cloud, fileIds)
@@ -87,7 +98,8 @@ exports.main = async (event) => {
       gender,
     )
 
-    // 严格校验：启用模特已知性别与资料性别相反时阻断（不扣费；未知性别放行）
+    // 严格校验：启用模特已知性别与资料性别相反时阻断，释放试穿图预占
+    // （搭评基础费已由 recommend-outfit 结算，此处不额外扣费；未知性别放行）
     if (modelGender && modelGender !== gender) {
       if (creditHoldId) {
         await release(db, openid, creditHoldId)
@@ -145,7 +157,7 @@ exports.main = async (event) => {
       }
 
       if (creditHoldId) {
-        await settle(db, openid, creditHoldId, OUTFIT_SESSION)
+        await settle(db, openid, creditHoldId, OUTFIT_IMAGE)
         creditHoldId = null
       }
 

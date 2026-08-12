@@ -16,28 +16,36 @@ function resolveVisionTemperature() {
 
 async function recognizeItemsFromImage(imageUrl, apiKey, baseUrl, model) {
   const temperature = resolveVisionTemperature()
-  const response = await fetch(`${baseUrl}/chat/completions`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model,
-      temperature,
-      response_format: { type: 'json_object' },
-      messages: [
-        { role: 'system', content: buildSystemPrompt() },
-        {
-          role: 'user',
-          content: [
-            { type: 'image_url', image_url: { url: imageUrl } },
-            { type: 'text', text: USER_PROMPT },
-          ],
-        },
-      ],
-    }),
-  })
+  let response
+  try {
+    response = await fetch(`${baseUrl}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model,
+        temperature,
+        response_format: { type: 'json_object' },
+        messages: [
+          { role: 'system', content: buildSystemPrompt() },
+          {
+            role: 'user',
+            content: [
+              { type: 'image_url', image_url: { url: imageUrl } },
+              { type: 'text', text: USER_PROMPT },
+            ],
+          },
+        ],
+      }),
+    })
+  } catch (err) {
+    // 网络/超时等传输层失败：同样视为「API 报错」，调用方据此免收基础费
+    const e = err instanceof Error ? err : new Error(String(err))
+    e.code = 'LLM_API_ERROR'
+    throw e
+  }
 
   const data = await response.json()
   if (!response.ok) {

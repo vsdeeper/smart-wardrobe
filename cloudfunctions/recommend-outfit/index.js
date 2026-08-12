@@ -9,9 +9,10 @@ const {
 } = require('./constants/recommend-outfit-rules')
 const { callSeedChat } = require('./utils/call-seed-chat')
 const { summarizeWardrobe } = require('./utils/summarize-wardrobe')
-const { OUTFIT_SESSION, ERROR_INSUFFICIENT } = require('./constants/credits')
+const { OUTFIT_BASE, OUTFIT_TOTAL, ERROR_INSUFFICIENT } = require('./constants/credits')
 const {
   hold,
+  settle,
   release,
   ERROR_INSUFFICIENT: CREDITS_INSUFFICIENT,
 } = require('./utils/credits')
@@ -45,7 +46,7 @@ exports.main = async (event) => {
       const held = await hold(
         db,
         openid,
-        OUTFIT_SESSION,
+        OUTFIT_TOTAL,
         'outfit_session',
         plannedWearDateKey || '',
       )
@@ -74,6 +75,8 @@ exports.main = async (event) => {
     }
 
     let recommendation
+    let apiCompleted = false
+    let fallbackErr = null
     try {
       const content = await callSeedChat(
         buildRecommendSystemPrompt(requestMode),
@@ -86,7 +89,10 @@ exports.main = async (event) => {
       ) {
         throw new Error('AI 返回的单品与用户选择不一致')
       }
+      apiCompleted = true
     } catch (llmErr) {
+      // 第三方 API 报错（HTTP/网络/缺配置）→ 未消耗 API；其余（200 已返回但不可用）→ 视为已完成
+      apiCompleted = llmErr?.code !== 'LLM_API_ERROR'
       recommendation =
         requestMode === 'selection'
           ? buildSelectionFallbackRecommendation(
@@ -100,11 +106,23 @@ exports.main = async (event) => {
               payload.weather,
             )
       if (!recommendation) {
-        throw llmErr
+        fallbackErr = llmErr
       }
     }
 
-    return { recommendation, creditHoldId }
+    // 搭评结算：API 已完成 → 收搭评基础费；未完成（第三方 API 报错走 fallback）→ 释放
+    if (apiCompleted) {
+      await settle(db, openid, creditHoldId, OUTFIT_BASE)
+    } else {
+      await release(db, openid, creditHoldId)
+    }
+    creditHoldId = null
+
+    if (fallbackErr) {
+      throw fallbackErr
+    }
+
+    return { recommendation }
   } catch (err) {
     if (openid && creditHoldId) {
       try {

@@ -25,7 +25,6 @@ function TryOnPage() {
     selectedPieces,
     fromCache,
     savedReturn,
-    creditHoldId,
     isManualOutfit,
     retryRecommend,
     weatherSnapshot,
@@ -47,7 +46,6 @@ function TryOnPage() {
     selectedPieces,
     fromCache,
     savedReturn,
-    creditHoldId,
     recommendReady: recommendStatus === "success",
     weatherSnapshot,
   });

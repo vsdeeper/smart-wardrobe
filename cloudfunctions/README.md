@@ -369,7 +369,7 @@ wx.cloud
   .catch(console.error);
 ```
 
-预期返回 `{ batchId, itemCount }`；失败时 batch 文档 `status` 为 `failed`，并按场景写入 `errorCode`：未识别到任何衣物 → `NOTHING_RECOGNIZED`；识别到的单品全部与资料性别不符 → `GENDER_MISMATCH`（两种情况均释放预占积分，不扣费）。
+预期返回 `{ batchId, itemCount }`；失败时 batch 文档 `status` 为 `failed`，并按场景写入 `errorCode`：未识别到任何衣物 → `NOTHING_RECOGNIZED`；识别到的单品全部与资料性别不符 → `GENDER_MISMATCH`。两种情况均收**识图基础费 10**（识别 API 已完成）；第三方识别调用报错（`LLM_API_ERROR`）则整单释放不扣。
 
 **性别过滤**：识别结果按 `userGender` 过滤 `audienceGender === 相反性别` 的单品。若同图部分单品不符，保留相符单品并写 `genderFilteredCount`（前端结果页据此 Toast「已按性别过滤部分单品」）；全部不符则批次失败。
 
@@ -433,7 +433,9 @@ wx.cloud
 
 预期首次返回 `{ balance: 1000, frozen: 0, available: 1000, initialGranted: true }`。
 
-积分扣费还挂载在 `process-recognition-batch`、`recommend-outfit`、`generate-tryon-image`；修改 `shared/` 积分模块后须 sync 并**重新部署上述 4 个函数**。
+积分扣费还挂载在 `process-recognition-batch`、`recommend-outfit`、`generate-tryon-image`、`generate-tryon-model`；修改 `shared/` 积分模块后须 sync 并**重新部署上述 5 个函数**。
+
+定价为「基础费 **10**（Seed 调用收到响应即收）+ 成果费 **50**/张（Seedream 成功出图）」，成功价统一 **60**（识别 / 模特 / 试穿）；任一 API 报错即免对应费用。
 
 ## 7. 试穿相关云函数
 
@@ -455,6 +457,8 @@ wx.cloud
 入参：`weather`、`season`、`profile`、`wardrobeByType`（按 typeName 分组的衣橱摘要）。
 
 LLM 失败时回退规则推荐 `buildFallbackRecommendation`。
+
+**积分**：成功返回 `{ recommendation }`（不再返回 `creditHoldId`）；搭评调用完成即结算基础费 **10**（200 已返回但内容不可用也收），第三方调用报错走本地回退则**不扣**。试穿图费 50 由 `generate-tryon-image` 单独预占/结算。
 
 | 返回 message | 常见原因 |
 | ------------ | -------- |
@@ -482,7 +486,9 @@ LLM 失败时回退规则推荐 `buildFallbackRecommendation`。
 
 成功时返回 `{ coverFileId, coverUrl }`，解析响应 `data[0].url` 或 `b64_json`。失败时返回 `{ error, message }`。
 
-**性别一致性校验**：出图前校验启用模特已知性别与资料 `gender` 是否一致——预设取 `templateId` 前缀；自定义取生成时检测并存库的 `gender`。已知且相反时返回 `{ error: 'GENDER_MISMATCH', message: '试穿模特与您的性别不符，请更换' }` 并释放预占积分（不扣费）；模特性别未知（旧自定义数据）不拦截。
+**积分**：本函数独立预占/结算**试穿图费 50**（搭评基础费 10 已由 `recommend-outfit` 结算）；性别拦截或试穿图失败只释放试穿图预占，不再额外扣费。
+
+**性别一致性校验**：出图前校验启用模特已知性别与资料 `gender` 是否一致——预设取 `templateId` 前缀；自定义取生成时检测并存库的 `gender`。已知且相反时返回 `{ error: 'GENDER_MISMATCH', message: '试穿模特与您的性别不符，请更换' }` 并释放试穿图预占；模特性别未知（旧自定义数据）不拦截。
 
 | 返回 message | 常见原因 |
 | ------------ | -------- |
@@ -543,7 +549,7 @@ LLM 失败时回退规则推荐 `buildFallbackRecommendation`。
 
 ### generate-tryon-model
 
-「生成本人试穿模特」：上传本人照片（**全身照或清晰上半身照均可**）→ 严格校验照片人物性别 → Seedream 生成全身标准模特 → 写入 `user_profiles.customTryOnModels`（50 积分/次，失败不扣）。
+「生成本人试穿模特」：上传本人照片（**全身照或清晰上半身照均可**）→ 严格校验照片人物性别 → Seedream 生成全身标准模特 → 写入 `user_profiles.customTryOnModels`（**检测 10 + 生成 50，成功共 60 积分/次**；检测调用完成即收基础费 10，被拦截或生成失败不产生生成费）。
 
 右键 `cloudfunctions/generate-tryon-model` → **上传并部署：云端安装依赖**。
 
@@ -558,7 +564,7 @@ LLM 失败时回退规则推荐 `buildFallbackRecommendation`。
 
 入参：`sourceFileId`（本人照片 fileID）、`gender`（资料性别 `male`/`female`）。成功返回 `{ fileId, coverUrl, gender }`；`gender` 为生成时检测的人物性别，前端写入 `customTryOnModels[].gender` 供试穿一致性校验。
 
-**严格性别校验**：出图前调用 `DOUBAO_SEED_MODEL` 检测照片人物性别，仅「确定性别 + 置信度 ≥ 0.7 + 与资料性别一致」放行；明确相反 → `{ error: 'GENDER_MISMATCH', message: '照片与您的性别不符，请更换照片' }`；无法识别 / 低置信 / 检测异常 / 缺模型 → `{ error: 'GENDER_UNKNOWN', ... }`。阻断均释放预占积分（不扣费）。
+**严格性别校验**：出图前调用 `DOUBAO_SEED_MODEL` 检测照片人物性别，仅「确定性别 + 置信度 ≥ 0.7 + 与资料性别一致」放行；明确相反 → `{ error: 'GENDER_MISMATCH', message: '照片与您的性别不符，请更换照片' }`；无法识别 / 低置信 / 检测异常 / 缺模型 → `{ error: 'GENDER_UNKNOWN', ... }`。阻断时检测调用已完成收**基础费 10**（检测调用报错 / 缺配置则免费），生成费不产生。
 
 **超时**：`config.json` 为 `timeout: 300`（检测 + 生图耗时较长）。
 

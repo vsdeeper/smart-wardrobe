@@ -5,24 +5,19 @@ import "./index.scss";
 
 const PRICING_ROWS = [
   {
-    name: "识图基础费",
-    cost: "10 / 次",
-    desc: "每次识别成功检出单品后收取（与单品展示图张数无关）",
-  },
-  {
-    name: "单品展示图",
-    cost: "50 / 张",
-    desc: "按本次成功生成的单品展示图张数加收",
+    name: "AI 识别生成",
+    cost: "识图 10 + 展示图 50/张（成功共 60）",
+    desc: "识图调用完成即收基础费 10（即使未检出衣物或被性别校验拦截；第三方调用报错不扣）；展示图按成功生成张数加收",
   },
   {
     name: "生成本人试穿模特",
-    cost: "50 / 次",
-    desc: "上传全身照生成与预设同款着装的本人模特；选用预设并启用不扣",
+    cost: "基础 10 + 生成 50（成功共 60）",
+    desc: "人物性别检测基础费 + 模特生成费；选用预设并启用不扣",
   },
   {
     name: "AI 试穿",
-    cost: "70 / 次",
-    desc: "含智能搭评 + 1 张试穿预览；自动推荐与手动搭配同价",
+    cost: "搭评 10 + 试穿图 50（成功共 60）",
+    desc: "智能搭评 + 1 张试穿预览；自动推荐与手动搭配同价",
   },
 ] as const;
 
@@ -63,7 +58,7 @@ function CreditsPricingPage() {
               ))}
             </View>
             <Text className="credits-page__p">
-              <Text className="credits-page__em">识别入库合计</Text>
+              <Text className="credits-page__em">AI 识别生成合计</Text>
               {" = 识图基础费 + 单品展示图 × 实际成功张数。"}
             </Text>
             <Text className="credits-page__p">
@@ -72,14 +67,17 @@ function CreditsPricingPage() {
           </View>
 
           <View className="credits-page__section">
-            <Text className="credits-page__section-title">识别怎么理解</Text>
+            <Text className="credits-page__section-title">AI 识别生成怎么理解</Text>
             <View className="credits-page__list">
               <Text className="credits-page__li">一次识别对应一张照片。</Text>
               <Text className="credits-page__li">
                 一张照片可能识别出多件衣服；费用按实际成功生成的单品展示图张数结算。
               </Text>
               <Text className="credits-page__li">
-                单品展示图未成功生成的部分不扣；若识图已成功，仍收取基础费 10 积分。
+                识图调用完成即收基础费 10：即使未检出衣物、或衣物全部与资料性别不符被拦截；仅第三方调用报错不扣。
+              </Text>
+              <Text className="credits-page__li">
+                单品展示图未成功生成的部分不扣。
               </Text>
             </View>
           </View>
@@ -87,11 +85,14 @@ function CreditsPricingPage() {
           <View className="credits-page__section">
             <Text className="credits-page__section-title">AI 试穿怎么理解</Text>
             <Text className="credits-page__p">
-              智能搭评与虚拟试穿属于同一次「AI 试穿」，合在一起扣 70
-              积分，不拆开单独计费。
+              AI 试穿 = 智能搭评（基础费 10）+ 1 张试穿预览图（50），成功共 60
+              积分。
             </Text>
             <Text className="credits-page__p">
-              若复用已生成的试穿图（无需重新出图），不扣积分。
+              搭评调用完成即收基础费 10；试穿图未成功生成的部分不扣。
+            </Text>
+            <Text className="credits-page__p">
+              若复用已生成的试穿图且未重新搭评，不扣积分。
             </Text>
           </View>
 
@@ -99,13 +100,16 @@ function CreditsPricingPage() {
             <Text className="credits-page__section-title">失败怎么算</Text>
             <View className="credits-page__list">
               <Text className="credits-page__li">
-                识图失败、未检出单品：整次不扣。
+                第三方 AI 调用失败（网络 / 服务报错）：对应部分不扣。
+              </Text>
+              <Text className="credits-page__li">
+                识别调用完成但未检出衣物 / 性别不符被拦截：收基础费 10。
               </Text>
               <Text className="credits-page__li">
                 单品展示图部分失败：只按成功张数结算。
               </Text>
               <Text className="credits-page__li">
-                AI 试穿：搭评或试穿图任一失败，整次不扣；重试成功后再扣。
+                AI 试穿：搭评完成即收基础费 10；试穿图失败不产生试穿图费。
               </Text>
             </View>
           </View>
@@ -122,7 +126,7 @@ function CreditsPricingPage() {
             <Text className="credits-page__section-title">体验积分与充值</Text>
             <Text className="credits-page__p">
               首次使用可获赠 <Text className="credits-page__em">1000 体验积分</Text>
-              （一次性），用于体验识别入库与 AI 试穿。
+              （一次性），用于体验 AI 识别生成与 AI 试穿。
             </Text>
             <Text className="credits-page__p">
               微信支付充值即将开放；积分不可提现、不可兑换现金。

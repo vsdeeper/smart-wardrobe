@@ -36,7 +36,12 @@ function calcRecognizeCharge(displayCount) {
 async function finalizeRecognizeHold(openid, holdId, err) {
   if (!holdId) return
 
-  if (err instanceof RecognitionProcessError && err.recognized) {
+  // 识别 API 已完成（成功识图 / 收到 200 但结果被阻断）→ 收基础费（+成功展示图费）；
+  // 第三方 API 报错 / 传输层失败 → 整单释放免费
+  if (
+    err instanceof RecognitionProcessError &&
+    (err.recognized || err.chargeBase)
+  ) {
     await settle(db, openid, holdId, calcRecognizeCharge(err.displayCount))
     return
   }

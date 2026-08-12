@@ -14,8 +14,6 @@ export interface GenerateTryonInput {
   pieceTypeNames?: string[];
   /** 当前天气，用于试穿图光影氛围；缺省时云端按晴天处理 */
   weatherConditionCode?: WeatherConditionCode;
-  /** recommend-outfit 预占的 hold；缓存推荐单独出图时可不传，由云端自行预占 */
-  creditHoldId?: string;
 }
 
 export interface GenerateTryonResult {
