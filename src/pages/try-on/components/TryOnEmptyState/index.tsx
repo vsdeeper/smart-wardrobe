@@ -1,6 +1,8 @@
 import { Gender } from "@/types/profile";
 import { View, Text } from "@tarojs/components";
 import GenderSetupChoices from "@/components/GenderSetupChoices";
+import OutlineButton from "@/components/OutlineButton";
+import WearDateSelector from "../WearDateSelector";
 
 import "./index.scss";
 
@@ -9,6 +11,13 @@ export type TryOnEmptyStateProps =
       variant: "needsGender";
       genderSaving: boolean;
       onGenderSelect: (gender: Gender) => void;
+    }
+  | {
+      variant: "ready";
+      plannedWearDateKey: string;
+      onWearDateChange: (dateKey: string) => void;
+      onRecommend: () => void;
+      onGoOutfit: () => void;
     }
   | { variant: "empty"; onGoWardrobe: () => void }
   | { variant: "error"; errorMessage: string | null; onRetry: () => void };
@@ -26,6 +35,26 @@ function TryOnEmptyState(props: TryOnEmptyStateProps) {
           loading={props.genderSaving}
           onSelect={props.onGenderSelect}
         />
+      </View>
+    );
+  }
+
+  if (props.variant === "ready") {
+    return (
+      <View className="try-on-empty try-on-empty--ready">
+        <Text className="try-on-empty__title">打算什么时候穿？</Text>
+        <WearDateSelector
+          value={props.plannedWearDateKey}
+          onChange={props.onWearDateChange}
+        />
+        <View className="try-on-empty__actions">
+          <View className="try-on-empty__cta" onClick={props.onRecommend}>
+            <Text className="try-on-empty__cta-text">推荐穿搭</Text>
+          </View>
+          <OutlineButton block onClick={props.onGoOutfit}>
+            我要搭配
+          </OutlineButton>
+        </View>
       </View>
     );
   }

@@ -13,7 +13,8 @@ const { summarizeWardrobe } = require('./utils/summarize-wardrobe')
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 
 exports.main = async (event) => {
-  const { mode = 'recommend', weather, season, profile, wardrobeByType } = event || {}
+  const { mode = 'recommend', weather, season, profile, wardrobeByType, plannedWearDateKey } =
+    event || {}
   const requestMode = mode === 'selection' ? 'selection' : 'recommend'
 
   try {
@@ -40,6 +41,7 @@ exports.main = async (event) => {
       season: season || '春',
       profile: profile || { occupation: '', styleTags: [] },
       wardrobeByType: summarized,
+      plannedWearDateKey,
     }
 
     let recommendation

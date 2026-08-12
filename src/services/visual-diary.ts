@@ -21,6 +21,7 @@ export interface SaveVisualDiaryInput {
   pieceIds: string[];
   tips?: TryOnTip[];
   weatherSnapshot?: WeatherSnapshot;
+  plannedWearDateKey?: string;
 }
 
 export interface FetchVisualDiaryEntriesOptions {
@@ -67,6 +68,10 @@ function normalizeEntry(raw: Record<string, unknown>): VisualDiaryEntry {
       raw.weatherSnapshot &&
       typeof raw.weatherSnapshot === "object"
         ? (raw.weatherSnapshot as WeatherSnapshot)
+        : undefined,
+    plannedWearDateKey:
+      typeof raw.plannedWearDateKey === "string"
+        ? raw.plannedWearDateKey
         : undefined,
     createdAt,
   };
@@ -122,6 +127,10 @@ export async function saveVisualDiaryEntry(
   }
   if (input.coverUrl) {
     data.coverUrl = input.coverUrl;
+  }
+
+  if (input.plannedWearDateKey) {
+    data.plannedWearDateKey = input.plannedWearDateKey;
   }
 
   const addRes = await db.collection("visual_diary").add({ data });

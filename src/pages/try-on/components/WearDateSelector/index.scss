@@ -1,0 +1,38 @@
+.wear-date-selector {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--nutui-spacing-3);
+
+  &__chip {
+    padding: 8px 16px;
+    border-radius: var(--sw-radius-pill);
+    background: var(--nutui-gray-1);
+    border: 1px solid var(--nutui-gray-2);
+    transition: opacity 0.15s ease;
+
+    &--active {
+      background: var(--nutui-brand-1);
+      border-color: var(--nutui-brand-3);
+    }
+
+    &--disabled {
+      opacity: 0.5;
+    }
+
+    &:active:not(&--disabled) {
+      opacity: 0.88;
+      transform: scale(0.98);
+    }
+  }
+
+  &__chip-text {
+    font-size: var(--nutui-font-size-3);
+    font-weight: 500;
+    color: var(--nutui-gray-7);
+  }
+
+  &__chip--active &__chip-text {
+    color: var(--nutui-brand-6);
+  }
+}

@@ -20,8 +20,9 @@ export interface TryOnRecommendation {
   tips: TryOnTip[];
 }
 
-export interface TryOnDailyCache {
-  dateKey: string;
+/** 某一「计划穿的日子」下的试穿会话缓存条目 */
+export interface TryOnWearCacheEntry {
+  plannedWearDateKey: string;
   /** 直接进入试穿页时使用的 AI 推荐链路数据 */
   recommendation?: TryOnRecommendation;
   selectedPieces?: WardrobeItem[];
@@ -36,6 +37,12 @@ export interface TryOnDailyCache {
   cachedAt: number;
 }
 
+export interface TryOnCacheStore {
+  version: 2;
+  activeWearDateKey: string;
+  entries: Record<string, TryOnWearCacheEntry>;
+}
+
 export interface VisualDiaryEntry {
   _id?: string;
   title: string;
@@ -45,6 +52,7 @@ export interface VisualDiaryEntry {
   pieceIds: string[];
   tips?: TryOnTip[];
   weatherSnapshot?: WeatherSnapshot;
+  plannedWearDateKey?: string;
   createdAt: number;
 }
 
@@ -57,10 +65,11 @@ export interface TryOnDraft {
   selectedPieces?: WardrobeItem[];
   baselinePieceIds?: string[];
   piecesChanged?: boolean;
+  plannedWearDateKey?: string;
 }
 
 export type TryOnRecommendStatus =
-  | "idle"
+  | "ready"
   | "loading"
   | "success"
   | "error"

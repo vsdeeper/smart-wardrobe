@@ -15,9 +15,32 @@ export interface OutfitHeroProps {
   previewErrorMessage?: string | null;
   onRetryPreview?: () => void;
   onImageError?: () => void;
+  /** 兼容旧用法：与 weatherViewModel 二选一 */
   weatherStatus?: WeatherLoadStatus;
   weatherViewModel?: WeatherCardViewModel | null;
   onWeatherClick?: () => void;
+}
+
+function StaticWeatherChip({
+  viewModel,
+  onClick,
+}: {
+  viewModel: WeatherCardViewModel;
+  onClick?: () => void;
+}) {
+  return (
+    <View
+      className="weather-chip"
+      hoverClass={onClick ? "weather-chip--pressed" : undefined}
+      hoverStartTime={0}
+      hoverStayTime={100}
+      onClick={onClick}
+    >
+      <Text className={`iconfont ${viewModel.icon} weather-chip__icon`} />
+      <Text className="weather-chip__temp">{viewModel.temperature}°C</Text>
+      <Text className="weather-chip__label">{viewModel.conditionLabel}</Text>
+    </View>
+  );
 }
 
 function WeatherChip({
@@ -72,8 +95,10 @@ export default function OutfitHero({
   const isLoading = previewStatus === "loading";
   const isError = previewStatus === "error";
   const heroSrc = !isLoading && (heroImageUrl || heroCoverFileId);
-  const showWeatherChip =
+  const showLegacyWeatherChip =
     weatherStatus !== undefined && typeof onWeatherClick === "function";
+  const showStaticWeatherChip =
+    !showLegacyWeatherChip && weatherViewModel != null;
 
   return (
     <View className="outfit-hero">
@@ -99,10 +124,16 @@ export default function OutfitHero({
           ) : null}
         </View>
       )}
-      {showWeatherChip ? (
+      {showLegacyWeatherChip ? (
         <WeatherChip
-          status={weatherStatus}
+          status={weatherStatus!}
           viewModel={weatherViewModel ?? null}
+          onClick={onWeatherClick!}
+        />
+      ) : null}
+      {showStaticWeatherChip ? (
+        <StaticWeatherChip
+          viewModel={weatherViewModel!}
           onClick={onWeatherClick}
         />
       ) : null}

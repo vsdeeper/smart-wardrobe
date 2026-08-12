@@ -1,15 +1,16 @@
 import { WardrobeItem } from "@/types/wardrobe";
 import { WeatherSnapshot } from "@/types/weather";
 import { TryOnRecommendation } from "@/types/try-on";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Taro from "@tarojs/taro";
 
 
-
-import { getInitialTryOnCache, writeTryOnCache } from "@/services/try-on-cache";
+import { getInitialTryOnCache, writeWearCache } from "@/services/try-on-cache";
 import { saveVisualDiaryEntry } from "@/services/visual-diary";
+import { formatWearOutfitTitle } from "@/utils/wear-date";
 
 interface UseTryOnWearOptions {
+  plannedWearDateKey: string;
   recommendation: TryOnRecommendation | null;
   selectedPieces: WardrobeItem[];
   heroCoverFileId: string | null;
@@ -19,12 +20,13 @@ interface UseTryOnWearOptions {
 
 function getOutfitKey(
   selectedPieces: WardrobeItem[],
-  heroCoverFileId: string | null
+  heroCoverFileId: string | null,
 ): string {
   return `${heroCoverFileId ?? ""}:${selectedPieces.map((piece) => piece._id).join(",")}`;
 }
 
 export function useTryOnWear({
+  plannedWearDateKey,
   recommendation,
   selectedPieces,
   heroCoverFileId,
@@ -34,16 +36,31 @@ export function useTryOnWear({
   const [saving, setSaving] = useState(false);
   const outfitKey = getOutfitKey(selectedPieces, heroCoverFileId);
   const [confirmedOutfitKey, setConfirmedOutfitKey] = useState(() => {
-    const cache = getInitialTryOnCache();
+    const cache = getInitialTryOnCache(plannedWearDateKey);
     return cache?.wearConfirmed
-      ? getOutfitKey(cache.selectedPieces, cache.heroCoverFileId ?? null)
+      ? getOutfitKey(cache.selectedPieces ?? [], cache.heroCoverFileId ?? null)
       : null;
   });
   const savingRef = useRef(false);
+
+  useEffect(() => {
+    const cache = getInitialTryOnCache(plannedWearDateKey);
+    if (cache?.wearConfirmed) {
+      setConfirmedOutfitKey(
+        getOutfitKey(
+          cache.selectedPieces ?? [],
+          cache.heroCoverFileId ?? null,
+        ),
+      );
+    } else {
+      setConfirmedOutfitKey(null);
+    }
+  }, [plannedWearDateKey]);
+
   const wearConfirmed =
     !isManualOutfit &&
     confirmedOutfitKey === outfitKey &&
-    getInitialTryOnCache()?.wearConfirmed === true;
+    getInitialTryOnCache(plannedWearDateKey)?.wearConfirmed === true;
 
   const handleWearOutfit = useCallback(async () => {
     if (savingRef.current || wearConfirmed) return;
@@ -61,14 +78,17 @@ export function useTryOnWear({
     savingRef.current = true;
     setSaving(true);
 
+    const fallbackTitle = formatWearOutfitTitle(plannedWearDateKey);
+
     try {
       await saveVisualDiaryEntry({
-        title: recommendation?.outfitName ?? "今日搭配",
+        title: recommendation?.outfitName ?? fallbackTitle,
         description: recommendation?.description ?? "",
         coverFileId: heroCoverFileId,
         pieceIds: selectedPieces.map((p) => p._id),
         tips: recommendation?.tips ?? [],
         weatherSnapshot: weatherSnapshot ?? undefined,
+        plannedWearDateKey,
       });
 
       if (isManualOutfit) {
@@ -82,11 +102,12 @@ export function useTryOnWear({
         return;
       }
 
-      const cache = getInitialTryOnCache();
-      writeTryOnCache(
+      const cache = getInitialTryOnCache(plannedWearDateKey);
+      writeWearCache(
+        plannedWearDateKey,
         {
           recommendation: recommendation ?? {
-            outfitName: "今日搭配",
+            outfitName: fallbackTitle,
             description: "",
             slots: [],
             tips: [],
@@ -96,7 +117,7 @@ export function useTryOnWear({
           weatherSnapshot: weatherSnapshot ?? undefined,
           wearConfirmed: true,
         },
-        { clearHero: cache?.heroCoverFileId !== heroCoverFileId }
+        { clearHero: cache?.heroCoverFileId !== heroCoverFileId },
       );
       setConfirmedOutfitKey(outfitKey);
       Taro.showToast({ title: "已记录到视觉日记", icon: "success" });
@@ -116,6 +137,7 @@ export function useTryOnWear({
     isManualOutfit,
     outfitKey,
     wearConfirmed,
+    plannedWearDateKey,
   ]);
 
   return { saving, wearConfirmed, handleWearOutfit };

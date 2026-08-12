@@ -42,8 +42,38 @@ ${selectionRule}
 }`
 }
 
+function formatWearDatePromptLine(plannedWearDateKey) {
+  if (!plannedWearDateKey) return ''
+
+  const today = new Date()
+  const pad = (n) => String(n).padStart(2, '0')
+  const todayKey = `${today.getFullYear()}-${pad(today.getMonth() + 1)}-${pad(today.getDate())}`
+  const tomorrow = new Date(today)
+  tomorrow.setDate(tomorrow.getDate() + 1)
+  const tomorrowKey = `${tomorrow.getFullYear()}-${pad(tomorrow.getMonth() + 1)}-${pad(tomorrow.getDate())}`
+
+  let suffix = ''
+  if (plannedWearDateKey === todayKey) {
+    suffix = '（今天）'
+  } else if (plannedWearDateKey === tomorrowKey) {
+    suffix = '（明天）'
+  } else {
+    const [, m, d] = plannedWearDateKey.split('-').map(Number)
+    suffix = `（${m}月${d}日）`
+  }
+
+  return `计划穿着日期：${plannedWearDateKey}${suffix}`
+}
+
 function buildRecommendUserPrompt(payload) {
-  const { weather, season, profile, wardrobeByType, mode = 'recommend' } = payload
+  const {
+    weather,
+    season,
+    profile,
+    wardrobeByType,
+    mode = 'recommend',
+    plannedWearDateKey,
+  } = payload
 
   const wardrobeText = Object.entries(wardrobeByType || {})
     .map(([typeName, items]) => {
@@ -55,12 +85,15 @@ function buildRecommendUserPrompt(payload) {
     })
     .join('\n\n')
 
+  const wearDateLine = formatWearDatePromptLine(plannedWearDateKey)
+
   const instruction =
     mode === 'selection'
       ? '请评价用户已选择的这套穿搭。slots 必须包含下方全部单品且不得增删替换，alternatives 均为空数组；重点生成准确的搭配名称、评价正文和风格标签。'
-      : '请推荐今日穿搭。只选会一起穿着的单品写入 slots（通常 2–5 件），勿为凑齐类别而混搭互斥单品（如连衣裙与上装/下装不可同穿）。优先保证主体穿搭合理，再考虑鞋靴与外套。'
+      : '请推荐该日穿搭。只选会一起穿着的单品写入 slots（通常 2–5 件），勿为凑齐类别而混搭互斥单品（如连衣裙与上装/下装不可同穿）。优先保证主体穿搭合理，再考虑鞋靴与外套。'
 
   return `当前季节：${season}
+${wearDateLine}
 天气：${weather.conditionCode} ${weather.temperature}°C 湿度${weather.humidity}% 城市${weather.city}
 用户：身高${profile.heightCm}cm 体重${profile.weightKg}kg 职业「${profile.occupation || '未填写'}」 风格标签 ${JSON.stringify(profile.styleTags || [])}
 

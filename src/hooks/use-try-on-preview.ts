@@ -5,8 +5,6 @@ import { isGenderSet, isMetricsSet } from "@/utils/profile";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 
-
-
 import { resolveCloudFileUrl } from "@/services/cloud-file";
 import { putImageUrlCache } from "@/services/image-url-cache";
 import { fetchUserProfile } from "@/services/profile";
@@ -14,15 +12,14 @@ import { generateTryonImage } from "@/services/try-on-preview";
 import {
   getInitialTryOnCache,
   getTryOnHeroImageUrl,
-  writeTryOnCache,
+  writeWearCache,
 } from "@/services/try-on-cache";
 import type { SavedReturnMeta } from "@/hooks/use-try-on-recommend";
 import { isEphemeralExternalImageUrl } from "@/utils/image-url";
 
 interface UseTryOnPreviewOptions {
+  plannedWearDateKey: string;
   selectedPieces: WardrobeItem[];
-  outfitName: string;
-  description: string;
   fromCache: boolean;
   savedReturn: SavedReturnMeta | null;
   recommendReady: boolean;
@@ -30,13 +27,14 @@ interface UseTryOnPreviewOptions {
 }
 
 export function useTryOnPreview({
+  plannedWearDateKey,
   selectedPieces,
   fromCache,
   savedReturn,
   recommendReady,
   weatherSnapshot,
 }: UseTryOnPreviewOptions) {
-  const [initialCache] = useState(getInitialTryOnCache);
+  const initialCache = getInitialTryOnCache(plannedWearDateKey);
   const initialHeroUrl = getTryOnHeroImageUrl(initialCache?.heroCoverFileId);
   const [status, setStatus] = useState<TryOnPreviewStatus>(
     initialHeroUrl ? "success" : "idle",
@@ -73,7 +71,7 @@ export function useTryOnPreview({
   );
 
   const loadHeroFromCache = useCallback(async () => {
-    const cache = getInitialTryOnCache();
+    const cache = getInitialTryOnCache(plannedWearDateKey);
     if (!cache?.heroCoverFileId) {
       return false;
     }
@@ -95,14 +93,14 @@ export function useTryOnPreview({
     setPreviewErrorMessage(null);
     applyHero(freshUrl, coverFileId, true);
 
-    writeTryOnCache({
+    writeWearCache(plannedWearDateKey, {
       recommendation: cache.recommendation,
       selectedPieces: cache.selectedPieces,
       heroCoverFileId: coverFileId,
     });
 
     return true;
-  }, [applyHero, persistHeroUrl]);
+  }, [applyHero, persistHeroUrl, plannedWearDateKey]);
 
   const generatePreview = useCallback(async () => {
     if (loadingRef.current || selectedPieces.length === 0) return;
@@ -159,9 +157,9 @@ export function useTryOnPreview({
       applyHero(coverUrl, coverFileId, false);
       imageRetriedRef.current.delete(coverFileId);
 
-      const cache = getInitialTryOnCache();
+      const cache = getInitialTryOnCache(plannedWearDateKey);
       if (!savedReturn && cache) {
-        writeTryOnCache({
+        writeWearCache(plannedWearDateKey, {
           recommendation: cache.recommendation,
           selectedPieces,
           heroCoverFileId: coverFileId,
@@ -182,6 +180,7 @@ export function useTryOnPreview({
     persistHeroUrl,
     weatherSnapshot?.conditionCode,
     savedReturn,
+    plannedWearDateKey,
   ]);
 
   const handleHeroImageError = useCallback(async () => {
@@ -200,9 +199,9 @@ export function useTryOnPreview({
       setPreviewErrorMessage(null);
       setStatus("success");
 
-      const cache = getInitialTryOnCache();
+      const cache = getInitialTryOnCache(plannedWearDateKey);
       if (!savedReturn && cache) {
-        writeTryOnCache({
+        writeWearCache(plannedWearDateKey, {
           recommendation: cache.recommendation,
           selectedPieces: cache.selectedPieces,
           heroCoverFileId: fileId,
@@ -211,7 +210,7 @@ export function useTryOnPreview({
     } catch {
       // 兜底失败不打扰用户，手动重试时会重新生成
     }
-  }, [heroCoverFileId, persistHeroUrl, savedReturn]);
+  }, [heroCoverFileId, persistHeroUrl, savedReturn, plannedWearDateKey]);
 
   useEffect(() => {
     if (!recommendReady || fromCache || selectedPieces.length === 0) return;
@@ -220,17 +219,17 @@ export function useTryOnPreview({
     setHeroCoverFileId(null);
     setStatus("loading");
     setPreviewErrorMessage(null);
-  }, [recommendReady, fromCache, selectedPieces]);
+  }, [recommendReady, fromCache, selectedPieces, plannedWearDateKey]);
 
   useEffect(() => {
     if (!recommendReady || selectedPieces.length === 0) return;
 
     const pieceKey = selectedPieces.map((p) => p._id).join(",");
     const triggerKey = savedReturn
-      ? `saved:${savedReturn.piecesChanged}:${pieceKey}`
+      ? `saved:${savedReturn.piecesChanged}:${pieceKey}:${plannedWearDateKey}`
       : fromCache
-        ? `cache:${pieceKey}`
-        : `fresh:${pieceKey}`;
+        ? `cache:${pieceKey}:${plannedWearDateKey}`
+        : `fresh:${pieceKey}:${plannedWearDateKey}`;
 
     if (handledKeyRef.current === triggerKey) return;
 
@@ -270,6 +269,7 @@ export function useTryOnPreview({
     savedReturn,
     generatePreview,
     loadHeroFromCache,
+    plannedWearDateKey,
   ]);
 
   return {

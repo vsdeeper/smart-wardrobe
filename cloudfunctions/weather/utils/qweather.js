@@ -36,6 +36,21 @@ function buildAirCurrentUrl(host, latitude, longitude) {
   return `${host}/airquality/v1/current/${latitude}/${longitude}`
 }
 
+function buildCurrentWeatherV1Url(host, latitude, longitude) {
+  const lat = Number(latitude).toFixed(2)
+  const lng = Number(longitude).toFixed(2)
+  return `${host}/weather/v1/current/${lat}/${lng}`
+}
+
+function buildDailyWeatherV1Url(host, latitude, longitude, days) {
+  const lat = Number(latitude).toFixed(2)
+  const lng = Number(longitude).toFixed(2)
+  return buildUrl(host, `/weather/v1/daily/${lat}/${lng}`, {
+    days,
+    localTime: 'true',
+  })
+}
+
 function parseAirV1Aqi(airRes) {
   const indexes = (airRes && airRes.indexes) || []
   const cn = indexes.find(
@@ -83,52 +98,143 @@ async function fetchAirV1Aqi(apiHost, latitude, longitude, apiKey) {
   }
 }
 
-async function fetchWeatherSnapshot(latitude, longitude) {
+function getDateKey(date = new Date()) {
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
+}
+
+function getWearDateOffset(dateKey, todayKey = getDateKey()) {
+  const parse = (key) => {
+    const [y, m, d] = key.split('-').map(Number)
+    return new Date(y, m - 1, d).getTime()
+  }
+  return Math.round((parse(dateKey) - parse(todayKey)) / (24 * 60 * 60 * 1000))
+}
+
+/** 解析 Current Weather v1 响应 */
+function parseCurrentWeatherV1(res, city, district, aqi, dateKey) {
+  return {
+    city,
+    district,
+    dateKey,
+    conditionCode: mapQWeatherIcon(res.condition && res.condition.code),
+    temperature: Math.round(Number(res.temperature && res.temperature.value) || 0),
+    humidity: Math.round((Number(res.humidity) || 0) * 100),
+    aqi,
+  }
+}
+
+/** 解析 Daily Forecast v1 单日白天段 */
+function parseDailyWeatherV1Day(day, city, district, aqi, dateKey) {
+  const daytime = day && day.daytime
+  const tempMax =
+    (daytime && daytime.temperatureMax && daytime.temperatureMax.value) ??
+    (day && day.temperatureMax && day.temperatureMax.value) ??
+    0
+  const humidityRaw =
+    (daytime && daytime.humidity) ?? (day && day.daytime && day.daytime.humidity) ?? 0
+  const conditionCode =
+    daytime && daytime.condition ? daytime.condition.code : '100'
+
+  return {
+    city,
+    district,
+    dateKey,
+    conditionCode: mapQWeatherIcon(conditionCode),
+    temperature: Math.round(Number(tempMax) || 0),
+    humidity: Math.round(Number(humidityRaw) * 100),
+    aqi,
+  }
+}
+
+async function fetchGeoCity(apiHost, latitude, longitude, apiKey) {
+  const coordQuery = `${longitude},${latitude}`
+  const geoRes = await fetchJson(
+    buildUrl(apiHost, '/geo/v2/city/lookup', { location: coordQuery }),
+    apiKey,
+  )
+  const loc = geoRes.location && geoRes.location[0]
+  return parseGeoLocation(loc)
+}
+
+/**
+ * 按 dateKey 拉取单日天气快照。
+ * 今天：v1 current；非今天：v1 daily?days=offset+1 取对应条目。
+ */
+async function fetchWeatherForDateKey(latitude, longitude, dateKey) {
   const apiKey = process.env.QWEATHER_API_KEY
   if (!apiKey) {
     return { error: 'CONFIG_ERROR', message: '未配置 QWEATHER_API_KEY 环境变量' }
   }
 
   const apiHost = normalizeHost(process.env.QWEATHER_API_HOST)
-  const coordQuery = `${longitude},${latitude}`
+  const todayKey = getDateKey()
+  const targetKey = dateKey || todayKey
+  const offset = getWearDateOffset(targetKey, todayKey)
 
-  const geoRes = await fetchJson(
-    buildUrl(apiHost, '/geo/v2/city/lookup', { location: coordQuery }),
-    apiKey,
-  )
-
-  const loc = geoRes.location && geoRes.location[0]
-  const locationId = loc && loc.id
-  const { city, district } = parseGeoLocation(loc)
-  const weatherLocation = locationId || coordQuery
-
-  const [weatherRes, aqi] = await Promise.all([
-    fetchJson(
-      buildUrl(apiHost, '/v7/weather/now', { location: weatherLocation }),
-      apiKey,
-    ),
-    fetchAirV1Aqi(apiHost, latitude, longitude, apiKey),
-  ])
-
-  if (weatherRes.code !== '200' || !weatherRes.now) {
+  if (offset < 0 || offset >= 7) {
     return {
-      error: 'WEATHER_API_ERROR',
-      message: weatherRes.code || '天气接口返回异常',
+      error: 'WEATHER_DATE_OUT_OF_RANGE',
+      message: '所选日期超出预报范围',
     }
   }
 
-  return {
-    city,
-    district,
-    conditionCode: mapQWeatherIcon(weatherRes.now.icon),
-    temperature: Number(weatherRes.now.temp) || 0,
-    humidity: Number(weatherRes.now.humidity) || 0,
-    aqi,
+  try {
+    const { city, district } = await fetchGeoCity(
+      apiHost,
+      latitude,
+      longitude,
+      apiKey,
+    )
+    const aqi = await fetchAirV1Aqi(apiHost, latitude, longitude, apiKey)
+
+    if (offset === 0) {
+      const currentRes = await fetchJson(
+        buildCurrentWeatherV1Url(apiHost, latitude, longitude),
+        apiKey,
+      )
+      return parseCurrentWeatherV1(
+        currentRes,
+        city,
+        district,
+        aqi,
+        targetKey,
+      )
+    }
+
+    const days = offset + 1
+    const dailyRes = await fetchJson(
+      buildDailyWeatherV1Url(apiHost, latitude, longitude, days),
+      apiKey,
+    )
+    const dayList = (dailyRes && dailyRes.days) || []
+    const day = dayList[offset]
+    if (!day) {
+      return {
+        error: 'WEATHER_DATE_OUT_OF_RANGE',
+        message: '未能获取该日预报',
+      }
+    }
+    return parseDailyWeatherV1Day(day, city, district, aqi, targetKey)
+  } catch (err) {
+    return {
+      error: 'FETCH_FAILED',
+      message: err && err.message ? err.message : '请求和风天气失败',
+    }
   }
+}
+
+/** 实时天气（供非试穿场景）；走 v1 current，不用已弃用 v7/now */
+async function fetchWeatherSnapshot(latitude, longitude) {
+  return fetchWeatherForDateKey(latitude, longitude, getDateKey())
 }
 
 module.exports = {
   mapQWeatherIcon,
   normalizeHost,
   fetchWeatherSnapshot,
+  fetchWeatherForDateKey,
+  getDateKey,
 }

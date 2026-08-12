@@ -7,9 +7,8 @@ import { useMainTabNavigation } from "@/hooks/use-main-tab-navigation";
 import { useTryOnPreview } from "@/hooks/use-try-on-preview";
 import { useTryOnRecommend } from "@/hooks/use-try-on-recommend";
 import { useTryOnWear } from "@/hooks/use-try-on-wear";
-import { useWeather } from "@/hooks/use-weather";
-
 import { applyGenderSetupWithToast } from "@/services/apply-gender-setup";
+import { setActiveWearDateKey } from "@/services/try-on-cache";
 import Main from "@/layouts/Main";
 import TryOnEmptyState from "./components/TryOnEmptyState";
 import TryOnResult from "./components/TryOnResult";
@@ -17,11 +16,6 @@ import "./index.scss";
 
 function TryOnPage() {
   const { activeTab, onTabChange } = useMainTabNavigation(1);
-  const {
-    viewModel: weatherViewModel,
-    status: weatherStatus,
-    handleCardClick: handleWeatherClick,
-  } = useWeather();
   const [genderSaving, setGenderSaving] = useState(false);
 
   const {
@@ -34,6 +28,10 @@ function TryOnPage() {
     isManualOutfit,
     retryRecommend,
     weatherSnapshot,
+    plannedWearDateKey,
+    setWearDateKey,
+    startRecommend,
+    refreshWeather,
   } = useTryOnRecommend();
 
   const {
@@ -44,9 +42,8 @@ function TryOnPage() {
     generatePreview,
     handleHeroImageError,
   } = useTryOnPreview({
+    plannedWearDateKey,
     selectedPieces,
-    outfitName: recommendation?.outfitName ?? "",
-    description: recommendation?.description ?? "",
     fromCache,
     savedReturn,
     recommendReady: recommendStatus === "success",
@@ -54,6 +51,7 @@ function TryOnPage() {
   });
 
   const { saving, wearConfirmed, handleWearOutfit } = useTryOnWear({
+    plannedWearDateKey,
     recommendation,
     selectedPieces,
     heroCoverFileId,
@@ -79,20 +77,41 @@ function TryOnPage() {
         retryRecommend();
       }
     },
-    [genderSaving, retryRecommend]
+    [genderSaving, retryRecommend],
   );
 
   const handleGoWardrobe = useCallback(() => {
     Taro.redirectTo({ url: "/pages/wardrobe/index" });
   }, []);
 
+  const handleGoOutfit = useCallback(() => {
+    setActiveWearDateKey(plannedWearDateKey);
+    Taro.redirectTo({ url: "/pages/outfit/index" });
+  }, [plannedWearDateKey]);
+
+  const handleWearDateChange = useCallback(
+    (dateKey: string) => {
+      void setWearDateKey(dateKey);
+    },
+    [setWearDateKey],
+  );
+
   const renderBody = () => {
     switch (recommendStatus) {
       case "loading":
-      case "idle":
         return (
           <PageLoading
             text={isManualOutfit ? "AI 正在评价搭配…" : "AI 正在推荐穿搭…"}
+          />
+        );
+      case "ready":
+        return (
+          <TryOnEmptyState
+            variant="ready"
+            plannedWearDateKey={plannedWearDateKey}
+            onWearDateChange={handleWearDateChange}
+            onRecommend={startRecommend}
+            onGoOutfit={handleGoOutfit}
           />
         );
       case "needsGender":
@@ -120,15 +139,16 @@ function TryOnPage() {
           <TryOnResult
             recommendation={recommendation}
             selectedPieces={selectedPieces}
+            plannedWearDateKey={plannedWearDateKey}
+            onWearDateChange={handleWearDateChange}
+            weatherSnapshot={weatherSnapshot}
+            onRefreshWeather={() => void refreshWeather()}
             heroImageUrl={heroImageUrl}
             heroCoverFileId={heroCoverFileId}
             previewStatus={previewStatus}
             previewErrorMessage={previewErrorMessage}
             onRetryPreview={generatePreview}
             onHeroImageError={handleHeroImageError}
-            weatherStatus={weatherStatus}
-            weatherViewModel={weatherViewModel}
-            onWeatherClick={handleWeatherClick}
             saving={saving}
             wearConfirmed={wearConfirmed}
             onWearOutfit={handleWearCta}

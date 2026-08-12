@@ -1,31 +1,31 @@
-import { WeatherCardViewModel } from "@/types/weather";
+import { WeatherSnapshot } from "@/types/weather";
 import { WardrobeItem } from "@/types/wardrobe";
 import { TryOnPreviewStatus, TryOnRecommendation } from "@/types/try-on";
 import { View, Text } from "@tarojs/components";
+import { buildWeatherCardView } from "@/utils/weather";
 import OutfitCard from "@/components/OutfitCard";
 import OutfitHero from "@/components/OutfitHero";
 import OutfitMeta from "@/components/OutfitMeta";
 import OutfitPieceList from "@/components/OutfitPieceList";
 import OutlineButton from "@/components/OutlineButton";
-
-
-
-import type { WeatherLoadStatus } from "@/services/weather";
+import WearDateSelector from "../WearDateSelector";
 import WearCta from "../WearCta";
+
 import "./index.scss";
 
 export interface TryOnResultProps {
   recommendation: TryOnRecommendation | null;
   selectedPieces: WardrobeItem[];
+  plannedWearDateKey: string;
+  onWearDateChange: (dateKey: string) => void;
+  weatherSnapshot: WeatherSnapshot | null;
+  onRefreshWeather?: () => void;
   heroImageUrl?: string | null;
   heroCoverFileId?: string | null;
   previewStatus: TryOnPreviewStatus;
   previewErrorMessage: string | null;
   onRetryPreview: () => void;
   onHeroImageError: () => void;
-  weatherStatus: WeatherLoadStatus;
-  weatherViewModel: WeatherCardViewModel | null;
-  onWeatherClick: () => void;
   saving: boolean;
   wearConfirmed: boolean;
   onWearOutfit: () => void;
@@ -34,15 +34,16 @@ export interface TryOnResultProps {
 function TryOnResult({
   recommendation,
   selectedPieces,
+  plannedWearDateKey,
+  onWearDateChange,
+  weatherSnapshot,
+  onRefreshWeather,
   heroImageUrl,
   heroCoverFileId,
   previewStatus,
   previewErrorMessage,
   onRetryPreview,
   onHeroImageError,
-  weatherStatus,
-  weatherViewModel,
-  onWeatherClick,
   saving,
   wearConfirmed,
   onWearOutfit,
@@ -52,8 +53,19 @@ function TryOnResult({
     .filter(Boolean)
     .join(" / ");
 
+  const weatherViewModel = weatherSnapshot
+    ? buildWeatherCardView(weatherSnapshot)
+    : null;
+
   return (
     <>
+      <View className="try-on-result__header">
+        <WearDateSelector
+          value={plannedWearDateKey}
+          onChange={onWearDateChange}
+          disabled={saving || previewStatus === "loading"}
+        />
+      </View>
       <OutfitCard
         hero={
           <OutfitHero
@@ -63,9 +75,8 @@ function TryOnResult({
             previewErrorMessage={previewErrorMessage}
             onRetryPreview={onRetryPreview}
             onImageError={onHeroImageError}
-            weatherStatus={weatherStatus}
             weatherViewModel={weatherViewModel}
-            onWeatherClick={onWeatherClick}
+            onWeatherClick={onRefreshWeather}
           />
         }
       >

@@ -14,6 +14,7 @@ export interface RecommendOutfitInput {
   season: string;
   profile: UserProfile;
   wardrobeByType: WardrobeItemsByType;
+  plannedWearDateKey?: string;
 }
 
 export interface RecommendSelectedOutfitInput {
@@ -21,6 +22,7 @@ export interface RecommendSelectedOutfitInput {
   season: string;
   profile: UserProfile;
   selectedPieces: WardrobeItem[];
+  plannedWearDateKey?: string;
 }
 
 interface RecommendCloudError {
@@ -75,6 +77,7 @@ async function callRecommendOutfit(
       weather: input.weather,
       season: input.season,
       profile: input.profile,
+      plannedWearDateKey: input.plannedWearDateKey,
       wardrobeByType: toCloudWardrobe(wardrobeByType),
     },
   });

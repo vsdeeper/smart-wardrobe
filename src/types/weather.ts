@@ -34,6 +34,8 @@ export interface WeatherSnapshot {
   city: string;
   /** 行政区域（区/县），可选 */
   district?: string;
+  /** 该快照对应的预报日 YYYY-MM-DD */
+  dateKey?: string;
   conditionCode: WeatherConditionCode;
   temperature: number;
   humidity: number;

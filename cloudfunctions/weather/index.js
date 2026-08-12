@@ -1,17 +1,20 @@
 const cloud = require('wx-server-sdk')
-const { fetchWeatherSnapshot } = require('./utils/qweather')
+const { fetchWeatherSnapshot, fetchWeatherForDateKey } = require('./utils/qweather')
 
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 
 exports.main = async (event) => {
-  const { latitude, longitude } = event || {}
+  const { latitude, longitude, dateKey } = event || {}
 
   if (typeof latitude !== 'number' || typeof longitude !== 'number') {
     return { error: 'INVALID_PARAMS', message: '缺少 latitude / longitude' }
   }
 
   try {
-    const result = await fetchWeatherSnapshot(latitude, longitude)
+    const result =
+      typeof dateKey === 'string' && dateKey
+        ? await fetchWeatherForDateKey(latitude, longitude, dateKey)
+        : await fetchWeatherSnapshot(latitude, longitude)
     if (result.error) {
       return result
     }

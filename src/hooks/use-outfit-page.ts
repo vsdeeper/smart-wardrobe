@@ -11,7 +11,10 @@ import {
   type InboundRefreshPayload,
 } from "@/services/recognition-inbound-cache";
 import { peekTryOnDraft, setTryOnDraft } from "@/services/try-on-draft";
-import { getInitialTryOnCache } from "@/services/try-on-cache";
+import {
+  getActiveWearDateKey,
+  getInitialTryOnCache,
+} from "@/services/try-on-cache";
 import { fetchClothingTypes, fetchWardrobeItems } from "@/services/wardrobe";
 import {
   appendWardrobeTypeBucket,
@@ -24,6 +27,7 @@ import {
   setOutfitActiveTypeKey,
   setWardrobeTypeBucket,
 } from "@/services/wardrobe-cache";
+import { getDateKey } from "@/utils/season";
 import { isWeapp } from "@/utils/platform";
 import { arePieceSelectionsEqual, getPieceIds } from "@/utils/outfit-selection";
 
@@ -360,6 +364,8 @@ export function useOutfitPage() {
 
     const currentIds = getPieceIds(outfitPieces);
 
+    const wearDateKey = getActiveWearDateKey() || getDateKey();
+
     if (fromTryOnEdit) {
       const piecesChanged = !arePieceSelectionsEqual(
         baselinePieceIds,
@@ -369,12 +375,13 @@ export function useOutfitPage() {
         mode: "saved",
         selectedPieces: outfitPieces,
         piecesChanged,
+        plannedWearDateKey: wearDateKey,
       });
       Taro.redirectTo({ url: "/pages/try-on/index" });
       return;
     }
 
-    const cache = getInitialTryOnCache();
+    const cache = getInitialTryOnCache(wearDateKey);
     const baselineIds = cache ? getPieceIds(cache.selectedPieces) : [];
     const piecesChanged = !arePieceSelectionsEqual(baselineIds, currentIds);
 
@@ -382,6 +389,7 @@ export function useOutfitPage() {
       mode: "saved",
       selectedPieces: outfitPieces,
       piecesChanged,
+      plannedWearDateKey: wearDateKey,
     });
     Taro.redirectTo({ url: "/pages/try-on/index" });
   }, [outfitPieces, fromTryOnEdit, baselinePieceIds]);
