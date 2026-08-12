@@ -1,6 +1,8 @@
 {
   "files": [
+    "constants/credits.js",
     "providers/ark/constants.js",
+    "utils/credits.js",
     "utils/doubao-vision.js",
     "utils/env.js",
     "utils/upload-generated-image.js"

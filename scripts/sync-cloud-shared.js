@@ -28,21 +28,26 @@ const SHARED_SYNC_MAP = {
   ],
   'process-recognition-batch': [
     'utils/env.js',
+    'utils/credits.js',
     'utils/doubao-vision.js',
     'utils/seed-recognize.js',
     'utils/upload-generated-image.js',
     'utils/wardrobe-display-pipeline.js',
     'utils/resolve-display-bg-url.js',
+    'constants/credits.js',
     'constants/recognition-rules.js',
     'constants/item-display-rules.js',
     'constants/display-bg-file-ids.js',
   ],
   'generate-tryon-image': [
     'utils/env.js',
+    'utils/credits.js',
     'utils/doubao-vision.js',
     'utils/upload-generated-image.js',
+    'constants/credits.js',
   ],
-  'recommend-outfit': ['utils/env.js'],
+  'recommend-outfit': ['utils/env.js', 'utils/credits.js', 'constants/credits.js'],
+  credits: ['utils/credits.js', 'constants/credits.js'],
 }
 
 /** 各云函数需要同步的 providers 文件（相对 providers/） */

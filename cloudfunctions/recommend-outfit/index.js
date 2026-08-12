@@ -9,17 +9,28 @@ const {
 } = require('./constants/recommend-outfit-rules')
 const { callSeedChat } = require('./utils/call-seed-chat')
 const { summarizeWardrobe } = require('./utils/summarize-wardrobe')
+const { OUTFIT_SESSION, ERROR_INSUFFICIENT } = require('./constants/credits')
+const {
+  hold,
+  release,
+  ERROR_INSUFFICIENT: CREDITS_INSUFFICIENT,
+} = require('./utils/credits')
 
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
+
+const db = cloud.database()
 
 exports.main = async (event) => {
   const { mode = 'recommend', weather, season, profile, wardrobeByType, plannedWearDateKey } =
     event || {}
   const requestMode = mode === 'selection' ? 'selection' : 'recommend'
+  let creditHoldId = null
+  let openid = null
 
   try {
     const wxContext = cloud.getWXContext()
-    if (!wxContext.OPENID) {
+    openid = wxContext.OPENID
+    if (!openid) {
       return { error: 'NO_OPENID', message: '无法获取用户身份' }
     }
 
@@ -28,6 +39,24 @@ exports.main = async (event) => {
 
     if (typeCount === 0) {
       return { error: 'EMPTY_WARDROBE', message: '衣橱为空，请先上传衣物' }
+    }
+
+    try {
+      const held = await hold(
+        db,
+        openid,
+        OUTFIT_SESSION,
+        'outfit_session',
+        plannedWearDateKey || '',
+      )
+      creditHoldId = held.holdId
+    } catch (holdErr) {
+      const message =
+        holdErr instanceof Error ? holdErr.message : '积分预占失败'
+      if (holdErr?.error === CREDITS_INSUFFICIENT) {
+        return { error: ERROR_INSUFFICIENT, message }
+      }
+      return { error: 'CREDITS_HOLD_FAILED', message }
     }
 
     const payload = {
@@ -75,8 +104,19 @@ exports.main = async (event) => {
       }
     }
 
-    return { recommendation }
+    return { recommendation, creditHoldId }
   } catch (err) {
+    if (openid && creditHoldId) {
+      try {
+        await release(db, openid, creditHoldId)
+      } catch (releaseErr) {
+        console.warn(
+          '[recommend-outfit] 积分释放失败:',
+          releaseErr instanceof Error ? releaseErr.message : releaseErr,
+        )
+      }
+    }
+
     const message = err instanceof Error ? err.message : String(err)
     return { error: 'RECOMMEND_FAILED', message }
   }

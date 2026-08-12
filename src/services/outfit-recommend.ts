@@ -8,6 +8,8 @@ import Taro from "@tarojs/taro";
 
 
 import type { WardrobeItemsByType } from "@/services/wardrobe";
+import { CREDITS_ERROR_INSUFFICIENT } from "@/constants/credits";
+import { resolveCreditsToastMessage } from "@/utils/credits";
 
 export interface RecommendOutfitInput {
   weather: WeatherSnapshot;
@@ -25,6 +27,11 @@ export interface RecommendSelectedOutfitInput {
   plannedWearDateKey?: string;
 }
 
+export interface RecommendOutfitResult {
+  recommendation: TryOnRecommendation;
+  creditHoldId?: string;
+}
+
 interface RecommendCloudError {
   error: string;
   message: string;
@@ -32,6 +39,7 @@ interface RecommendCloudError {
 
 interface RecommendCloudSuccess {
   recommendation: TryOnRecommendation;
+  creditHoldId?: string;
 }
 
 function isError(
@@ -69,7 +77,7 @@ async function callRecommendOutfit(
   input: Omit<RecommendOutfitInput, "wardrobeByType">,
   wardrobeByType: WardrobeItemsByType,
   mode: "recommend" | "selection"
-): Promise<TryOnRecommendation> {
+): Promise<RecommendOutfitResult> {
   const { result } = await Taro.cloud.callFunction({
     name: "recommend-outfit",
     data: {
@@ -84,20 +92,28 @@ async function callRecommendOutfit(
 
   const data = result as RecommendCloudSuccess | RecommendCloudError;
   if (isError(data)) {
-    throw new Error(data.message || data.error);
+    const message = resolveCreditsToastMessage(data.message, data.error);
+    const err = new Error(message);
+    if (data.error === CREDITS_ERROR_INSUFFICIENT) {
+      (err as Error & { code?: string }).code = CREDITS_ERROR_INSUFFICIENT;
+    }
+    throw err;
   }
-  return data.recommendation;
+  return {
+    recommendation: data.recommendation,
+    creditHoldId: data.creditHoldId,
+  };
 }
 
 export function recommendOutfit(
   input: RecommendOutfitInput
-): Promise<TryOnRecommendation> {
+): Promise<RecommendOutfitResult> {
   return callRecommendOutfit(input, input.wardrobeByType, "recommend");
 }
 
 export function recommendSelectedOutfit(
   input: RecommendSelectedOutfitInput
-): Promise<TryOnRecommendation> {
+): Promise<RecommendOutfitResult> {
   return callRecommendOutfit(
     input,
     groupSelectedPieces(input.selectedPieces),

@@ -5,7 +5,7 @@ import { MINE_DIARY_PREVIEW_LIMIT } from "@/constants/try-on";
 import { getUserDisplayName } from "@/utils/profile";
 import { useCallback, useState } from "react";
 import { View, Text } from "@tarojs/components";
-import Taro from "@tarojs/taro";
+import Taro, { useDidShow } from "@tarojs/taro";
 import { ArrowRight, Setting } from "@nutui/icons-react-taro";
 import { Image } from "@nutui/nutui-react-taro";
 import DefaultAvatar from "@/components/DefaultAvatar";
@@ -19,6 +19,7 @@ import { useMainTabNavigation } from "@/hooks/use-main-tab-navigation";
 import { useRecognitionBatches } from "@/hooks/use-recognition-batches";
 import { useUserProfile } from "@/hooks/use-user-profile";
 import { useVisualDiary } from "@/hooks/use-visual-diary";
+import { fetchCreditBalance } from "@/services/credits";
 import Main from "@/layouts/Main";
 import { formatDateTime } from "@/utils/format-date-time";
 import { normalizeRecognitionErrorMessage } from "@/utils/recognition";
@@ -31,6 +32,7 @@ type DiaryLayout = "grid" | "list";
 function MinePage() {
   const { activeTab, onTabChange } = useMainTabNavigation(3);
   const [diaryLayout, setDiaryLayout] = useState<DiaryLayout>("grid");
+  const [creditAvailable, setCreditAvailable] = useState<number | null>(null);
   const { profile, avatarUrl, onAvatarLoadError } = useUserProfile();
   const {
     entries,
@@ -100,6 +102,12 @@ function MinePage() {
     Taro.navigateTo({ url: "/pages/credits-pricing/index" });
   }, []);
 
+  useDidShow(() => {
+    void fetchCreditBalance()
+      .then((summary) => setCreditAvailable(summary.available))
+      .catch(() => setCreditAvailable(null));
+  });
+
   return (
     <Main
       activeTab={activeTab}
@@ -125,8 +133,10 @@ function MinePage() {
               {getUserDisplayName(profile)}
             </Text>
             <View className="mine-header__credits" onClick={handleOpenCredits}>
-              <Text className="mine-header__credits-balance">积分 0</Text>
-              <Text className="mine-header__credits-action">充值</Text>
+              <Text className="mine-header__credits-balance">
+                积分 {creditAvailable ?? "--"}
+              </Text>
+              <Text className="mine-header__credits-action">说明</Text>
             </View>
           </View>
 

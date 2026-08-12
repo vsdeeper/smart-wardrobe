@@ -4,6 +4,11 @@ import { isWeapp } from "@/utils/platform";
 import Taro from "@tarojs/taro";
 
 import { createRecognitionBatchAndStart } from "@/services/recognition-batch";
+import { fetchCreditBalance } from "@/services/credits";
+import {
+  canAffordRecognition,
+  CREDITS_INSUFFICIENT_TOAST,
+} from "@/utils/credits";
 import {
   checkNeedPrivacyAuthorization,
   getMediaPickerErrorToast,
@@ -40,6 +45,16 @@ export function useWardrobeUpload({
       if (filePaths.length === 0) return;
 
       setAdding(true);
+
+      const creditSummary = await fetchCreditBalance();
+      if (!canAffordRecognition(creditSummary.available)) {
+        Taro.showToast({
+          title: CREDITS_INSUFFICIENT_TOAST,
+          icon: "none",
+          duration: 3000,
+        });
+        return;
+      }
 
       await createRecognitionBatchAndStart(filePaths);
 

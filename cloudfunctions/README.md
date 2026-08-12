@@ -124,6 +124,56 @@ wx.cloud
 
 由小程序端建单（`status=processing`），云函数 `process-recognition-batch` 异步写回结果；确认/放弃由小程序端更新 `confirmStatus`。
 
+### 集合 `user_credits` — 积分账户（仅云函数写）
+
+| 字段             | 类型    | 说明                                   |
+| ---------------- | ------- | -------------------------------------- |
+| `_openid`        | string  | 用户隔离                               |
+| `balance`        | number  | 可用余额（含已冻结部分的总账）         |
+| `frozen`         | number  | 预占冻结中积分                         |
+| `initialGranted` | boolean | 是否已发放体验首赠（1000，一次性）     |
+| `updatedAt`      | number  | 最近更新                               |
+
+可用积分 = `balance - frozen`。首次调用 `credits` 云函数 `balance` 或 AI 扣费入口时自动建账并赠送 1000。
+
+### 集合 `credit_holds` — 积分预占
+
+| 字段            | 类型   | 说明                                      |
+| --------------- | ------ | ----------------------------------------- |
+| `_openid`       | string | 用户隔离                                  |
+| `amount`        | number | 预占上限                                  |
+| `settledAmount` | number | 实扣积分（结算后写入）                    |
+| `action`        | string | `recognize` / `outfit_session`            |
+| `refId`         | string | 关联 batchId 或 wearDateKey 等            |
+| `status`        | string | `held` \| `settled` \| `released`         |
+| `createdAt`     | number | 创建时间                                  |
+
+### 集合 `credit_ledger` — 积分流水
+
+| 字段        | 类型   | 说明                                           |
+| ----------- | ------ | ---------------------------------------------- |
+| `_openid`   | string | 用户隔离                                       |
+| `type`      | string | `grant` / `hold` / `settle` / `release`        |
+| `amount`    | number | 变动积分                                       |
+| `action`    | string | 业务动作                                       |
+| `refId`     | string | 关联 ID                                        |
+| `holdId`    | string | 预占 ID（可选）                                |
+| `note`      | string | 备注（如 `initial`）                           |
+| `createdAt` | number | 时间戳                                         |
+
+### 积分相关安全规则
+
+`user_credits`、`credit_holds`、`credit_ledger` 建议：
+
+```json
+{
+  "read": "doc._openid == auth.openid",
+  "write": false
+}
+```
+
+积分写入仅通过云函数（管理员权限）；客户端可读自己的余额与流水。
+
 ### 安全规则示例
 
 `clothing_types`、`wardrobe_items`、`recognition_batches` 均使用：
@@ -363,6 +413,25 @@ wx.cloud
 | `Cannot find module './utils/wardrobe-save'` | 函数目录缺少 utils；确认已部署最新代码 |
 | `缺少待入库衣物数据` | `items` 为空或非数组 |
 | `无法获取用户身份` | 未登录或未初始化云开发 |
+
+## 6.5 credits 云函数（积分账户）
+
+部署前须 `pnpm cf:sync-shared`（同步 `shared/utils/credits.js`、`shared/constants/credits.js`）。
+
+右键 `cloudfunctions/credits` → **上传并部署：云端安装依赖**。
+
+Console 验证：
+
+```javascript
+wx.cloud
+  .callFunction({ name: "credits", data: { action: "balance" } })
+  .then(console.log)
+  .catch(console.error);
+```
+
+预期首次返回 `{ balance: 1000, frozen: 0, available: 1000, initialGranted: true }`。
+
+积分扣费还挂载在 `process-recognition-batch`、`recommend-outfit`、`generate-tryon-image`；修改 `shared/` 积分模块后须 sync 并**重新部署上述 4 个函数**。
 
 ## 7. 试穿相关云函数
 

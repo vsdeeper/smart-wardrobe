@@ -114,12 +114,16 @@ function CreditsPricingPage() {
           </View>
 
           <View className="credits-page__section">
-            <Text className="credits-page__section-title">充值与权益</Text>
+            <Text className="credits-page__section-title">体验积分与充值</Text>
             <Text className="credits-page__p">
-              积分通过微信支付充值获得，不可提现、不可兑换现金。
+              首次使用可获赠 <Text className="credits-page__em">1000 体验积分</Text>
+              （一次性），用于体验识别入库与 AI 试穿。
             </Text>
             <Text className="credits-page__p">
-              若因第三方服务成本变化需要调整积分规则，我们会在小程序内公告后再生效。公告时间可能因实际情况延后，请以届时说明为准；已购买积分不可兑人民币、不可提现。
+              微信支付充值即将开放；积分不可提现、不可兑换现金。
+            </Text>
+            <Text className="credits-page__p">
+              若因第三方服务成本变化需要调整积分规则，我们会在小程序内公告后再生效。公告时间可能因实际情况延后，请以届时说明为准。
             </Text>
             <Text className="credits-page__p">异常扣费可联系客服核查补发。</Text>
           </View>

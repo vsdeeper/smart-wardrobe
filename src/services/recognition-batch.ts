@@ -3,6 +3,8 @@ import { RECOGNITION_HISTORY_PAGE_SIZE } from "@/constants/recognition";
 import { type RecognitionBatch, type RecognitionBatchProgress, type RecognitionBatchStatus, type RecognitionConfirmStatus } from "@/types/recognition";
 import { isGenderSet } from "@/utils/profile";
 import Taro from "@tarojs/taro";
+import { CREDITS_ERROR_INSUFFICIENT } from "@/constants/credits";
+import { resolveCreditsToastMessage } from "@/utils/credits";
 
 
 
@@ -279,11 +281,17 @@ function triggerProcessRecognitionBatch(
         | { error?: string; message?: string }
         | undefined;
       if (result?.error) {
+        const message = resolveCreditsToastMessage(
+          result.message || result.error || RECOGNITION_FAIL_MESSAGE,
+          result.error,
+        );
         void markRecognitionBatchFailed(
           batchId,
-          normalizeRecognitionErrorMessage(
-            result.message || result.error || RECOGNITION_FAIL_MESSAGE,
-          ),
+          result.error === CREDITS_ERROR_INSUFFICIENT
+            ? message
+            : normalizeRecognitionErrorMessage(
+                result.message || result.error || RECOGNITION_FAIL_MESSAGE,
+              ),
         );
       }
     })

@@ -98,6 +98,7 @@ export function useTryOnRecommend() {
     initial.selectedPieces,
   );
   const [fromCache, setFromCache] = useState(initial.fromCache);
+  const [creditHoldId, setCreditHoldId] = useState<string | null>(null);
   const [savedReturn, setSavedReturn] = useState<SavedReturnMeta | null>(null);
   const [weatherSnapshot, setWeatherSnapshot] = useState<WeatherSnapshot | null>(
     initial.weatherSnapshot,
@@ -157,6 +158,7 @@ export function useTryOnRecommend() {
     setWeatherSnapshot(cache.weatherSnapshot ?? null);
     setFromCache(true);
     setSavedReturn(null);
+    setCreditHoldId(null);
     setStatus("success");
     setErrorMessage(null);
     return true;
@@ -169,6 +171,7 @@ export function useTryOnRecommend() {
       manualDraftRef.current = null;
       setSavedReturn(null);
       setErrorMessage(null);
+      setCreditHoldId(null);
 
       const cache = getInitialTryOnCache(wearDateKey);
       if (cache && allPieceUrlsFresh(cache.selectedPieces)) {
@@ -189,6 +192,7 @@ export function useTryOnRecommend() {
       setSelectedPieces([]);
       setWeatherSnapshot(null);
       setFromCache(false);
+      setCreditHoldId(null);
       setStatus("ready");
     },
     [restoreFromCache],
@@ -203,6 +207,7 @@ export function useTryOnRecommend() {
       setErrorMessage(null);
       setFromCache(false);
       setSavedReturn(null);
+      setCreditHoldId(null);
       manualDraftRef.current = null;
 
       try {
@@ -242,13 +247,16 @@ export function useTryOnRecommend() {
         setWeatherSnapshot(weather);
 
         const season = getCurrentSeason(parseDateKey(wearDateKey));
-        const rec = await recommendOutfit({
+        const { recommendation: rec, creditHoldId: nextHoldId } =
+          await recommendOutfit({
           weather,
           season,
           profile,
           wardrobeByType: byType,
           plannedWearDateKey: wearDateKey,
         });
+
+        setCreditHoldId(nextHoldId ?? null);
 
         const pieces = resolveSelectedPieces(rec, items);
         const cachedPieces = await resolveAndCachePieceUrls(pieces);
@@ -312,13 +320,16 @@ export function useTryOnRecommend() {
         const weather = await fetchWeatherForCurrentWearDate(wearDateKey);
         const pieces = await resolveAndCachePieceUrls(piecesFromDraft);
         const season = getCurrentSeason(parseDateKey(wearDateKey));
-        const rec = await recommendSelectedOutfit({
+        const { recommendation: rec, creditHoldId: nextHoldId } =
+          await recommendSelectedOutfit({
           weather,
           season,
           profile,
           selectedPieces: pieces,
           plannedWearDateKey: wearDateKey,
         });
+
+        setCreditHoldId(nextHoldId ?? null);
 
         applyRecommendation(rec, pieces);
         allItemsRef.current = pieces;
@@ -389,6 +400,7 @@ export function useTryOnRecommend() {
     setWeatherSnapshot(null);
     setFromCache(false);
     setSavedReturn(null);
+    setCreditHoldId(null);
     setStatus("ready");
     setErrorMessage(null);
   }, [loadManual, restoreFromCache]);
@@ -430,6 +442,7 @@ export function useTryOnRecommend() {
     recommendation,
     selectedPieces,
     fromCache,
+    creditHoldId,
     savedReturn,
     isManualOutfit: savedReturn !== null,
     weatherSnapshot,

@@ -1,5 +1,7 @@
 {
   "files": [
+    "constants/credits.js",
+    "utils/credits.js",
     "utils/env.js"
   ]
 }

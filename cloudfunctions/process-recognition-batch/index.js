@@ -4,15 +4,50 @@
 const cloud = require('wx-server-sdk')
 const { COLLECTION } = require('./constants/collection')
 const { updateBatch, failBatch } = require('./utils/batch-db')
-const { processCoverImage } = require('./utils/process-cover-image')
+const {
+  processCoverImage,
+  RecognitionProcessError,
+} = require('./utils/process-cover-image')
 const { requireEnv } = require('./utils/env')
+const {
+  RECOGNIZE_BASE,
+  DISPLAY_IMAGE,
+  RECOGNIZE_HOLD_MAX,
+  ERROR_INSUFFICIENT,
+} = require('./constants/credits')
+const {
+  hold,
+  settle,
+  release,
+  ERROR_INSUFFICIENT: CREDITS_INSUFFICIENT,
+} = require('./utils/credits')
 
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 
 const db = cloud.database()
 
+/** 按识图/展示图成功情况计算实扣积分 */
+function calcRecognizeCharge(displayCount) {
+  const count = typeof displayCount === 'number' ? displayCount : 0
+  return RECOGNIZE_BASE + DISPLAY_IMAGE * Math.max(0, count)
+}
+
+/** 识别失败时按错误类型结算或释放预占 */
+async function finalizeRecognizeHold(openid, holdId, err) {
+  if (!holdId) return
+
+  if (err instanceof RecognitionProcessError && err.recognized) {
+    await settle(db, openid, holdId, calcRecognizeCharge(err.displayCount))
+    return
+  }
+
+  await release(db, openid, holdId)
+}
+
 exports.main = async (event) => {
   const { batchId, userGender } = event || {}
+  let creditHoldId = null
+  let openid = null
 
   if (!batchId || typeof batchId !== 'string') {
     return { error: 'INVALID_BATCH_ID', message: '缺少 batchId' }
@@ -20,7 +55,7 @@ exports.main = async (event) => {
 
   try {
     const wxContext = cloud.getWXContext()
-    const openid = wxContext.OPENID
+    openid = wxContext.OPENID
     if (!openid) {
       await failBatch(batchId, '无法获取用户身份')
       return { error: 'NO_OPENID', message: '无法获取用户身份' }
@@ -75,6 +110,20 @@ exports.main = async (event) => {
     }
 
     try {
+      const held = await hold(db, openid, RECOGNIZE_HOLD_MAX, 'recognize', batchId)
+      creditHoldId = held.holdId
+    } catch (holdErr) {
+      const message =
+        holdErr instanceof Error ? holdErr.message : '积分预占失败'
+      if (holdErr?.error === CREDITS_INSUFFICIENT) {
+        await failBatch(batchId, message)
+        return { error: ERROR_INSUFFICIENT, message }
+      }
+      await failBatch(batchId, message)
+      return { error: 'CREDITS_HOLD_FAILED', message }
+    }
+
+    try {
       await updateBatch(batchId, {
         progress: { current: 1, total: 1, phase: 'recognizing' },
       })
@@ -93,6 +142,14 @@ exports.main = async (event) => {
           }),
       )
 
+      await settle(
+        db,
+        openid,
+        creditHoldId,
+        calcRecognizeCharge(items.length),
+      )
+      creditHoldId = null
+
       await updateBatch(batchId, {
         status: 'succeeded',
         progress: { current: 1, total: 1 },
@@ -108,6 +165,17 @@ exports.main = async (event) => {
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err)
       console.warn('[process-recognition-batch] 识别失败:', message)
+
+      try {
+        await finalizeRecognizeHold(openid, creditHoldId, err)
+        creditHoldId = null
+      } catch (creditErr) {
+        console.warn(
+          '[process-recognition-batch] 积分回滚失败:',
+          creditErr instanceof Error ? creditErr.message : creditErr,
+        )
+      }
+
       await failBatch(batchId, message, {
         progress: { current: 1, total: 1 },
         itemCount: 0,
@@ -121,6 +189,18 @@ exports.main = async (event) => {
     }
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
+
+    if (openid && creditHoldId) {
+      try {
+        await release(db, openid, creditHoldId)
+      } catch (releaseErr) {
+        console.warn(
+          '[process-recognition-batch] 外层积分释放失败:',
+          releaseErr instanceof Error ? releaseErr.message : releaseErr,
+        )
+      }
+    }
+
     await failBatch(batchId, message)
     return { error: 'PROCESS_FAILED', message }
   }

@@ -8,6 +8,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { resolveCloudFileUrl } from "@/services/cloud-file";
 import { putImageUrlCache } from "@/services/image-url-cache";
 import { fetchUserProfile } from "@/services/profile";
+import { releaseCreditHold } from "@/services/credits";
 import { generateTryonImage } from "@/services/try-on-preview";
 import {
   getInitialTryOnCache,
@@ -23,6 +24,7 @@ interface UseTryOnPreviewOptions {
   fromCache: boolean;
   savedReturn: SavedReturnMeta | null;
   recommendReady: boolean;
+  creditHoldId?: string | null;
   weatherSnapshot?: WeatherSnapshot | null;
 }
 
@@ -32,6 +34,7 @@ export function useTryOnPreview({
   fromCache,
   savedReturn,
   recommendReady,
+  creditHoldId,
   weatherSnapshot,
 }: UseTryOnPreviewOptions) {
   const initialCache = getInitialTryOnCache(plannedWearDateKey);
@@ -81,6 +84,9 @@ export function useTryOnPreview({
     if (cachedUrl) {
       setPreviewErrorMessage(null);
       applyHero(cachedUrl, coverFileId, true);
+      if (creditHoldId) {
+        void releaseCreditHold(creditHoldId);
+      }
       return true;
     }
 
@@ -92,6 +98,9 @@ export function useTryOnPreview({
     persistHeroUrl(coverFileId, freshUrl);
     setPreviewErrorMessage(null);
     applyHero(freshUrl, coverFileId, true);
+    if (creditHoldId) {
+      void releaseCreditHold(creditHoldId);
+    }
 
     writeWearCache(plannedWearDateKey, {
       recommendation: cache.recommendation,
@@ -100,7 +109,7 @@ export function useTryOnPreview({
     });
 
     return true;
-  }, [applyHero, persistHeroUrl, plannedWearDateKey]);
+  }, [applyHero, creditHoldId, persistHeroUrl, plannedWearDateKey]);
 
   const generatePreview = useCallback(async () => {
     if (loadingRef.current || selectedPieces.length === 0) return;
@@ -131,6 +140,7 @@ export function useTryOnPreview({
           .filter(Boolean),
         pieceTypeNames: selectedPieces.map((p) => p.typeName).filter(Boolean),
         weatherConditionCode: weatherSnapshot?.conditionCode,
+        creditHoldId: creditHoldId || undefined,
       });
 
       if (result.error) {
@@ -179,6 +189,7 @@ export function useTryOnPreview({
     applyHero,
     persistHeroUrl,
     weatherSnapshot?.conditionCode,
+    creditHoldId,
     savedReturn,
     plannedWearDateKey,
   ]);
@@ -269,6 +280,7 @@ export function useTryOnPreview({
     savedReturn,
     generatePreview,
     loadHeroFromCache,
+    creditHoldId,
     plannedWearDateKey,
   ]);
 
