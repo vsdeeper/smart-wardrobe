@@ -29,6 +29,10 @@ const ERROR_INSUFFICIENT = 'INSUFFICIENT_CREDITS'
 const COLLECTION_USER_CREDITS = 'user_credits'
 const COLLECTION_CREDIT_HOLDS = 'credit_holds'
 const COLLECTION_CREDIT_LEDGER = 'credit_ledger'
+const COLLECTION_CREDIT_ORDERS = 'credit_orders'
+
+/** 流水类型：充值入账 */
+const LEDGER_TYPE_RECHARGE = 'recharge'
 
 module.exports = {
   INITIAL_GRANT,
@@ -48,4 +52,6 @@ module.exports = {
   COLLECTION_USER_CREDITS,
   COLLECTION_CREDIT_HOLDS,
   COLLECTION_CREDIT_LEDGER,
+  COLLECTION_CREDIT_ORDERS,
+  LEDGER_TYPE_RECHARGE,
 }

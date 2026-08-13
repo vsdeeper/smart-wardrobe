@@ -1,6 +1,9 @@
 import { View, Text } from "@tarojs/components";
+import { useDidShow } from "@tarojs/taro";
 import AppNavbar from "@/components/AppNavbar";
 import Main from "@/layouts/Main";
+import RechargeAmountForm from "./components/RechargeAmountForm";
+import { useRecharge } from "@/hooks/use-recharge";
 import "./index.scss";
 
 const PRICING_ROWS = [
@@ -22,13 +25,38 @@ const PRICING_ROWS = [
 ] as const;
 
 /**
- * 积分说明页：公示 AI 动作消耗规则（文案对齐 CREDITS.USER.md）。
+ * 积分说明页：充值入口 + 公示 AI 动作消耗规则（文案对齐 CREDITS.USER.md）。
  */
 function CreditsPricingPage() {
+  const {
+    amountYuan,
+    amountError,
+    previewCredits,
+    paying,
+    canPay,
+    refreshBalance,
+    handleAmountChange,
+    handlePay,
+  } = useRecharge();
+
+  useDidShow(() => {
+    void refreshBalance();
+  });
+
   return (
     <Main showTabbar={false} header={<AppNavbar showBack title="积分说明" />}>
       <Main.Scroll>
         <View className="credits-page">
+          <RechargeAmountForm
+            amountYuan={amountYuan}
+            amountError={amountError}
+            previewCredits={previewCredits}
+            paying={paying}
+            canPay={canPay}
+            onAmountChange={handleAmountChange}
+            onPay={handlePay}
+          />
+
           <Text className="credits-page__lead">
             凡衣橱只对 AI 相关动作收取积分；浏览衣橱、编辑单品、视觉日记、天气等日常功能不扣积分。
           </Text>
@@ -37,10 +65,7 @@ function CreditsPricingPage() {
             <Text className="credits-page__section-title">积分与金额</Text>
             <Text className="credits-page__p">
               <Text className="credits-page__em">1 积分 = ¥0.01</Text>
-              （面值）。
-            </Text>
-            <Text className="credits-page__p">
-              充值到账积分按档位公示；各动作消耗以本说明为准。
+              （面值）。充值实付金额按此换算入账。
             </Text>
           </View>
 
@@ -129,7 +154,7 @@ function CreditsPricingPage() {
               （一次性），用于体验 AI 识别生成与 AI 试穿。
             </Text>
             <Text className="credits-page__p">
-              微信支付充值即将开放；积分不可提现、不可兑换现金。
+              微信支付充值即将开放（待绑定个人商户）；积分不可提现、不可兑换现金。
             </Text>
             <Text className="credits-page__p">
               若因第三方服务成本变化需要调整积分规则，我们会在小程序内公告后再生效。公告时间可能因实际情况延后，请以届时说明为准。

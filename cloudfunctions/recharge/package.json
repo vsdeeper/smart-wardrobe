@@ -1,0 +1,9 @@
+{
+  "name": "recharge",
+  "version": "1.0.0",
+  "description": "积分充值下单与查单补单",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

@@ -6,8 +6,10 @@ import {
 import type { CreditBalance, CreditCloudError } from "@/types/credits";
 
 /** 积分不足时的统一提示文案 */
-export const CREDITS_INSUFFICIENT_TOAST =
-  "积分不足，请前往「我的」查看积分说明";
+export const CREDITS_INSUFFICIENT_TOAST = "积分不足，请前往充值";
+
+/** 积分充值页路径 */
+export const CREDITS_RECHARGE_PAGE = "/pages/credits-pricing/index";
 
 /**
  * 判断云函数/服务返回是否为积分不足。

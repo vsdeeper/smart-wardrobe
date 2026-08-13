@@ -23,9 +23,11 @@ import {
 import {
   canAffordTryOnModel,
   CREDITS_INSUFFICIENT_TOAST,
+  CREDITS_RECHARGE_PAGE,
   isInsufficientCreditsPayload,
   resolveCreditsToastMessage,
 } from "@/utils/credits";
+import { afterToastNavigate } from "@/utils/after-toast-navigate";
 import { getMediaPickerErrorToast } from "@/utils/media-picker-error";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Taro from "@tarojs/taro";
@@ -153,6 +155,9 @@ export function useMineTryOnModel() {
           icon: "none",
           duration: 3000,
         });
+        afterToastNavigate(() => {
+          Taro.navigateTo({ url: CREDITS_RECHARGE_PAGE });
+        });
         return;
       }
 
@@ -222,6 +227,9 @@ export function useMineTryOnModel() {
           : { message: "生成失败，请稍后重试", error: undefined };
       if (isInsufficientCreditsPayload(payload)) {
         Taro.showToast({ title: CREDITS_INSUFFICIENT_TOAST, icon: "none" });
+        afterToastNavigate(() => {
+          Taro.navigateTo({ url: CREDITS_RECHARGE_PAGE });
+        });
       } else {
         Taro.showToast({
           title: payload.message || "生成失败，请稍后重试",

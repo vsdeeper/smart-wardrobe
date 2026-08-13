@@ -153,17 +153,32 @@ wx.cloud
 | 字段        | 类型   | 说明                                           |
 | ----------- | ------ | ---------------------------------------------- |
 | `_openid`   | string | 用户隔离                                       |
-| `type`      | string | `grant` / `hold` / `settle` / `release`        |
+| `type`      | string | `grant` / `hold` / `settle` / `release` / `recharge` |
 | `amount`    | number | 变动积分                                       |
 | `action`    | string | 业务动作                                       |
-| `refId`     | string | 关联 ID                                        |
+| `refId`     | string | 关联 ID（充值时为 outTradeNo）                 |
 | `holdId`    | string | 预占 ID（可选）                                |
-| `note`      | string | 备注（如 `initial`）                           |
+| `note`      | string | 备注（如 `initial`、`wechat_pay`）             |
 | `createdAt` | number | 时间戳                                         |
+
+### 集合 `credit_orders` — 充值订单（仅云函数写）
+
+| 字段            | 类型   | 说明                                      |
+| --------------- | ------ | ----------------------------------------- |
+| `_openid`       | string | 用户隔离                                  |
+| `outTradeNo`    | string | 商户订单号（唯一）                        |
+| `totalFee`      | number | 实付金额（分）                            |
+| `credits`       | number | 到账积分（= totalFee）                    |
+| `status`        | string | `pending` \| `paid` \| `closed`           |
+| `transactionId` | string | 微信支付流水号（入账后）                  |
+| `createdAt`     | number | 创建时间                                  |
+| `paidAt`        | number | 入账时间（可选）                          |
+
+建议索引：`outTradeNo` 唯一；`_openid + createdAt`（降序）。
 
 ### 积分相关安全规则
 
-`user_credits`、`credit_holds`、`credit_ledger` 建议：
+`user_credits`、`credit_holds`、`credit_ledger`、`credit_orders` 建议：
 
 ```json
 {
@@ -439,6 +454,48 @@ wx.cloud
 积分扣费还挂载在 `process-recognition-batch`、`recommend-outfit`、`generate-tryon-image`、`generate-tryon-model`；修改 `shared/` 积分模块后须 sync 并**重新部署上述 5 个函数**。
 
 定价为「基础费 **10**（Seed 调用收到响应即收）+ 成果费 **50**/张（Seedream 成功出图）」，成功价统一 **60**（识别 / 模特 / 试穿）；任一 API 报错即免对应费用。
+
+## 6.6 recharge / pay-callback 云函数（积分充值）
+
+部署前须 `pnpm cf:sync-shared`（同步 `shared/utils/recharge-order.js`、`shared/constants/recharge.js` 等）。
+
+1. **先部署** `cloudfunctions/pay-callback`（支付结果通知）
+2. 再部署 `cloudfunctions/recharge`（下单 / 查单补单）
+
+### 控制台前置（真实收款）
+
+- 微信公众平台为小程序开通 **微信支付**，绑定**个人商户号**
+- 云开发控制台 → **设置** → **微信支付** → 绑定商户号
+- 云函数 `recharge` 环境变量（可选）：`WECHAT_PAY_MCH_ID` = 商户号（作为 `unifiedOrder` 的 `subMchId`）
+- 新建集合 `credit_orders`（见上文 schema）
+
+未配置 `WECHAT_PAY_MCH_ID` 或未开通微信支付时，`createOrder` 返回 `PAY_NOT_CONFIGURED`，小程序提示「微信支付即将开放」。
+
+### 调用示例
+
+```javascript
+// 创建订单（amountFen 单位：分，100 = ¥1）
+wx.cloud
+  .callFunction({
+    name: "recharge",
+    data: { action: "createOrder", amountFen: 600 },
+  })
+  .then(console.log)
+  .catch(console.error);
+
+// 支付成功后查单补单
+wx.cloud
+  .callFunction({
+    name: "recharge",
+    data: { action: "queryOrder", outTradeNo: "R..." },
+  })
+  .then(console.log)
+  .catch(console.error);
+```
+
+充值按 **1 积分 = ¥0.01** 入账；单次 **¥1–¥200**。入账幂等：`pay-callback` 与 `queryOrder` 重复调用不会重复加积分。
+
+修改 `shared/` 充值模块后须 sync 并**重新部署 `recharge` 与 `pay-callback`**。
 
 ## 7. 试穿相关云函数
 

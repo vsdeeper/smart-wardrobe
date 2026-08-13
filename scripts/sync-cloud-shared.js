@@ -65,6 +65,20 @@ const SHARED_SYNC_MAP = {
     'constants/credits.js',
   ],
   credits: ['utils/credits.js', 'constants/credits.js'],
+  recharge: [
+    'utils/env.js',
+    'utils/credits.js',
+    'utils/recharge-order.js',
+    'constants/credits.js',
+    'constants/recharge.js',
+  ],
+  'pay-callback': [
+    'utils/env.js',
+    'utils/credits.js',
+    'utils/recharge-order.js',
+    'constants/credits.js',
+    'constants/recharge.js',
+  ],
 }
 
 /** 各云函数需要同步的 providers 文件（相对 providers/） */

@@ -4,6 +4,7 @@ const {
   COLLECTION_USER_CREDITS,
   COLLECTION_CREDIT_HOLDS,
   COLLECTION_CREDIT_LEDGER,
+  LEDGER_TYPE_RECHARGE,
 } = require('../constants/credits')
 
 /**
@@ -300,6 +301,43 @@ async function release(db, openid, holdId) {
 }
 
 /**
+ * 充值入账：直接增加 balance，写入 recharge 流水（幂等由调用方保证）。
+ * @param {string} refId 订单号 outTradeNo
+ */
+async function addCredits(db, openid, amount, refId = '') {
+  if (!(amount > 0)) {
+    throw new Error('充值积分必须大于 0')
+  }
+
+  let lastError = null
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      const account = await ensureAccount(db, openid)
+      const balance =
+        typeof account.balance === 'number' ? account.balance : 0
+
+      await updateAccountWithLock(db, openid, account, {
+        balance: balance + amount,
+      })
+
+      await appendLedger(db, openid, {
+        type: LEDGER_TYPE_RECHARGE,
+        amount,
+        action: 'recharge',
+        refId,
+        note: 'wechat_pay',
+      })
+
+      return { added: amount }
+    } catch (err) {
+      lastError = err
+    }
+  }
+
+  throw lastError || new Error('充值入账失败')
+}
+
+/**
  * 查询余额摘要。
  */
 async function getBalanceSummary(db, openid) {
@@ -321,6 +359,7 @@ module.exports = {
   hold,
   settle,
   release,
+  addCredits,
   getBalanceSummary,
   ERROR_INSUFFICIENT,
 }

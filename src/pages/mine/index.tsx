@@ -136,7 +136,7 @@ function MinePage() {
               <Text className="mine-header__credits-balance">
                 积分 {creditAvailable ?? "--"}
               </Text>
-              <Text className="mine-header__credits-action">说明</Text>
+              <Text className="mine-header__credits-action">充值</Text>
             </View>
           </View>
 

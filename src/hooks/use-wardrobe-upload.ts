@@ -8,7 +8,9 @@ import { fetchCreditBalance } from "@/services/credits";
 import {
   canAffordRecognition,
   CREDITS_INSUFFICIENT_TOAST,
+  CREDITS_RECHARGE_PAGE,
 } from "@/utils/credits";
+import { afterToastNavigate } from "@/utils/after-toast-navigate";
 import {
   checkNeedPrivacyAuthorization,
   getMediaPickerErrorToast,
@@ -52,6 +54,9 @@ export function useWardrobeUpload({
           title: CREDITS_INSUFFICIENT_TOAST,
           icon: "none",
           duration: 3000,
+        });
+        afterToastNavigate(() => {
+          Taro.navigateTo({ url: CREDITS_RECHARGE_PAGE });
         });
         return;
       }
