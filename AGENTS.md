@@ -46,6 +46,8 @@ pnpm test
 pnpm test:watch
 ```
 
+前端用例放 `src/**/*.test.ts`；云函数 shared 单测放 `cloudfunctions/shared/**/*.test.js`（mock 辅助在 `cloudfunctions/shared/test-helpers/`，不在 sync 白名单内）。修改 shared 逻辑须带对应用例。
+
 `pnpm install` 会通过 `prepare` 脚本初始化 Husky；提交时 `pre-commit` 对暂存文件跑 lint-staged（ESLint + Prettier）并执行 `pnpm test`，`commit-msg` 由 commitlint 校验 Conventional Commits。
 
 完整平台命令以 `package.json` 的 `scripts` 为准。
@@ -84,14 +86,14 @@ types/                # 环境/global 类型声明（如 global.d.ts），非业
 
 全局非组件文件 **kebab-case**（`-` 连接）；组件目录 **PascalCase**（大驼峰）。
 
-| 职责 | 目录 | 文件命名 | 约束 |
-|------|------|----------|------|
-| 纯函数 / 格式化 | `src/utils/` | kebab-case，如 `format-date-time.ts` | 无 UI、无请求副作用 |
-| 跨模块类型 | `src/types/` | kebab-case，如 `wardrobe.ts` | 仅类型导出 |
-| 跨模块常量 | `src/constants/` | kebab-case，如 `wardrobe.ts` | 字面量、枚举配置 |
-| 可复用 hooks | `src/hooks/` | kebab-case，如 `use-weather.ts` | 导出名仍为 `useWeather` |
-| API / 云请求 | `src/services/` | kebab-case，如 `wardrobe.ts` | 不写 JSX |
-| 全局样式令牌 | `src/styles/` | 主题/变量 | 组件样式 colocation |
+| 职责            | 目录             | 文件命名                             | 约束                    |
+| --------------- | ---------------- | ------------------------------------ | ----------------------- |
+| 纯函数 / 格式化 | `src/utils/`     | kebab-case，如 `format-date-time.ts` | 无 UI、无请求副作用     |
+| 跨模块类型      | `src/types/`     | kebab-case，如 `wardrobe.ts`         | 仅类型导出              |
+| 跨模块常量      | `src/constants/` | kebab-case，如 `wardrobe.ts`         | 字面量、枚举配置        |
+| 可复用 hooks    | `src/hooks/`     | kebab-case，如 `use-weather.ts`      | 导出名仍为 `useWeather` |
+| API / 云请求    | `src/services/`  | kebab-case，如 `wardrobe.ts`         | 不写 JSX                |
+| 全局样式令牌    | `src/styles/`    | 主题/变量                            | 组件样式 colocation     |
 
 - **禁止**新建 `src/data/`、`common/`、`misc/` 等无归属目录。
 - 单组件/单页专属内容留在该目录内，勿提升到全局。
@@ -132,23 +134,23 @@ types/                # 环境/global 类型声明（如 global.d.ts），非业
 | --------------------------------------------------- | ---------------------------------------------------------------------------------------- |
 | 独立 UI 区块（卡片、Banner、表单段）且 JSX > ~40 行 | `pages/<page>/components/<Name>/index.tsx` + `index.scss`                                |
 | 同一 UI 被 ≥2 个页面使用                            | `src/components/<Name>/`（大驼峰，如 [`AppNavbar`](src/components/AppNavbar/index.tsx)） |
-| 可复用状态/副作用（分页、轮询、表单）               | `src/hooks/use-xxx.ts`（如 [`use-weather.ts`](src/hooks/use-weather.ts)）                      |
+| 可复用状态/副作用（分页、轮询、表单）               | `src/hooks/use-xxx.ts`（如 [`use-weather.ts`](src/hooks/use-weather.ts)）                |
 | 云函数 / HTTP / 数据库访问                          | `src/services/`（如 [`wardrobe.ts`](src/services/wardrobe.ts)）                          |
-| 无 UI 的纯计算/格式化                               | `src/utils/`（如 [`outfit-selection.ts`](src/utils/outfit-selection.ts)）                  |
-| 跨模块类型 / 常量                                   | `src/types/`、`src/constants/`（如 [`types/wardrobe.ts`](src/types/wardrobe.ts)）          |
+| 无 UI 的纯计算/格式化                               | `src/utils/`（如 [`outfit-selection.ts`](src/utils/outfit-selection.ts)）                |
+| 跨模块类型 / 常量                                   | `src/types/`、`src/constants/`（如 [`types/wardrobe.ts`](src/types/wardrobe.ts)）        |
 
 - **页面私有组件**：仅单页使用时放 `src/pages/<page>/components/<ComponentName>/`（大驼峰 + `index.tsx` / `index.scss`）；页面内 `import X from "./components/X"`。样式遵守上文「组件样式收窄」。
 - **平衡**：为可读性与职责分离而拆；一次任务若新增 >1 个独立 UI 块，优先抽组件。不要为 5–10 行 JSX 单独建目录；不要为「可能复用」提前抽到 `components/`（YAGNI）；不要在小修复中顺带大规模重构无关页面。
 
 ### 样式分层（必须遵守）
 
-| 文件                          | 职责                                                                                                                                                      |
-| ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/styles/theme.scss`       | 主题入口（薄文件）；变量定义在 `src/styles/theme/` 分层 partial，经 `_emit.scss` 聚合到 `:root, page` |
+| 文件                          | 职责                                                                                                                                                                                        |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/styles/theme.scss`       | 主题入口（薄文件）；变量定义在 `src/styles/theme/` 分层 partial，经 `_emit.scss` 聚合到 `:root, page`                                                                                       |
 | `src/styles/theme/`           | L0 `_palette.scss`（换主题改此）→ L1/L2 NutUI 基础/语义 → L3 `_nutui-components.scss`（NutUI 组件变量）→ L4 `_app-extensions.scss`（`.sw-*` 扩展）→ L5 `_layout-runtime.scss`（运行时布局） |
-| `src/app.scss`                | 全局样式：在 `@use "./styles/theme.scss"` 之后引入；`page` 系统字体、`.card` / `.chip` 等工具类、NutUI 组件**全局**覆写（如 `.nut-tabs-titles-button`）。 |
-| `src/pages/<page>/index.scss` | **仅**页面编排/布局/空态等，优先使用 `var(--nutui-*)`；自定义 `.sw-btn` / `.sw-field` 等用 L4 `--sw-*`；组件样式与组件同目录。 |
-| 组件 `index.scss`             | `layouts/`、`src/components/`、`pages/<page>/components/` 下各组件的 BEM/class，与组件同目录并由组件自行引入。                                           |
+| `src/app.scss`                | 全局样式：在 `@use "./styles/theme.scss"` 之后引入；`page` 系统字体、`.card` / `.chip` 等工具类、NutUI 组件**全局**覆写（如 `.nut-tabs-titles-button`）。                                   |
+| `src/pages/<page>/index.scss` | **仅**页面编排/布局/空态等，优先使用 `var(--nutui-*)`；自定义 `.sw-btn` / `.sw-field` 等用 L4 `--sw-*`；组件样式与组件同目录。                                                              |
+| 组件 `index.scss`             | `layouts/`、`src/components/`、`pages/<page>/components/` 下各组件的 BEM/class，与组件同目录并由组件自行引入。                                                                              |
 
 - `app.scss` 必须在任何 NutUI 样式之前 `@use` `theme.scss`，保证变量先生效。
 - **换主题**：只改 `src/styles/theme/_palette.scss` 中 `--sw-palette-*` 原始色值。
@@ -259,16 +261,16 @@ fix: 修复衣橱列表图片链接解析失败的问题
 
 `type` 取值（与本仓库历史提交保持一致）：
 
-| type       | 说明                                             |
-| ---------- | ------------------------------------------------ |
-| `feat`     | 新增功能                                         |
-| `fix`      | 修复 bug                                         |
-| `refactor` | 重构（不改变外部行为的代码结构调整）             |
-| `style`    | 样式/UI 调优（不涉及逻辑变更）                   |
-| `docs`     | 文档变更（如 `AGENTS.md`、`README.md`）          |
-| `chore`    | 构建配置、依赖、脚手架等杂项变更                 |
-| `perf`     | 性能优化                                         |
-| `test`     | 测试相关变更（Vitest 单元测试）|
+| type       | 说明                                    |
+| ---------- | --------------------------------------- |
+| `feat`     | 新增功能                                |
+| `fix`      | 修复 bug                                |
+| `refactor` | 重构（不改变外部行为的代码结构调整）    |
+| `style`    | 样式/UI 调优（不涉及逻辑变更）          |
+| `docs`     | 文档变更（如 `AGENTS.md`、`README.md`） |
+| `chore`    | 构建配置、依赖、脚手架等杂项变更        |
+| `perf`     | 性能优化                                |
+| `test`     | 测试相关变更（Vitest 单元测试）         |
 
 - 描述部分**用简体中文**，动词开头（如「添加」「修复」「更新」「移除」），概括本次改动做了什么、以及必要时说明为什么。
 - 一次 commit 聚焦一个主题；避免把多个不相关改动混在一条提交信息里。
@@ -287,4 +289,3 @@ fix: 修复衣橱列表图片链接解析失败的问题
 - **[PRODUCT.md](./PRODUCT.md)** — 注册表 `product`；用户（穿搭爱好者）、产品目的、品牌气质（有机温暖）、反参考、设计原则、无障碍
 - **[DESIGN.md](./DESIGN.md)** — 视觉体系「Botanica & Steel」：叶绿/钢蓝色板、Plus Jakarta Sans + Be Vietnam Pro、圆角与阴影令牌
 - **代码令牌** — [`src/styles/theme/`](src/styles/theme/)（L0 palette → L1/L2 `--nutui-*` → L3 组件 → L4 `--sw-*` 扩展），与 DESIGN.md 对齐；当前实现使用系统字体回退，西文字体未打包。
-
