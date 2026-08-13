@@ -1,7 +1,7 @@
 const cloud = require('wx-server-sdk')
 const { resolveImageUrls } = require('./utils/resolve-cloud-image')
 const { generateImage } = require('./utils/model-env')
-const { uploadSeedreamImageToCloud } = require('./utils/upload-generated-image')
+const { uploadGeneratedImageToCloud } = require('./utils/upload-generated-image')
 const { resolveOutfitReferenceUrl } = require('./utils/resolve-outfit-reference-url')
 const { buildTryonModelGenerationPrompt } = require('./constants/tryon-model-generation-rules')
 const {
@@ -150,7 +150,7 @@ exports.main = async (event) => {
         return { error: 'SEEDREAM_FAILED', message: 'Seedream 未返回可用图片' }
       }
 
-      const fileId = await uploadSeedreamImageToCloud(cloud, result, {
+      const fileId = await uploadGeneratedImageToCloud(cloud, result, {
         prefix: 'tryon-models',
         openid,
       })

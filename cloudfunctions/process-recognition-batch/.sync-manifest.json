@@ -10,9 +10,9 @@
     "utils/credits.js",
     "utils/env.js",
     "utils/model-env.js",
+    "utils/recognize-items.js",
     "utils/resolve-cloud-image.js",
     "utils/resolve-display-bg-url.js",
-    "utils/seed-recognize.js",
     "utils/upload-generated-image.js",
     "utils/wardrobe-display-pipeline.js"
   ]

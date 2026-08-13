@@ -4,6 +4,6 @@
     "providers/ark/chat.js",
     "utils/env.js",
     "utils/model-env.js",
-    "utils/seed-recognize.js"
+    "utils/recognize-items.js"
   ]
 }

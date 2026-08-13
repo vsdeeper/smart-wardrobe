@@ -1,9 +1,9 @@
 const { chatCompletions } = require('./model-env')
 
 /**
- * 调用 Seed 文本模型生成搭评。
+ * 调用文本模型生成搭评。
  */
-async function callSeedChat(systemPrompt, userPrompt) {
+async function callChat(systemPrompt, userPrompt) {
   try {
     const data = await chatCompletions({
       temperature: 0.3,
@@ -23,4 +23,4 @@ async function callSeedChat(systemPrompt, userPrompt) {
   }
 }
 
-module.exports = { callSeedChat }
+module.exports = { callChat }

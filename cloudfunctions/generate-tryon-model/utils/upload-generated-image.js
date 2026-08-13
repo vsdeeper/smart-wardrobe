@@ -35,7 +35,7 @@ function buildCloudPath(prefix, openid, index) {
   return `${prefix}/${openid}/${suffix}`
 }
 
-async function uploadSeedreamImageToCloud(cloud, imageResult, options = {}) {
+async function uploadGeneratedImageToCloud(cloud, imageResult, options = {}) {
   const { prefix = 'generated', openid, index } = options
   const cloudPath = buildCloudPath(prefix, openid, index)
 
@@ -58,6 +58,6 @@ async function uploadSeedreamImageToCloud(cloud, imageResult, options = {}) {
 module.exports = {
   uploadBase64ToCloud,
   uploadUrlToCloud,
-  uploadSeedreamImageToCloud,
+  uploadGeneratedImageToCloud,
   buildCloudPath,
 }

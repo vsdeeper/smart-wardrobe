@@ -1,7 +1,7 @@
 const cloud = require('wx-server-sdk')
 const { filterItemsByUserGender } = require('./constants/recognition-rules')
 const { resolveImageUrl } = require('./utils/resolve-cloud-image')
-const { recognizeItemsFromImage } = require('./utils/seed-recognize')
+const { recognizeItemsFromImage } = require('./utils/recognize-items')
 const {
   getModelApiKey,
   requireModelBaseUrl,

@@ -44,7 +44,7 @@ function getImageModel() {
   return model
 }
 
-function getArkCredentials() {
+function getModelCredentials() {
   return {
     apiKey: getModelApiKey(),
     baseUrl: requireModelBaseUrl(),
@@ -52,10 +52,10 @@ function getArkCredentials() {
 }
 
 /**
- * chat/completions：读环境变量并委托 ark/chat。
+ * chat/completions：读环境变量并委托当前供应商 chat 适配。
  */
 async function chatCompletions(options) {
-  const creds = getArkCredentials()
+  const creds = getModelCredentials()
   return chat.chatCompletions({
     ...creds,
     model: options.model || getChatModel(),
@@ -64,10 +64,10 @@ async function chatCompletions(options) {
 }
 
 /**
- * images/generations：读环境变量并委托 ark/images。
+ * images/generations：读环境变量并委托当前供应商 images 适配。
  */
 async function generateImages(options) {
-  const creds = getArkCredentials()
+  const creds = getModelCredentials()
   return images.generateImages({
     ...creds,
     model: options.model || getImageModel(),
@@ -76,7 +76,7 @@ async function generateImages(options) {
 }
 
 async function generateImage(options) {
-  const creds = getArkCredentials()
+  const creds = getModelCredentials()
   return images.generateImage({
     ...creds,
     model: options.model || getImageModel(),

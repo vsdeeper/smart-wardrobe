@@ -174,7 +174,7 @@ types/                # 环境/global 类型声明（如 global.d.ts），非业
 
 #### 运行时与请求
 
-- 云函数内发起**外部 HTTP 请求统一使用 Node 18 原生 `fetch()`**，与 [`cloudfunctions/recommend-outfit/utils/call-seed-chat.js`](cloudfunctions/recommend-outfit/utils/call-seed-chat.js) 保持一致。
+- 云函数内发起**外部 HTTP 请求统一使用 Node 18 原生 `fetch()`**，与 [`cloudfunctions/providers/ark/chat.js`](cloudfunctions/providers/ark/chat.js) 保持一致。
 - 各云函数 [`config.json`](cloudfunctions/weather/config.json) 须声明 `"runtime": "Nodejs18.15"`；部署后云端须为 Node 18（原生 `fetch` 可用且自动解压 Gzip）。
 - **禁止**使用 `require('https')` / `https.get`、旧版 `request` 库或 axios 等额外依赖（除非用户明确要求）。
 - 原因：`https.get` 需手动解压 Gzip，易导致 `Unexpected end of JSON input`。

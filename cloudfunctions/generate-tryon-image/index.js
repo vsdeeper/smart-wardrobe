@@ -2,7 +2,7 @@ const cloud = require('wx-server-sdk')
 const { resolveImageUrls } = require('./utils/resolve-cloud-image')
 const { generateImage } = require('./utils/model-env')
 const { buildTryonPrompt } = require('./constants/tryon-image-rules')
-const { uploadSeedreamImageToCloud } = require('./utils/upload-generated-image')
+const { uploadGeneratedImageToCloud } = require('./utils/upload-generated-image')
 const { resolveModelTemplateUrl } = require('./utils/resolve-model-template-url')
 const { resolvePoseUrl } = require('./utils/resolve-pose-url')
 const { resolveTryonBgUrl } = require('./utils/resolve-tryon-bg-url')
@@ -143,7 +143,7 @@ exports.main = async (event) => {
         return { error: 'SEEDREAM_FAILED', message: 'Seedream 未返回可用图片' }
       }
 
-      const coverFileId = await uploadSeedreamImageToCloud(cloud, result, {
+      const coverFileId = await uploadGeneratedImageToCloud(cloud, result, {
         prefix: 'tryon',
         openid,
       })

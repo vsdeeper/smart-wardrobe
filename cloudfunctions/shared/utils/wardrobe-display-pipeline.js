@@ -6,7 +6,7 @@ const {
 const { generateImages } = require('./model-env')
 const { resolveImageUrl } = require('./resolve-cloud-image')
 const { resolveDisplayBgUrl } = require('./resolve-display-bg-url')
-const { uploadSeedreamImageToCloud } = require('./upload-generated-image')
+const { uploadGeneratedImageToCloud } = require('./upload-generated-image')
 
 function createTempId() {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
@@ -65,7 +65,7 @@ async function generateDisplayImages(cloud, items, sourceUrl, openid, options = 
       continue
     }
     try {
-      const fileId = await uploadSeedreamImageToCloud(cloud, imageResult, {
+      const fileId = await uploadGeneratedImageToCloud(cloud, imageResult, {
         prefix,
         openid,
         index: i,

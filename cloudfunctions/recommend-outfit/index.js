@@ -7,7 +7,7 @@ const {
   buildSelectionFallbackRecommendation,
   isSelectionRecommendationValid,
 } = require('./constants/recommend-outfit-rules')
-const { callSeedChat } = require('./utils/call-seed-chat')
+const { callChat } = require('./utils/call-chat')
 const { summarizeWardrobe } = require('./utils/summarize-wardrobe')
 const { OUTFIT_BASE, OUTFIT_TOTAL, ERROR_INSUFFICIENT } = require('./constants/credits')
 const {
@@ -78,7 +78,7 @@ exports.main = async (event) => {
     let apiCompleted = false
     let fallbackErr = null
     try {
-      const content = await callSeedChat(
+      const content = await callChat(
         buildRecommendSystemPrompt(requestMode),
         buildRecommendUserPrompt(payload),
       )

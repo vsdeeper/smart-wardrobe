@@ -1,5 +1,5 @@
 const { resolveImageUrl } = require('./resolve-cloud-image')
-const { recognizeItemsFromImage } = require('./seed-recognize')
+const { recognizeItemsFromImage } = require('./recognize-items')
 const { filterItemsByUserGender } = require('../constants/recognition-rules')
 const { generateDisplayPreviewsForBatch } = require('./wardrobe-display-pipeline')
 

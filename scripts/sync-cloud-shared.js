@@ -15,7 +15,7 @@ const SHARED_SYNC_MAP = {
   'recognize-clothing': [
     'utils/env.js',
     'utils/model-env.js',
-    'utils/seed-recognize.js',
+    'utils/recognize-items.js',
     'constants/recognition-rules.js',
   ],
   'generate-wardrobe-display': [
@@ -33,7 +33,7 @@ const SHARED_SYNC_MAP = {
     'utils/model-env.js',
     'utils/credits.js',
     'utils/resolve-cloud-image.js',
-    'utils/seed-recognize.js',
+    'utils/recognize-items.js',
     'utils/upload-generated-image.js',
     'utils/wardrobe-display-pipeline.js',
     'utils/resolve-display-bg-url.js',

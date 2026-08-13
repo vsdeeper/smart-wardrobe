@@ -96,7 +96,7 @@ try {
 
 const {
   recognizeItemsFromImage,
-} = require("../cloudfunctions/shared/utils/seed-recognize");
+} = require("../cloudfunctions/shared/utils/recognize-items");
 const {
   filterItemsByUserGender,
   RECOGNITION_LIMITS,

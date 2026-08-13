@@ -1,6 +1,6 @@
 /**
  * 人物性别检测：调用视觉模型分析上传的本人照片，输出 gender 判定。
- * 调用方式与 seed-recognize.js 保持一致（OpenAI 兼容 /chat/completions）。
+ * 调用方式与 recognize-items.js 保持一致（OpenAI 兼容 /chat/completions）。
  */
 const {
   buildPersonGenderSystemPrompt,
