@@ -1,4 +1,4 @@
-const { resolveImageUrl } = require('./doubao-vision')
+const { resolveImageUrl } = require('./resolve-cloud-image')
 const { recognizeItemsFromImage } = require('./seed-recognize')
 const { filterItemsByUserGender } = require('../constants/recognition-rules')
 const { generateDisplayPreviewsForBatch } = require('./wardrobe-display-pipeline')
@@ -19,26 +19,12 @@ class RecognitionProcessError extends Error {
   }
 }
 
-async function processCoverImage(
-  cloud,
-  fileID,
-  userGender,
-  apiKey,
-  baseUrl,
-  seedModel,
-  openid,
-  onPhase,
-) {
+async function processCoverImage(cloud, fileID, userGender, openid, onPhase) {
   const imageUrl = await resolveImageUrl(cloud, fileID)
 
   let rawItems
   try {
-    rawItems = await recognizeItemsFromImage(
-      imageUrl,
-      apiKey,
-      baseUrl,
-      seedModel,
-    )
+    rawItems = await recognizeItemsFromImage(imageUrl)
   } catch (err) {
     // 第三方 API 报错（HTTP/网络/传输层）：识别调用未完成，整单免费
     if (err?.code === 'LLM_API_ERROR') {

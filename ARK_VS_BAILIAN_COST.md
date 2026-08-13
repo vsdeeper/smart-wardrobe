@@ -28,8 +28,8 @@
 
 | 能力 | 环境变量 | API | 用途 |
 |------|----------|-----|------|
-| **Seed 2.0 Lite**（或同级） | `DOUBAO_SEED_MODEL` | `POST …/chat/completions` | 识图抽 `items[]`、模特性别检测、搭评 JSON |
-| **Seedream 5.0** | `DOUBAO_VISION_MODEL` | `POST …/images/generations` | 单品展示图、试穿 Hero、本人模特图 |
+| **Seed 2.0 Lite**（或同级） | `CHAT_MODEL` | `POST …/chat/completions` | 识图抽 `items[]`、模特性别检测、搭评 JSON |
+| **Seedream 5.0** | `IMAGE_MODEL` | `POST …/images/generations` | 单品展示图、试穿 Hero、本人模特图 |
 
 出图尺寸：`providers/ark` → `VISION_SIZE = 1920×1920`（约 368 万像素）。  
 展示图上限：`DISPLAY_IMAGE_MAX_COUNT = 1`（一次识别最多 1 张成功展示图）。

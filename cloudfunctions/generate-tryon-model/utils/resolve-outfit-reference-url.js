@@ -1,4 +1,4 @@
-const { resolveImageUrls } = require('./doubao-vision')
+const { resolveImageUrls } = require('./resolve-cloud-image')
 const MODEL_TEMPLATE_FILE_IDS = require('../constants/model-template-file-ids')
 
 /**

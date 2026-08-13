@@ -5,7 +5,7 @@
  * 不走微信云函数 / fileID，不改动线上 wardrobe-display-pipeline。
  *
  * 用法：
- *   1. 复制 .env.local.example → .env.local，填入 DOUBAO_API_KEY、DOUBAO_SEED_MODEL、DOUBAO_VISION_MODEL 等
+ *   1. 复制 .env.local.example → .env.local，填入 MODEL_API_KEY、CHAT_MODEL、IMAGE_MODEL 等
  *   2. pnpm test:recognize-display --image <衣物图> [--bg <背景图>] [--gender male|female] [--out <目录>] [--limit <n>]
  *
  * 示例：
@@ -101,10 +101,11 @@ const {
   filterItemsByUserGender,
   RECOGNITION_LIMITS,
 } = require("../cloudfunctions/shared/constants/recognition-rules");
+const { generateImages } = require("../cloudfunctions/shared/utils/model-env");
 const {
-  generateSeedreamImages,
-} = require("../cloudfunctions/shared/utils/doubao-vision");
-const { requireEnv } = require("../cloudfunctions/shared/utils/env");
+  getChatModel,
+  getImageModel,
+} = require("../cloudfunctions/shared/utils/model-env");
 const ark = require("../cloudfunctions/providers/ark/constants");
 
 const OUTPUT_SIZE = ark.VISION_SIZE;
@@ -208,9 +209,9 @@ function printHelp() {
   --help, -h         显示此帮助
 
 环境变量（.env.local）:
-  DOUBAO_API_KEY、DOUBAO_API_BASE_URL
-  DOUBAO_SEED_MODEL（识别）、DOUBAO_VISION_MODEL（生图）
-  DOUBAO_SEED_TEMPERATURE（可选）
+  MODEL_PROVIDER=ark（可选，缺省 ark）
+  MODEL_API_KEY、MODEL_API_BASE_URL
+  CHAT_MODEL（识别）、IMAGE_MODEL（生图）
 
 输出:
   recognition.json   识别结果
@@ -361,29 +362,24 @@ async function main() {
     process.exit(1);
   }
 
-  if (!process.env.DOUBAO_API_KEY) {
+  if (!process.env.MODEL_API_KEY) {
     console.error(
-      "缺少 DOUBAO_API_KEY。请复制 .env.local.example 为 .env.local 后重试。",
+      "缺少 MODEL_API_KEY。请复制 .env.local.example 为 .env.local 后重试。",
     );
     process.exit(1);
   }
-  if (!process.env.DOUBAO_SEED_MODEL) {
+  try {
+    getChatModel();
+    getImageModel();
+  } catch (err) {
     console.error(
-      "缺少 DOUBAO_SEED_MODEL。请复制 .env.local.example 为 .env.local 后重试。",
-    );
-    process.exit(1);
-  }
-  if (!process.env.DOUBAO_VISION_MODEL) {
-    console.error(
-      "缺少 DOUBAO_VISION_MODEL。请复制 .env.local.example 为 .env.local 后重试。",
+      err instanceof Error ? err.message : String(err),
     );
     process.exit(1);
   }
 
-  const apiKey = process.env.DOUBAO_API_KEY;
-  const baseUrl = requireEnv("DOUBAO_API_BASE_URL");
-  const seedModel = process.env.DOUBAO_SEED_MODEL;
-  const visionModel = process.env.DOUBAO_VISION_MODEL;
+  const chatModel = getChatModel();
+  const imageModel = getImageModel();
 
   const imagePath = path.resolve(cli.image);
   const bgPath = path.resolve(cli.bg);
@@ -405,8 +401,8 @@ async function main() {
     gender: cli.gender ?? null,
     limit: cli.limit ?? null,
     models: {
-      seed: seedModel,
-      vision: visionModel,
+      chat: chatModel,
+      image: imageModel,
     },
     outputSize: OUTPUT_SIZE,
   };
@@ -418,12 +414,7 @@ async function main() {
   const recognizeStarted = Date.now();
   let rawItems;
   try {
-    rawItems = await recognizeItemsFromImage(
-      sourceDataUrl,
-      apiKey,
-      baseUrl,
-      seedModel,
-    );
+    rawItems = await recognizeItemsFromImage(sourceDataUrl);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     console.error(`识别失败: ${message}`);
@@ -482,7 +473,7 @@ async function main() {
 
     const genStarted = Date.now();
     try {
-      const { images } = await generateSeedreamImages({
+      const { images } = await generateImages({
         prompt,
         imageUrls: [bgDataUrl, sourceDataUrl],
         maxImages: 1,

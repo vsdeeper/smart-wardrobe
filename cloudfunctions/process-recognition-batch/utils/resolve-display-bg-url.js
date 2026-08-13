@@ -1,5 +1,5 @@
 const { CLOTHING_WALL_BG_FILE_ID } = require('../constants/display-bg-file-ids')
-const { resolveImageUrl } = require('./doubao-vision')
+const { resolveImageUrl } = require('./resolve-cloud-image')
 
 /**
  * 解析衣物单品展示图预设背景临时 URL。

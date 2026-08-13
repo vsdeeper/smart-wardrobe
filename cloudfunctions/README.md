@@ -200,7 +200,10 @@ pnpm cf:sync-shared
 | 源码路径 | 同步到函数包内 |
 | ---- | -------------- |
 | `shared/utils/env.js` | `./utils/env.js` |
-| `shared/utils/doubao-vision.js` | `./utils/doubao-vision.js` |
+| `shared/utils/model-env.js` | `./utils/model-env.js` |
+| `shared/utils/resolve-cloud-image.js` | `./utils/resolve-cloud-image.js` |
+| `providers/ark/chat.js` | `./providers/ark/chat.js` |
+| `providers/ark/images.js` | `./providers/ark/images.js` |
 | `shared/constants/recognition-rules.js` | `./constants/recognition-rules.js` |
 | `providers/ark/constants.js` | `./providers/ark/constants.js` |
 
@@ -232,12 +235,12 @@ tcb fn deploy recognize-clothing -e cloudbase-d6gkz1xlx9adbfe51
 
 | 变量名                | 说明                                               |
 | --------------------- | -------------------------------------------------- |
-| `DOUBAO_API_KEY`      | 火山方舟 API Key                                   |
-| `DOUBAO_API_BASE_URL` | 可选，默认 `https://ark.cn-beijing.volces.com/api/v3` |
-| `DOUBAO_SEED_MODEL` | 方舟 Seed 全模态模型 ID，示例 `doubao-seed-2-0-lite-260428`（从原图提取 `items[]` JSON） |
-| `DOUBAO_SEED_TEMPERATURE` | 可选，识别采样温度，默认 `0.1`，范围 0–2 |
+| `MODEL_PROVIDER` | 可选，模型供应商，当前仅 `ark`（缺省 `ark`）；`bailian` 尚未接入 |
+| `MODEL_API_KEY`      | 火山方舟 API Key                                   |
+| `MODEL_API_BASE_URL` | OpenAI 兼容基址，须含 `https://`，示例 `https://ark.cn-beijing.volces.com/api/v3` |
+| `CHAT_MODEL` | 方舟 Seed 全模态模型 ID，示例 `doubao-seed-2-0-lite-260428`（从原图提取 `items[]` JSON） |
 
-在[火山方舟控制台](https://console.volcengine.com/ark)模型列表中查看模型 ID，填入 `DOUBAO_SEED_MODEL`。
+在[火山方舟控制台](https://console.volcengine.com/ark)模型列表中查看模型 ID，填入 `CHAT_MODEL`。
 
 识别规则（typeName 白名单、Prompt 文案）见 [`cloudfunctions/shared/constants/recognition-rules.js`](shared/constants/recognition-rules.js)。修改 shared 后须 `pnpm cf:sync-shared` 并重新部署相关云函数。
 
@@ -265,7 +268,7 @@ wx.cloud
 | ------------ | -------- |
 | `145 code exit unexpected` | SDK 在 `cloud.init()` 前调用 `cloud.database()`；确保已部署最新代码后重新「上传并部署：云端安装依赖」 |
 | `Cannot find module './utils/...'` | 未 sync；见第 3 节，运行 `pnpm cf:sync-shared` 后重新部署 |
-| `未配置 DOUBAO_SEED_MODEL` | 未设置 Seed 全模态模型 ID 环境变量 |
+| `未配置 CHAT_MODEL` | 未设置 Seed 全模态模型 ID 环境变量 |
 | `未识别到衣物单品` | 原图中 Seed 未识别到衣物 |
 | `-504003` / 云函数超时 | 若仍出现在识别阶段，检查是否误将 Seedream 逻辑合并在本函数；生图超时见第 5 节 `generate-wardrobe-display` |
 | `无法获取图片临时链接` | fileID 无效或云存储权限问题 |
@@ -294,9 +297,9 @@ tcb fn deploy generate-wardrobe-display -e cloudbase-d6gkz1xlx9adbfe51
 
 | 变量名                | 说明                                               |
 | --------------------- | -------------------------------------------------- |
-| `DOUBAO_API_KEY`      | 火山方舟 API Key（可与其它云函数共用）             |
-| `DOUBAO_API_BASE_URL` | 可选，默认 `https://ark.cn-beijing.volces.com/api/v3` |
-| `DOUBAO_VISION_MODEL` | Seedream 模型 ID，示例 `doubao-seedream-5-0-260128`（按 items 从原图生成展示图） |
+| `MODEL_API_KEY`      | 火山方舟 API Key（可与其它云函数共用）             |
+| `MODEL_API_BASE_URL` | OpenAI 兼容基址，须含 `https://` |
+| `IMAGE_MODEL` | Seedream 模型 ID，示例 `doubao-seedream-5-0-260128`（按 items 从原图生成展示图） |
 
 出图尺寸由 [`providers/ark/constants.js`](../providers/ark/constants.js) 的 `VISION_SIZE`（`1920x1920`）静态配置，与试穿图共用，无需环境变量。
 
@@ -337,7 +340,7 @@ wx.cloud
 
 | 返回 message | 常见原因 |
 | ------------ | -------- |
-| `未配置 DOUBAO_VISION_MODEL` | 未在 `generate-wardrobe-display` 配置 Seedream 模型 ID |
+| `未配置 IMAGE_MODEL` | 未在 `generate-wardrobe-display` 配置 Seedream 模型 ID |
 | `SEEDREAM_FAILED` | Seedream 组图失败，检查模型 ID 与 prompt/参考图 |
 | `Seedream 未返回图片` | 模型无图像生成权限或组图参数不符合要求 |
 | `image size must be at least 3686400 pixels` | 展示图 `size` 过小；检查 `providers/ark` 的 `VISION_SIZE`（须 ≥3686400 像素） |
@@ -351,7 +354,7 @@ wx.cloud
 2. 微信开发者工具展开 `cloudfunctions/process-recognition-batch`
 3. 右键 → **上传并部署：云端安装依赖**
 
-环境变量与 `recognize-clothing` + `generate-wardrobe-display` 相同：`DOUBAO_API_KEY`、`DOUBAO_SEED_MODEL`、`DOUBAO_VISION_MODEL`（及可选 Base URL / Temperature）。出图尺寸见 `providers/ark/constants.js` 的 `VISION_SIZE`。
+环境变量与 `recognize-clothing` + `generate-wardrobe-display` 相同：`MODEL_PROVIDER`（可选）、`MODEL_API_KEY`、`MODEL_API_BASE_URL`、`CHAT_MODEL`、`IMAGE_MODEL`。出图尺寸见 `providers/ark/constants.js` 的 `VISION_SIZE`。
 
 **超时**：`config.json` 为 `timeout: 300`。
 
@@ -443,16 +446,17 @@ wx.cloud
 
 右键 `cloudfunctions/recommend-outfit` → **上传并部署：云端安装依赖**。
 
-调用火山方舟 Seed 文本模型：`POST {DOUBAO_API_BASE_URL}/chat/completions`。
+调用火山方舟 Seed 文本模型：`POST {MODEL_API_BASE_URL}/chat/completions`。
 
 环境变量（云开发控制台 → `recommend-outfit` → 配置）：
 
 | 变量名 | 说明 |
 | ------ | ---- |
-| `DOUBAO_API_KEY` | 火山方舟 API Key（可与其它云函数共用） |
-| `DOUBAO_API_BASE_URL` | 可选，默认 `https://ark.cn-beijing.volces.com/api/v3` |
-| `DOUBAO_SEED_MODEL` | Seed 模型 ID，可与 `recognize-clothing` 相同 |
-| `DOUBAO_SEED_TEMPERATURE` | 可选，采样温度，默认 `0.3`，范围 0–2 |
+| `MODEL_API_KEY` | 火山方舟 API Key（可与其它云函数共用） |
+| `MODEL_API_BASE_URL` | OpenAI 兼容基址，须含 `https://` |
+| `CHAT_MODEL` | Seed 模型 ID，可与 `recognize-clothing` 相同 |
+
+采样温度在代码内按场景写死（搭评 `0.3`），无需环境变量。
 
 入参：`weather`、`season`、`profile`、`wardrobeByType`（按 typeName 分组的衣橱摘要）。
 
@@ -462,7 +466,7 @@ LLM 失败时回退规则推荐 `buildFallbackRecommendation`。
 
 | 返回 message | 常见原因 |
 | ------------ | -------- |
-| `未配置 DOUBAO_SEED_MODEL` | 未设置 Seed 模型 ID 环境变量 |
+| `未配置 CHAT_MODEL` | 未设置 Seed 模型 ID 环境变量 |
 
 ### generate-tryon-image
 
@@ -470,7 +474,7 @@ LLM 失败时回退规则推荐 `buildFallbackRecommendation`。
 
 部署前若修改过 `cloudfunctions/shared/` 下 vision / 上传模块，或 `generate-tryon-image/constants/` 下试穿规则 / 模特配置，须先执行 `pnpm cf:sync-shared`（仅改 tryon 专属 constants 时可只部署该函数）。
 
-调用火山方舟 **Seedream 图像生成 API**：`POST {DOUBAO_API_BASE_URL}/images/generations`（非 `/chat/completions`）。参考图通过 `image` 传入，顺序为：**图1 = 模特人物参考**（锁定脸型/发型/肤质，姿势不沿用模板）→ **图2 = 姿势体态参考**（每次从姿势库随机选取，仅管站姿与构图，不得复制面孔与服装）→ **图3 = 场景背景参考**（固定浅色工作室场景）→ **图4 起 = 衣物参考图**；缺任一参考时动态前移序号并降级为文案描述。文本需求通过 `prompt` 描述。输出尺寸来自 [`providers/ark/constants.js`](../providers/ark/constants.js) 的 `VISION_SIZE`（`1920x1920`，1:1，满足 Seedream 5.0 像素下限）。
+调用火山方舟 **Seedream 图像生成 API**：`POST {MODEL_API_BASE_URL}/images/generations`（非 `/chat/completions`）。参考图通过 `image` 传入，顺序为：**图1 = 模特人物参考**（锁定脸型/发型/肤质，姿势不沿用模板）→ **图2 = 姿势体态参考**（每次从姿势库随机选取，仅管站姿与构图，不得复制面孔与服装）→ **图3 = 场景背景参考**（固定浅色工作室场景）→ **图4 起 = 衣物参考图**；缺任一参考时动态前移序号并降级为文案描述。文本需求通过 `prompt` 描述。输出尺寸来自 [`providers/ark/constants.js`](../providers/ark/constants.js) 的 `VISION_SIZE`（`1920x1920`，1:1，满足 Seedream 5.0 像素下限）。
 
 场景约定（`tryon-image-rules.js`）：始终**全身**生活方式构图；有姿势参考时沿用图2 体态，无则回退文案姿势；有背景参考时严格沿用图3 场景，无则回退浅色纹理墙描述；光影按 `weatherConditionCode` 叠在背景之上（缺省按晴天暖日光）。固定参考 + 衣物合计不超过 10 张。
 
@@ -478,9 +482,9 @@ LLM 失败时回退规则推荐 `buildFallbackRecommendation`。
 
 | 变量名 | 说明 |
 | ------ | ---- |
-| `DOUBAO_API_KEY` | 火山方舟 API Key（可与其它云函数共用） |
-| `DOUBAO_API_BASE_URL` | 可选，默认 `https://ark.cn-beijing.volces.com/api/v3` |
-| `DOUBAO_VISION_MODEL` | Hero 试穿图专用 Seedream 模型 ID，示例 `doubao-seedream-5-0-260128` |
+| `MODEL_API_KEY` | 火山方舟 API Key（可与其它云函数共用） |
+| `MODEL_API_BASE_URL` | OpenAI 兼容基址，须含 `https://` |
+| `IMAGE_MODEL` | Hero 试穿图专用 Seedream 模型 ID，示例 `doubao-seedream-5-0-260128` |
 
 入参：`imageFileIds[]`（衣物）、`heightCm`、`weightKg`、`gender`（`male`/`female`）、`pieceLabels[]`、`pieceTypeNames[]`、可选 `weatherConditionCode`（如 `sunny`/`rainy`，用于背景光影）。
 
@@ -492,7 +496,7 @@ LLM 失败时回退规则推荐 `buildFallbackRecommendation`。
 
 | 返回 message | 常见原因 |
 | ------------ | -------- |
-| `未配置 DOUBAO_VISION_MODEL` | 未在 `generate-tryon-image` 云函数配置 Hero 专用模型 ID |
+| `未配置 IMAGE_MODEL` | 未在 `generate-tryon-image` 云函数配置 Hero 专用模型 ID |
 | `Seedream 未返回图片` | 模型 ID 无图像生成权限，或 prompt/参考图不符合要求 |
 
 **固定模特模板（运行时按性别匹配）**：
@@ -533,7 +537,7 @@ LLM 失败时回退规则推荐 `buildFallbackRecommendation`。
 
 **离线生成模特模板候选图**（非云函数部署）：
 
-1. 在项目根目录 `.env.local` 配置与 `generate-tryon-image` 相同的 `DOUBAO_API_KEY`、`DOUBAO_VISION_MODEL`（脚本固定竖版 `1600x2304`）。
+1. 在项目根目录 `.env.local` 配置与 `generate-tryon-image` 相同的 `MODEL_API_KEY`、`IMAGE_MODEL`（脚本固定竖版 `1600x2304`）。
 2. 执行 `pnpm generate:model-templates`，默认生成 `female-standard` 的 3 张变体，输出至 `output/models/`（如 `female-standard-01-1920.jpg`）。
 3. 可选 CLI 参数（直接追加在 `pnpm generate:model-templates` 后）：
 
@@ -557,14 +561,14 @@ LLM 失败时回退规则推荐 `buildFallbackRecommendation`。
 
 | 变量名 | 说明 |
 | ------ | ---- |
-| `DOUBAO_API_KEY` | 火山方舟 API Key（可与其它云函数共用） |
-| `DOUBAO_API_BASE_URL` | 可选，默认 `https://ark.cn-beijing.volces.com/api/v3` |
-| `DOUBAO_VISION_MODEL` | Seedream 模型 ID，用于生成模特图 |
-| `DOUBAO_SEED_MODEL` | 视觉理解模型 ID（与 `process-recognition-batch` 相同），用于人物性别检测；**漏配会导致性别识别不可用、生成被全量阻断** |
+| `MODEL_API_KEY` | 火山方舟 API Key（可与其它云函数共用） |
+| `MODEL_API_BASE_URL` | OpenAI 兼容基址，须含 `https://` |
+| `IMAGE_MODEL` | Seedream 模型 ID，用于生成模特图 |
+| `CHAT_MODEL` | 视觉理解模型 ID（与 `process-recognition-batch` 相同），用于人物性别检测；**漏配会导致性别识别不可用、生成被全量阻断** |
 
 入参：`sourceFileId`（本人照片 fileID）、`gender`（资料性别 `male`/`female`）。成功返回 `{ fileId, coverUrl, gender }`；`gender` 为生成时检测的人物性别，前端写入 `customTryOnModels[].gender` 供试穿一致性校验。
 
-**严格性别校验**：出图前调用 `DOUBAO_SEED_MODEL` 检测照片人物性别，仅「确定性别 + 置信度 ≥ 0.7 + 与资料性别一致」放行；明确相反 → `{ error: 'GENDER_MISMATCH', message: '照片与您的性别不符，请更换照片' }`；无法识别 / 低置信 / 检测异常 / 缺模型 → `{ error: 'GENDER_UNKNOWN', ... }`。阻断时检测调用已完成收**基础费 10**（检测调用报错 / 缺配置则免费），生成费不产生。
+**严格性别校验**：出图前调用 `CHAT_MODEL` 检测照片人物性别，仅「确定性别 + 置信度 ≥ 0.7 + 与资料性别一致」放行；明确相反 → `{ error: 'GENDER_MISMATCH', message: '照片与您的性别不符，请更换照片' }`；无法识别 / 低置信 / 检测异常 / 缺模型 → `{ error: 'GENDER_UNKNOWN', ... }`。阻断时检测调用已完成收**基础费 10**（检测调用报错 / 缺配置则免费），生成费不产生。
 
 **超时**：`config.json` 为 `timeout: 300`（检测 + 生图耗时较长）。
 

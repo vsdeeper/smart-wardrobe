@@ -1,5 +1,5 @@
 const { LIGHT_SCENE_BG_FILE_ID } = require('../constants/tryon-bg-file-ids')
-const { resolveImageUrls } = require('./doubao-vision')
+const { resolveImageUrls } = require('./resolve-cloud-image')
 
 /**
  * 解析试穿场景背景临时 URL。

@@ -67,7 +67,7 @@ smart-wardrobe/
 │   └── app.config.ts       # 路由与窗口配置
 ├── cloudfunctions/         # 微信云函数
 │   ├── shared/             # 跨函数共享源码（utils/、constants/）
-│   ├── providers/          # 第三方静态配置（如 ark/constants.js）
+│   ├── providers/          # 供应商适配（如 ark/chat.js、ark/images.js）
 │   ├── weather/            # 各云函数：index.js 仅编排；utils/、constants/ 为专属或 sync 注入
 │   └── …/
 ├── scripts/

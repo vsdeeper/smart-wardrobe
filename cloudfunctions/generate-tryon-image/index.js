@@ -1,8 +1,6 @@
 const cloud = require('wx-server-sdk')
-const {
-  resolveImageUrls,
-  generateSeedreamImage,
-} = require('./utils/doubao-vision')
+const { resolveImageUrls } = require('./utils/resolve-cloud-image')
+const { generateImage } = require('./utils/model-env')
 const { buildTryonPrompt } = require('./constants/tryon-image-rules')
 const { uploadSeedreamImageToCloud } = require('./utils/upload-generated-image')
 const { resolveModelTemplateUrl } = require('./utils/resolve-model-template-url')
@@ -122,7 +120,7 @@ exports.main = async (event) => {
     const imageUrls = [...fixedRefs, ...clothingUrls.slice(0, maxClothing)]
 
     try {
-      const result = await generateSeedreamImage({
+      const result = await generateImage({
         prompt: buildTryonPrompt({
           heightCm,
           weightKg,

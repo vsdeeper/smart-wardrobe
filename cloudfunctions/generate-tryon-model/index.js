@@ -1,8 +1,6 @@
 const cloud = require('wx-server-sdk')
-const {
-  resolveImageUrls,
-  generateSeedreamImage,
-} = require('./utils/doubao-vision')
+const { resolveImageUrls } = require('./utils/resolve-cloud-image')
+const { generateImage } = require('./utils/model-env')
 const { uploadSeedreamImageToCloud } = require('./utils/upload-generated-image')
 const { resolveOutfitReferenceUrl } = require('./utils/resolve-outfit-reference-url')
 const { buildTryonModelGenerationPrompt } = require('./constants/tryon-model-generation-rules')
@@ -17,7 +15,12 @@ const {
   release,
   ERROR_INSUFFICIENT: CREDITS_INSUFFICIENT,
 } = require('./utils/credits')
-const { requireEnv } = require('./utils/env')
+const {
+  getModelApiKey,
+  requireModelBaseUrl,
+  getChatModel,
+  getImageModel,
+} = require('./utils/model-env')
 const {
   analyzePersonGender,
   resolveGenderBlock,
@@ -33,37 +36,22 @@ const db = cloud.database()
  * chargeBase：性别检测 API 是否已完成（收到 200 响应）→ 阻断时据此决定是否收基础费。
  */
 async function resolvePersonGenderGuard(imageUrl, profileGender) {
-  let baseUrl
   try {
-    baseUrl = requireEnv('DOUBAO_API_BASE_URL')
+    getModelApiKey()
+    requireModelBaseUrl()
+    getChatModel()
   } catch (err) {
-    console.warn('[generate-tryon-model] 缺 DOUBAO_API_BASE_URL:', err)
+    console.warn('[generate-tryon-model] 模型配置缺失，性别识别不可用:', err)
     return {
       blocked: true,
       code: 'GENDER_UNKNOWN',
       message: '性别识别暂不可用，请稍后重试',
-      chargeBase: false, // 未产生 API 调用，免基础费
-    }
-  }
-
-  const seedModel = process.env.DOUBAO_SEED_MODEL
-  if (!seedModel) {
-    console.warn('[generate-tryon-model] 未配置 DOUBAO_SEED_MODEL，性别识别不可用')
-    return {
-      blocked: true,
-      code: 'GENDER_UNKNOWN',
-      message: '性别识别暂不可用，请稍后重试',
-      chargeBase: false, // 未产生 API 调用，免基础费
+      chargeBase: false,
     }
   }
 
   try {
-    const analysis = await analyzePersonGender({
-      imageUrl,
-      apiKey: process.env.DOUBAO_API_KEY,
-      baseUrl,
-      model: seedModel,
-    })
+    const analysis = await analyzePersonGender({ imageUrl })
     const block = resolveGenderBlock(analysis, profileGender)
     const detectedGender =
       analysis.gender === 'male' || analysis.gender === 'female'
@@ -150,7 +138,7 @@ exports.main = async (event) => {
     const imageUrls = outfitUrl ? [sourceUrl, outfitUrl] : [sourceUrl]
 
     try {
-      const result = await generateSeedreamImage({
+      const result = await generateImage({
         prompt: buildTryonModelGenerationPrompt(),
         imageUrls,
       })

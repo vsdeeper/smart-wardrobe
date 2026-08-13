@@ -2,9 +2,11 @@
   "files": [
     "constants/credits.js",
     "providers/ark/constants.js",
+    "providers/ark/images.js",
     "utils/credits.js",
-    "utils/doubao-vision.js",
     "utils/env.js",
+    "utils/model-env.js",
+    "utils/resolve-cloud-image.js",
     "utils/upload-generated-image.js"
   ]
 }

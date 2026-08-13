@@ -167,7 +167,7 @@ types/                # 环境/global 类型声明（如 global.d.ts），非业
 
 #### 目录约定
 
-- **跨函数共享**（源码真相）：[`cloudfunctions/shared/`](cloudfunctions/shared/)（`utils/`、`constants/`）与 [`cloudfunctions/providers/`](cloudfunctions/providers/)（第三方静态配置，如 `ark/constants.js`）；文件 **kebab-case**；禁止再建 `cloudfunctions/common/`。
+- **跨函数共享**（源码真相）：[`cloudfunctions/shared/`](cloudfunctions/shared/)（`utils/`、`constants/`）与 [`cloudfunctions/providers/`](cloudfunctions/providers/)（**供应商适配**：静态配置 + HTTP 封装，如 `ark/chat.js`、`ark/images.js`）；文件 **kebab-case**；禁止再建 `cloudfunctions/common/`。
 - **单函数专属**：`cloudfunctions/<fn>/utils/`、`constants/`；`index.js` **仅编排**（`cloud.init` + `exports.main`），业务逻辑下沉 utils/constants。
 - **部署前同步**：修改 `shared/` 或 `providers/` 后执行 `pnpm cf:sync-shared`，复制进各函数包的 `./utils/`、`./constants/`、`./providers/`（由 `.sync-manifest.json` 追踪同步文件）。
 - 主识别路径：`process-recognition-batch`（异步批次）；`recognize-clothing` / `generate-wardrobe-display` 为同一套 shared 的薄封装 / 调试入口。
@@ -179,7 +179,7 @@ types/                # 环境/global 类型声明（如 global.d.ts），非业
 - **禁止**使用 `require('https')` / `https.get`、旧版 `request` 库或 axios 等额外依赖（除非用户明确要求）。
 - 原因：`https.get` 需手动解压 Gzip，易导致 `Unexpected end of JSON input`。
 - GET：`const res = await fetch(url)` → 检查 `res.ok` → `await res.text()` / `res.json()`。
-- POST：见 recommend-outfit 的 `callSeedChat`：`fetch(url, { method, headers, body })`。
+- POST：见 [`cloudfunctions/providers/ark/chat.js`](cloudfunctions/providers/ark/chat.js) / [`images.js`](cloudfunctions/providers/ark/images.js)（经 `shared/utils/model-env.js` 读 `MODEL_*` / `CHAT_MODEL` / `IMAGE_MODEL`）。
 - 环境变量中的 API Host **必须含 `https://` 协议前缀**；Key 仅配在云函数环境变量，勿写入小程序端或提交 `.env`。
 - 和风天气：Geo / Weather / Air **共用控制台分配的单一 API Host**；不同 endpoint 参数位置不同，勿假设统一格式：
   - Geo：`/geo/v2/city/lookup?location=经度,纬度`

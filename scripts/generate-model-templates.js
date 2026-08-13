@@ -2,7 +2,7 @@
  * 离线生成模特模板候选图（调用 Seedream，与 generate-tryon-image 共用配置）
  *
  * 用法：
- *   1. 复制 .env.local.example → .env.local，填入 DOUBAO_API_KEY 等
+ *   1. 复制 .env.local.example → .env.local，填入 MODEL_API_KEY 等
  *   2. pnpm generate:model-templates [--preset <id>] [--variant <n>]
  *
  * 示例：
@@ -49,9 +49,8 @@ try {
   // dotenv 未安装时依赖上方 loadEnvFile 或 shell 环境变量
 }
 
-const {
-  generateSeedreamImage,
-} = require("../cloudfunctions/shared/utils/doubao-vision");
+const { generateImage } = require("../cloudfunctions/shared/utils/model-env");
+const { getImageModel } = require("../cloudfunctions/shared/utils/model-env");
 const {
   MODEL_TEMPLATE_SIZE,
   listModelTemplatePresets,
@@ -179,16 +178,16 @@ async function main() {
     process.exit(1);
   }
 
-  if (!process.env.DOUBAO_API_KEY) {
+  if (!process.env.MODEL_API_KEY) {
     console.error(
-      "缺少 DOUBAO_API_KEY。请复制 .env.local.example 为 .env.local，填入云函数 generate-tryon-image 的环境变量后重试。"
+      "缺少 MODEL_API_KEY。请复制 .env.local.example 为 .env.local，填入云函数 generate-tryon-image 的环境变量后重试。"
     );
     process.exit(1);
   }
-  if (!process.env.DOUBAO_VISION_MODEL) {
-    console.error(
-      "缺少 DOUBAO_VISION_MODEL。请复制 .env.local.example 为 .env.local，填入云函数 generate-tryon-image 的环境变量后重试。"
-    );
+  try {
+    getImageModel();
+  } catch (err) {
+    console.error(err instanceof Error ? err.message : String(err));
     process.exit(1);
   }
 
@@ -211,7 +210,7 @@ async function main() {
     console.log(`\n[${i + 1}/${jobs.length}] 生成 ${job.id}…`);
 
     try {
-      const result = await generateSeedreamImage({
+      const result = await generateImage({
         prompt: job.prompt,
         imageUrls: [],
         size: TEMPLATE_OUTPUT_SIZE,

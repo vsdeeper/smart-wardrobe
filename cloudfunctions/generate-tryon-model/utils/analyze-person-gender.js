@@ -7,6 +7,7 @@ const {
   PERSON_GENDER_USER_PROMPT,
   BLOCK_CONFIDENCE_THRESHOLD,
 } = require('../constants/person-gender-rules')
+const { chatCompletions } = require('./model-env')
 
 /** 去除 Markdown 代码块围栏 */
 function stripCodeFence(text) {
@@ -90,45 +91,30 @@ function normalizeGender(raw) {
  * @returns {Promise<{ gender: 'male'|'female'|'unknown', confidence: number, reason: string }>}
  * LLM 调用或解析失败时抛错，由调用方 catch 后转为阻断。
  */
-async function analyzePersonGender({ imageUrl, apiKey, baseUrl, model }) {
-  let response
+async function analyzePersonGender({ imageUrl }) {
+  let data
   try {
-    response = await fetch(`${baseUrl}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model,
-        temperature: 0.1,
-        response_format: { type: 'json_object' },
-        messages: [
-          { role: 'system', content: buildPersonGenderSystemPrompt() },
-          {
-            role: 'user',
-            content: [
-              { type: 'image_url', image_url: { url: imageUrl } },
-              { type: 'text', text: PERSON_GENDER_USER_PROMPT },
-            ],
-          },
-        ],
-      }),
+    data = await chatCompletions({
+      temperature: 0.1,
+      responseFormat: { type: 'json_object' },
+      messages: [
+        { role: 'system', content: buildPersonGenderSystemPrompt() },
+        {
+          role: 'user',
+          content: [
+            { type: 'image_url', image_url: { url: imageUrl } },
+            { type: 'text', text: PERSON_GENDER_USER_PROMPT },
+          ],
+        },
+      ],
     })
   } catch (err) {
-    // 网络/超时等传输层失败：API 未完成，标记供调用方免收基础费
+    if (err?.code === 'LLM_API_ERROR') {
+      throw err
+    }
     const e = err instanceof Error ? err : new Error(String(err))
     e.code = 'LLM_API_ERROR'
     throw e
-  }
-
-  const data = await response.json()
-  if (!response.ok) {
-    const errMsg =
-      data?.error?.message || data?.message || `HTTP ${response.status}`
-    const err = new Error(errMsg)
-    err.code = 'LLM_API_ERROR'
-    throw err
   }
 
   const content = data?.choices?.[0]?.message?.content ?? ''

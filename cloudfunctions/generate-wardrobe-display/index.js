@@ -2,6 +2,11 @@ const cloud = require('wx-server-sdk')
 const { DISPLAY_IMAGE_MAX_COUNT } = require('./constants/item-display-rules')
 const { runWardrobeDisplayPipeline } = require('./utils/wardrobe-display-pipeline')
 const { normalizeItemsInput } = require('./utils/normalize-items')
+const {
+  getModelApiKey,
+  requireModelBaseUrl,
+  getImageModel,
+} = require('./utils/model-env')
 
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 
@@ -19,11 +24,13 @@ exports.main = async (event) => {
       return { error: 'NO_OPENID', message: '无法获取用户身份' }
     }
 
-    if (!process.env.DOUBAO_API_KEY) {
-      return { error: 'PROVIDER_CONFIG', message: '未配置 DOUBAO_API_KEY 环境变量' }
-    }
-    if (!process.env.DOUBAO_VISION_MODEL) {
-      return { error: 'PROVIDER_CONFIG', message: '未配置 DOUBAO_VISION_MODEL 环境变量' }
+    try {
+      getModelApiKey()
+      requireModelBaseUrl()
+      getImageModel()
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err)
+      return { error: 'PROVIDER_CONFIG', message: `${message} 环境变量` }
     }
 
     const items = normalizeItemsInput(rawItems)

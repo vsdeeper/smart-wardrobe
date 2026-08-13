@@ -1,3 +1,0 @@
-const DEFAULT_TEMPERATURE = 0.3
-
-module.exports = { DEFAULT_TEMPERATURE }

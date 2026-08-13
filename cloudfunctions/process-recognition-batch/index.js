@@ -8,7 +8,12 @@ const {
   processCoverImage,
   RecognitionProcessError,
 } = require('./utils/process-cover-image')
-const { requireEnv } = require('./utils/env')
+const {
+  getModelApiKey,
+  requireModelBaseUrl,
+  getChatModel,
+  getImageModel,
+} = require('./utils/model-env')
 const {
   RECOGNIZE_BASE,
   DISPLAY_IMAGE,
@@ -66,27 +71,15 @@ exports.main = async (event) => {
       return { error: 'NO_OPENID', message: '无法获取用户身份' }
     }
 
-    const apiKey = process.env.DOUBAO_API_KEY
-    const baseUrl = requireEnv('DOUBAO_API_BASE_URL')
-    const seedModel = process.env.DOUBAO_SEED_MODEL
-
-    if (!apiKey) {
-      await failBatch(batchId, '未配置 DOUBAO_API_KEY 环境变量')
-      return { error: 'PROVIDER_CONFIG', message: '未配置 DOUBAO_API_KEY 环境变量' }
-    }
-    if (!seedModel) {
-      await failBatch(batchId, '未配置 DOUBAO_SEED_MODEL 环境变量')
-      return {
-        error: 'PROVIDER_CONFIG',
-        message: '未配置 DOUBAO_SEED_MODEL 环境变量',
-      }
-    }
-    if (!process.env.DOUBAO_VISION_MODEL) {
-      await failBatch(batchId, '未配置 DOUBAO_VISION_MODEL 环境变量')
-      return {
-        error: 'PROVIDER_CONFIG',
-        message: '未配置 DOUBAO_VISION_MODEL 环境变量',
-      }
+    try {
+      getModelApiKey()
+      requireModelBaseUrl()
+      getChatModel()
+      getImageModel()
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err)
+      await failBatch(batchId, `${message} 环境变量`)
+      return { error: 'PROVIDER_CONFIG', message: `${message} 环境变量` }
     }
 
     const docRes = await db.collection(COLLECTION).doc(batchId).get()
@@ -137,9 +130,6 @@ exports.main = async (event) => {
         cloud,
         coverFileId,
         userGender,
-        apiKey,
-        baseUrl,
-        seedModel,
         openid,
         () =>
           updateBatch(batchId, {

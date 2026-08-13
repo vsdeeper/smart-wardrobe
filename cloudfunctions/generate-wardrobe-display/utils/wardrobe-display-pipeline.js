@@ -3,7 +3,8 @@ const {
   DISPLAY_IMAGE_MAX_COUNT,
   selectItemsForDisplayGeneration,
 } = require('../constants/item-display-rules')
-const { generateSeedreamImages, resolveImageUrl } = require('./doubao-vision')
+const { generateImages } = require('./model-env')
+const { resolveImageUrl } = require('./resolve-cloud-image')
 const { resolveDisplayBgUrl } = require('./resolve-display-bg-url')
 const { uploadSeedreamImageToCloud } = require('./upload-generated-image')
 
@@ -46,7 +47,7 @@ async function generateDisplayImages(cloud, items, sourceUrl, openid, options = 
     )
   }
 
-  const { images } = await generateSeedreamImages({
+  const { images } = await generateImages({
     prompt: buildItemsDisplayPrompt(displayItems, { hasBgRef }),
     imageUrls,
     maxImages: count,

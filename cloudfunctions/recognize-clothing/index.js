@@ -1,8 +1,12 @@
 const cloud = require('wx-server-sdk')
 const { filterItemsByUserGender } = require('./constants/recognition-rules')
-const { resolveImageUrl } = require('./utils/doubao-vision')
+const { resolveImageUrl } = require('./utils/resolve-cloud-image')
 const { recognizeItemsFromImage } = require('./utils/seed-recognize')
-const { requireEnv } = require('./utils/env')
+const {
+  getModelApiKey,
+  requireModelBaseUrl,
+  getChatModel,
+} = require('./utils/model-env')
 
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 
@@ -20,19 +24,17 @@ exports.main = async (event) => {
       return { error: 'NO_OPENID', message: '无法获取用户身份' }
     }
 
-    const apiKey = process.env.DOUBAO_API_KEY
-    const baseUrl = requireEnv('DOUBAO_API_BASE_URL')
-    const seedModel = process.env.DOUBAO_SEED_MODEL
-
-    if (!apiKey) {
-      return { error: 'PROVIDER_CONFIG', message: '未配置 DOUBAO_API_KEY 环境变量' }
-    }
-    if (!seedModel) {
-      return { error: 'PROVIDER_CONFIG', message: '未配置 DOUBAO_SEED_MODEL 环境变量' }
+    try {
+      getModelApiKey()
+      requireModelBaseUrl()
+      getChatModel()
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err)
+      return { error: 'PROVIDER_CONFIG', message: `${message} 环境变量` }
     }
 
     const imageUrl = await resolveImageUrl(cloud, fileID)
-    const rawItems = await recognizeItemsFromImage(imageUrl, apiKey, baseUrl, seedModel)
+    const rawItems = await recognizeItemsFromImage(imageUrl)
     const { items, filteredCount } = filterItemsByUserGender(rawItems, userGender)
 
     if (items.length === 0) {

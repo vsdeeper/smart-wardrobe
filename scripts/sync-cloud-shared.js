@@ -14,12 +14,14 @@ const MANIFEST_NAME = '.sync-manifest.json'
 const SHARED_SYNC_MAP = {
   'recognize-clothing': [
     'utils/env.js',
+    'utils/model-env.js',
     'utils/seed-recognize.js',
     'constants/recognition-rules.js',
   ],
   'generate-wardrobe-display': [
     'utils/env.js',
-    'utils/doubao-vision.js',
+    'utils/model-env.js',
+    'utils/resolve-cloud-image.js',
     'utils/upload-generated-image.js',
     'utils/wardrobe-display-pipeline.js',
     'utils/resolve-display-bg-url.js',
@@ -28,8 +30,9 @@ const SHARED_SYNC_MAP = {
   ],
   'process-recognition-batch': [
     'utils/env.js',
+    'utils/model-env.js',
     'utils/credits.js',
-    'utils/doubao-vision.js',
+    'utils/resolve-cloud-image.js',
     'utils/seed-recognize.js',
     'utils/upload-generated-image.js',
     'utils/wardrobe-display-pipeline.js',
@@ -41,28 +44,41 @@ const SHARED_SYNC_MAP = {
   ],
   'generate-tryon-image': [
     'utils/env.js',
+    'utils/model-env.js',
     'utils/credits.js',
-    'utils/doubao-vision.js',
+    'utils/resolve-cloud-image.js',
     'utils/upload-generated-image.js',
     'constants/credits.js',
   ],
   'generate-tryon-model': [
     'utils/env.js',
+    'utils/model-env.js',
     'utils/credits.js',
-    'utils/doubao-vision.js',
+    'utils/resolve-cloud-image.js',
     'utils/upload-generated-image.js',
     'constants/credits.js',
   ],
-  'recommend-outfit': ['utils/env.js', 'utils/credits.js', 'constants/credits.js'],
+  'recommend-outfit': [
+    'utils/env.js',
+    'utils/model-env.js',
+    'utils/credits.js',
+    'constants/credits.js',
+  ],
   credits: ['utils/credits.js', 'constants/credits.js'],
 }
 
 /** 各云函数需要同步的 providers 文件（相对 providers/） */
 const PROVIDERS_SYNC_MAP = {
-  'generate-wardrobe-display': ['ark/constants.js'],
-  'process-recognition-batch': ['ark/constants.js'],
-  'generate-tryon-image': ['ark/constants.js'],
-  'generate-tryon-model': ['ark/constants.js'],
+  'recognize-clothing': ['ark/chat.js'],
+  'recommend-outfit': ['ark/chat.js'],
+  'generate-wardrobe-display': ['ark/constants.js', 'ark/images.js'],
+  'generate-tryon-image': ['ark/constants.js', 'ark/images.js'],
+  'generate-tryon-model': ['ark/constants.js', 'ark/chat.js', 'ark/images.js'],
+  'process-recognition-batch': [
+    'ark/constants.js',
+    'ark/chat.js',
+    'ark/images.js',
+  ],
 }
 
 function readManifest(fnDir) {
@@ -85,14 +101,11 @@ function writeManifest(fnDir, files) {
   )
 }
 
-function transformSharedContent(rel, content) {
-  if (rel === 'utils/doubao-vision.js') {
-    return content.replace(
-      "require('../../providers/ark/constants')",
-      "require('../providers/ark/constants')",
-    )
-  }
-  return content
+function transformSharedContent(content) {
+  return content.replace(
+    /require\('\.\.\/\.\.\/providers\//g,
+    "require('../providers/",
+  )
 }
 
 /** 自底向上删除空目录（不删除 root 本身） */
@@ -148,7 +161,7 @@ function syncBundle(fnName, sourceDir, files, destPrefix) {
 
     let content = fs.readFileSync(src, 'utf8')
     if (!destPrefix) {
-      content = transformSharedContent(file, content)
+      content = transformSharedContent(content)
     }
     fs.writeFileSync(dest, content, 'utf8')
     console.log(`已同步: ${path.relative(ROOT, src)} → ${path.relative(ROOT, dest)}`)

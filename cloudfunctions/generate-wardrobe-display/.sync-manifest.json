@@ -3,8 +3,10 @@
     "constants/display-bg-file-ids.js",
     "constants/item-display-rules.js",
     "providers/ark/constants.js",
-    "utils/doubao-vision.js",
+    "providers/ark/images.js",
     "utils/env.js",
+    "utils/model-env.js",
+    "utils/resolve-cloud-image.js",
     "utils/resolve-display-bg-url.js",
     "utils/upload-generated-image.js",
     "utils/wardrobe-display-pipeline.js"
