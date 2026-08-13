@@ -48,6 +48,8 @@ pnpm test:watch
 
 前端用例放 `src/**/*.test.ts`；云函数 shared 单测放 `cloudfunctions/shared/**/*.test.js`（mock 辅助在 `cloudfunctions/shared/test-helpers/`，不在 sync 白名单内）。修改 shared 逻辑须带对应用例。
 
+构建侧：`config/vite-exclude-test-files.ts` 在 Taro 打包时拦截误入依赖图的 `*.test.*`；`tsconfig.json` 已 exclude 测试文件；`cf:sync-shared` 拒绝同步 `*.test.js` / `test-helpers/`。
+
 `pnpm install` 会通过 `prepare` 脚本初始化 Husky；提交时 `pre-commit` 对暂存文件跑 lint-staged（ESLint + Prettier）并执行 `pnpm test`，`commit-msg` 由 commitlint 校验 Conventional Commits。
 
 完整平台命令以 `package.json` 的 `scripts` 为准。

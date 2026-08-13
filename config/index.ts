@@ -3,6 +3,7 @@ import devConfig from "./dev";
 import prodConfig from "./prod";
 import vitePluginImp from "vite-plugin-imp";
 import path from "path";
+import { excludeTestFilesPlugin } from "./vite-exclude-test-files";
 
 const srcPath = path.resolve(__dirname, "..", "src");
 
@@ -33,6 +34,7 @@ export default defineConfig<"vite">(async (merge, { command, mode }) => {
     framework: "react",
     compiler: {
       vitePlugins: [
+        excludeTestFilesPlugin(),
         vitePluginImp({
           libList: [
             {

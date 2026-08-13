@@ -149,6 +149,10 @@ function syncBundle(fnName, sourceDir, files, destPrefix) {
   let copied = 0
 
   for (const file of files) {
+    if (/\.test\.(js|ts)$/.test(file) || file.includes('test-helpers/')) {
+      console.error(`禁止同步测试文件: ${file}`)
+      process.exit(1)
+    }
     const rel = file.split('/').join(path.sep)
     const src = path.join(sourceDir, rel)
     if (!fs.existsSync(src)) {
