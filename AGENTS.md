@@ -40,11 +40,15 @@ pnpm build:h5
 # 代码检查与格式化
 pnpm lint
 pnpm format
+
+# 单元测试
+pnpm test
+pnpm test:watch
 ```
 
-`pnpm install` 会通过 `prepare` 脚本初始化 Husky；提交时 `pre-commit` 对暂存文件跑 lint-staged（ESLint + Prettier），`commit-msg` 由 commitlint 校验 Conventional Commits。
+`pnpm install` 会通过 `prepare` 脚本初始化 Husky；提交时 `pre-commit` 对暂存文件跑 lint-staged（ESLint + Prettier）并执行 `pnpm test`，`commit-msg` 由 commitlint 校验 Conventional Commits。
 
-当前仓库**未配置**测试 runner 与 `test` 脚本；不要臆造测试命令。完整平台命令以 `package.json` 为准。
+完整平台命令以 `package.json` 的 `scripts` 为准。
 
 ## 约定与模式
 
@@ -264,7 +268,7 @@ fix: 修复衣橱列表图片链接解析失败的问题
 | `docs`     | 文档变更（如 `AGENTS.md`、`README.md`）          |
 | `chore`    | 构建配置、依赖、脚手架等杂项变更                 |
 | `perf`     | 性能优化                                         |
-| `test`     | 测试相关变更（当前仓库暂无测试 runner，谨慎使用）|
+| `test`     | 测试相关变更（Vitest 单元测试）|
 
 - 描述部分**用简体中文**，动词开头（如「添加」「修复」「更新」「移除」），概括本次改动做了什么、以及必要时说明为什么。
 - 一次 commit 聚焦一个主题；避免把多个不相关改动混在一条提交信息里。
