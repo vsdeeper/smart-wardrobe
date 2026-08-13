@@ -1,9 +1,9 @@
 /** 积分消耗与首赠常量（与 CREDITS.md、小程序 src/constants/credits.ts 对齐） */
 const INITIAL_GRANT = 1000
 
-/** 基础费：Seed 视觉/文本调用（识图、人物性别检测、搭评）收到 200 响应即收 */
+/** 基础费：视觉/文本调用（识图、人物性别检测、搭评）收到 200 响应即收 */
 const BASE_FEE = 10
-/** 成果费：Seedream 成功出图每张（展示图、试穿图、模特生成图） */
+/** 成果费：成功出图每张（展示图、试穿图、模特生成图） */
 const IMAGE_FEE = 50
 
 /** 语义别名（识别保持原名，值 = BASE_FEE/IMAGE_FEE） */
