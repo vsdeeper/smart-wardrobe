@@ -74,22 +74,22 @@ function AboutPage() {
                   说明
                 </Text>
                 ：识别、试穿等 AI
-                动作按次/按张消耗积分；浏览衣橱、日记、天气免费；调价以小程序内公告为准
+                动作按次/按张消耗积分；浏览衣橱、日记、天气免费；调价以小程序内公告为准。
               </Text>
               <Text className="about-page__item">
                 <Text className="about-page__item-label">关于 AI</Text>
                 {" — "}
-                推荐与试穿图供参考，帮你想清楚今天和明天，不替代你的判断
+                推荐与试穿图供参考，帮你想清楚今天和明天，不替代你的判断。
               </Text>
               <Text className="about-page__item">
                 <Text className="about-page__item-label">关于图片</Text>
                 {" — "}
-                用于识别、展示与试穿；相册等权限按微信《用户隐私保护指引》在需要时授权
+                用于识别、展示与试穿；相册等权限按微信《用户隐私保护指引》在需要时授权。
               </Text>
               <Text className="about-page__item">
                 <Text className="about-page__item-label">版本</Text>
                 {" — "}
-                {versionLabel}；识别、推荐与试穿会按反馈持续打磨
+                {versionLabel}；识别、推荐与试穿会按反馈持续打磨。
               </Text>
             </View>
           </View>
@@ -105,7 +105,7 @@ function AboutPage() {
                 告诉我们，我们会按消息逐条查看。
               </Text>
               <Text className="about-page__item">
-                若不便使用站内入口，可发邮件至：
+                亦可发邮件至：
                 <Text className="about-page__email" onClick={handleCopyEmail}>
                   vsdeeper@qq.com
                 </Text>
