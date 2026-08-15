@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { View, Image } from "@tarojs/components";
-import baicaiSrc from "@/assets/images/baicai.png";
+import defaultAvatar from "@/assets/images/default-avatar.png";
 
 import "./index.scss";
 
@@ -17,15 +17,15 @@ function DefaultAvatar({
   src,
   onLoadError,
 }: DefaultAvatarProps) {
-  const [displaySrc, setDisplaySrc] = useState(src || baicaiSrc);
+  const [displaySrc, setDisplaySrc] = useState(src || defaultAvatar);
 
   useEffect(() => {
-    setDisplaySrc(src || baicaiSrc);
+    setDisplaySrc(src || defaultAvatar);
   }, [src]);
 
   const handleError = () => {
-    if (displaySrc === baicaiSrc) return;
-    setDisplaySrc(baicaiSrc);
+    if (displaySrc === defaultAvatar) return;
+    setDisplaySrc(defaultAvatar);
     onLoadError?.();
   };
 
