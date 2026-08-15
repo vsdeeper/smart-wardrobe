@@ -1,6 +1,8 @@
 {
   "compilerOptions": {
     "target": "es2017",
+    // 显式声明 lib 以支持 ES2018 的 Promise.prototype.finally（ES2017 默认不含）
+    "lib": ["ES2018", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "removeComments": false,
     "preserveConstEnums": true,
@@ -17,18 +19,13 @@
     "jsx": "react-jsx",
     "allowJs": true,
     "resolveJsonModule": true,
-    "typeRoots": [
-      "node_modules/@types"
-    ],
+    "typeRoots": ["node_modules/@types"],
     "paths": {
       "@/*": ["./src/*"],
       "*": ["./*"]
     }
   },
-  "include": [
-    "./src",
-    "./types"
-  ],
+  "include": ["./src", "./types"],
   "exclude": [
     "node_modules",
     "dist",
