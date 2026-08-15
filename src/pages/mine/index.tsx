@@ -21,6 +21,7 @@ import { fetchCreditBalance } from "@/services/credits";
 import Main from "@/layouts/Main";
 import { formatWearDateChipLabel } from "@/utils/wear-date";
 import { normalizeRecognitionErrorMessage } from "@/utils/recognition";
+import { CREDITS_RECHARGE_PAGE } from "@/utils/credits";
 import "./index.scss";
 
 const ICON_PRIMARY = "var(--nutui-brand-6)";
@@ -100,6 +101,10 @@ function MinePage() {
     Taro.navigateTo({ url: "/pages/credits-pricing/index" });
   }, []);
 
+  const handleOpenRecharge = useCallback(() => {
+    Taro.navigateTo({ url: CREDITS_RECHARGE_PAGE });
+  }, []);
+
   useDidShow(() => {
     void fetchCreditBalance()
       .then((summary) => setCreditAvailable(summary.available))
@@ -130,7 +135,7 @@ function MinePage() {
             <Text className="mine-header__name">
               {getUserDisplayName(profile)}
             </Text>
-            <View className="mine-header__credits" onClick={handleOpenCredits}>
+            <View className="mine-header__credits" onClick={handleOpenRecharge}>
               <Text className="mine-header__credits-balance">
                 积分 {creditAvailable ?? "--"}
               </Text>

@@ -1,0 +1,20 @@
+.recharge-page__balance {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: var(--nutui-spacing-5);
+  padding: var(--nutui-spacing-6);
+  background: var(--nutui-gray-1);
+  border-radius: var(--sw-radius-card);
+}
+
+.recharge-page__balance-label {
+  font-size: var(--nutui-font-size-3);
+  color: var(--nutui-gray-6);
+}
+
+.recharge-page__balance-value {
+  font-size: var(--nutui-font-size-7);
+  font-weight: var(--nutui-font-weight-bold);
+  color: var(--nutui-brand-6);
+}

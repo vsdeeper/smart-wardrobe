@@ -15,6 +15,7 @@ export default defineAppConfig({
     "pages/recognition-history/index",
     "pages/about/index",
     "pages/credits-pricing/index",
+    "pages/recharge/index",
     "pages/feedback/index",
   ],
   permission: {

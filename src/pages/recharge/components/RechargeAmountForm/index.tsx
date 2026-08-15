@@ -1,9 +1,6 @@
 import { View, Text, Input } from "@tarojs/components";
 import SolidButton from "@/components/SolidButton";
-import {
-  RECHARGE_MAX_FEN,
-  RECHARGE_MIN_FEN,
-} from "@/constants/recharge";
+import { RECHARGE_MAX_FEN, RECHARGE_MIN_FEN } from "@/constants/recharge";
 import { formatFenToYuanLabel } from "@/utils/recharge";
 import "./index.scss";
 

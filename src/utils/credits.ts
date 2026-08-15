@@ -9,13 +9,13 @@ import type { CreditBalance, CreditCloudError } from "@/types/credits";
 export const CREDITS_INSUFFICIENT_TOAST = "积分不足，请前往充值";
 
 /** 积分充值页路径 */
-export const CREDITS_RECHARGE_PAGE = "/pages/credits-pricing/index";
+export const CREDITS_RECHARGE_PAGE = "/pages/recharge/index";
 
 /**
  * 判断云函数/服务返回是否为积分不足。
  */
 export function isInsufficientCreditsPayload(
-  payload: { error?: string; message?: string } | null | undefined,
+  payload: { error?: string; message?: string } | null | undefined
 ): boolean {
   if (!payload) return false;
   return payload.error === CREDITS_ERROR_INSUFFICIENT;
@@ -38,7 +38,7 @@ export function canAffordTryOnModel(available: number): boolean {
  */
 export function resolveCreditsToastMessage(
   message: string,
-  errorCode?: string,
+  errorCode?: string
 ): string {
   if (
     errorCode === CREDITS_ERROR_INSUFFICIENT ||
@@ -50,7 +50,7 @@ export function resolveCreditsToastMessage(
 }
 
 export function isCreditBalance(
-  data: CreditBalance | CreditCloudError,
+  data: CreditBalance | CreditCloudError
 ): data is CreditBalance {
   return typeof (data as CreditBalance).available === "number";
 }

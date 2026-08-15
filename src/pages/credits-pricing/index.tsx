@@ -1,9 +1,9 @@
 import { View, Text } from "@tarojs/components";
-import { useDidShow } from "@tarojs/taro";
-import { useRecharge } from "@/hooks/use-recharge";
+import Taro from "@tarojs/taro";
+import SolidButton from "@/components/SolidButton";
 import AppNavbar from "@/components/AppNavbar";
 import Main from "@/layouts/Main";
-import RechargeAmountForm from "./components/RechargeAmountForm";
+import { CREDITS_RECHARGE_PAGE } from "@/utils/credits";
 import "./index.scss";
 
 const PRICING_ROWS = [
@@ -25,38 +25,17 @@ const PRICING_ROWS = [
 ] as const;
 
 /**
- * 积分说明页：充值入口 + 公示 AI 动作消耗规则（文案对齐 CREDITS.USER.md）。
+ * 积分与定价说明页：公示 AI 动作消耗规则（文案对齐 CREDITS.USER.md）。
  */
 function CreditsPricingPage() {
-  const {
-    amountYuan,
-    amountError,
-    previewCredits,
-    paying,
-    canPay,
-    refreshBalance,
-    handleAmountChange,
-    handlePay,
-  } = useRecharge();
-
-  useDidShow(() => {
-    void refreshBalance();
-  });
+  const handleOpenRecharge = () => {
+    Taro.navigateTo({ url: CREDITS_RECHARGE_PAGE });
+  };
 
   return (
     <Main showTabbar={false} header={<AppNavbar showBack title="积分与定价" />}>
       <Main.Scroll>
         <View className="credits-page">
-          <RechargeAmountForm
-            amountYuan={amountYuan}
-            amountError={amountError}
-            previewCredits={previewCredits}
-            paying={paying}
-            canPay={canPay}
-            onAmountChange={handleAmountChange}
-            onPay={handlePay}
-          />
-
           <View className="credits-page__lead">
             凡衣橱只对 AI
             相关动作收取积分；浏览衣橱、编辑单品、视觉日记、天气等日常功能不扣积分。
@@ -169,6 +148,14 @@ function CreditsPricingPage() {
               异常扣费可联系客服核查补发。
             </Text>
           </View>
+
+          <SolidButton
+            block
+            className="credits-page__recharge-cta"
+            onClick={handleOpenRecharge}
+          >
+            去充值
+          </SolidButton>
         </View>
       </Main.Scroll>
     </Main>
