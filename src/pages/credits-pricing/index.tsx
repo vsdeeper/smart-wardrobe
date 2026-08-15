@@ -44,7 +44,7 @@ function CreditsPricingPage() {
   });
 
   return (
-    <Main showTabbar={false} header={<AppNavbar showBack title="积分说明" />}>
+    <Main showTabbar={false} header={<AppNavbar showBack title="积分与定价" />}>
       <Main.Scroll>
         <View className="credits-page">
           <RechargeAmountForm

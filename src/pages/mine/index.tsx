@@ -13,8 +13,6 @@ import MediaListCard from "@/components/MediaListCard";
 import PageLoading from "@/components/PageLoading";
 import RecognitionBatchCard from "@/components/RecognitionBatchCard";
 
-
-
 import { useMainTabNavigation } from "@/hooks/use-main-tab-navigation";
 import { useRecognitionBatches } from "@/hooks/use-recognition-batches";
 import { useUserProfile } from "@/hooks/use-user-profile";
@@ -246,8 +244,14 @@ function MinePage() {
             )}
           </View>
 
-          <View className="mine-about-link" onClick={handleOpenAbout}>
-            <Text className="mine-about-link__text">关于凡衣橱</Text>
+          <View className="mine-footer">
+            <View className="mine-about-link" onClick={handleOpenAbout}>
+              <Text className="mine-about-link__text">关于凡衣橱</Text>
+            </View>
+            <Text className="mine-footer__sep">·</Text>
+            <View className="mine-about-link" onClick={handleOpenCredits}>
+              <Text className="mine-about-link__text">积分与定价</Text>
+            </View>
           </View>
         </View>
       </Main.Scroll>

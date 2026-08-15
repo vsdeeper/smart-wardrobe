@@ -47,7 +47,7 @@
 
 .mine-avatar {
   position: relative;
-  margin-bottom: var(--nutui-spacing-8);
+  margin-bottom: var(--nutui-spacing-7);
 
   &__ring {
     width: 100px;
@@ -149,6 +149,19 @@
   justify-content: center;
 
   &__text {
+    font-size: var(--nutui-font-size-2);
+    color: var(--nutui-gray-5);
+    line-height: var(--nutui-line-height-base);
+  }
+}
+
+.mine-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--nutui-spacing-3);
+
+  &__sep {
     font-size: var(--nutui-font-size-2);
     color: var(--nutui-gray-5);
     line-height: var(--nutui-line-height-base);
