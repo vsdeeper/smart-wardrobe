@@ -1,26 +1,26 @@
 import { View, Text } from "@tarojs/components";
 import { useDidShow } from "@tarojs/taro";
+import { useRecharge } from "@/hooks/use-recharge";
 import AppNavbar from "@/components/AppNavbar";
 import Main from "@/layouts/Main";
 import RechargeAmountForm from "./components/RechargeAmountForm";
-import { useRecharge } from "@/hooks/use-recharge";
 import "./index.scss";
 
 const PRICING_ROWS = [
   {
     name: "AI 识别生成",
     cost: "识图 10 + 展示图 50/张（成功共 60）",
-    desc: "识图调用完成即收基础费 10（即使未检出衣物或被性别校验拦截；第三方调用报错不扣）；展示图按成功生成张数加收",
+    desc: "识图调用完成即收基础费 10（即使未检出衣物或被性别校验拦截；第三方调用报错不扣）；展示图按成功生成张数加收。",
   },
   {
     name: "生成本人试穿模特",
     cost: "基础 10 + 生成 50（成功共 60）",
-    desc: "人物性别检测基础费 + 模特生成费；选用预设并启用不扣",
+    desc: "人物性别检测基础费 + 模特生成费；选用预设并启用不扣。",
   },
   {
     name: "AI 试穿",
     cost: "搭评 10 + 试穿图 50（成功共 60）",
-    desc: "智能搭评 + 1 张试穿预览；自动推荐与手动搭配同价",
+    desc: "智能搭评 + 1 张试穿预览；自动推荐与手动搭配同价。",
   },
 ] as const;
 
@@ -57,16 +57,17 @@ function CreditsPricingPage() {
             onPay={handlePay}
           />
 
-          <Text className="credits-page__lead">
-            凡衣橱只对 AI 相关动作收取积分；浏览衣橱、编辑单品、视觉日记、天气等日常功能不扣积分。
-          </Text>
+          <View className="credits-page__lead">
+            凡衣橱只对 AI
+            相关动作收取积分；浏览衣橱、编辑单品、视觉日记、天气等日常功能不扣积分。
+          </View>
 
           <View className="credits-page__section">
             <Text className="credits-page__section-title">积分与金额</Text>
-            <Text className="credits-page__p">
-              <Text className="credits-page__em">1 积分 = ¥0.01</Text>
-              （面值）。充值实付金额按此换算入账。
-            </Text>
+            <View className="credits-page__p">
+              <Text className="credits-page__em">1 积分 = ¥0.01（面值）</Text>
+              充值实付金额按此换算入账。
+            </View>
           </View>
 
           <View className="credits-page__section">
@@ -87,19 +88,23 @@ function CreditsPricingPage() {
               {" = 识图基础费 + 单品展示图 × 实际成功张数。"}
             </Text>
             <Text className="credits-page__p">
-              例如：识图成功并生成 1 张单品展示图时，共 60 积分（面值约 ¥0.60）。
+              例如：识图成功并生成 1 张单品展示图时，共 60 积分（面值约
+              ¥0.60）。
             </Text>
           </View>
 
           <View className="credits-page__section">
-            <Text className="credits-page__section-title">AI 识别生成怎么理解</Text>
+            <Text className="credits-page__section-title">
+              AI 识别生成怎么理解
+            </Text>
             <View className="credits-page__list">
               <Text className="credits-page__li">一次识别对应一张照片。</Text>
               <Text className="credits-page__li">
                 一张照片可能识别出多件衣服；费用按实际成功生成的单品展示图张数结算。
               </Text>
               <Text className="credits-page__li">
-                识图调用完成即收基础费 10：即使未检出衣物、或衣物全部与资料性别不符被拦截；仅第三方调用报错不扣。
+                识图调用完成即收基础费
+                10：即使未检出衣物、或衣物全部与资料性别不符被拦截；仅第三方调用报错不扣。
               </Text>
               <Text className="credits-page__li">
                 单品展示图未成功生成的部分不扣。
@@ -142,15 +147,16 @@ function CreditsPricingPage() {
           <View className="credits-page__section">
             <Text className="credits-page__section-title">免费范围</Text>
             <Text className="credits-page__p">
-              衣橱浏览与编辑、视觉日记、天气查看，以及命中缓存、无需重新调用
-              AI 的结果复用。
+              衣橱浏览与编辑、视觉日记、天气查看，以及命中缓存、无需重新调用 AI
+              的结果复用。
             </Text>
           </View>
 
           <View className="credits-page__section">
             <Text className="credits-page__section-title">体验积分与充值</Text>
             <Text className="credits-page__p">
-              首次使用可获赠 <Text className="credits-page__em">1000 体验积分</Text>
+              首次使用可获赠{" "}
+              <Text className="credits-page__em">1000 体验积分</Text>
               （一次性），用于体验 AI 识别生成与 AI 试穿。
             </Text>
             <Text className="credits-page__p">
@@ -159,7 +165,9 @@ function CreditsPricingPage() {
             <Text className="credits-page__p">
               若因第三方服务成本变化需要调整积分规则，我们会在小程序内公告后再生效。公告时间可能因实际情况延后，请以届时说明为准。
             </Text>
-            <Text className="credits-page__p">异常扣费可联系客服核查补发。</Text>
+            <Text className="credits-page__p">
+              异常扣费可联系客服核查补发。
+            </Text>
           </View>
         </View>
       </Main.Scroll>

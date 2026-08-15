@@ -335,7 +335,6 @@ page .nut-image .nut-img-error {
     padding: var(--sw-field-padding-sm);
     --nutui-input-font-size: var(--sw-field-font-size-sm);
   }
-
 }
 
 // NutUI TextArea 外壳（须包裹 <TextArea />；置于 .sw-field-box 内时可省略）
@@ -346,21 +345,6 @@ page .nut-image .nut-img-error {
   background: var(--sw-field-bg);
   border: 1px solid var(--sw-field-border-color);
   border-radius: var(--sw-radius-field);
-
-  --nutui-textarea-padding: 0;
-  --nutui-textarea-font: var(--sw-field-font-size);
-  --nutui-textarea-text-color: var(--sw-field-color);
-  --nutui-gray-1: transparent;
-}
-
-// TextArea 浅底外框（搭配内层 <TextArea />，无需再加 .sw-field-textarea）
-.sw-field-box {
-  min-height: 120px;
-  padding: var(--nutui-spacing-4);
-  background: var(--sw-field-bg-muted);
-  border: 1px solid var(--sw-field-border-color);
-  border-radius: var(--sw-radius-field);
-  box-sizing: border-box;
 
   --nutui-textarea-padding: 0;
   --nutui-textarea-font: var(--sw-field-font-size);

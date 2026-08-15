@@ -49,9 +49,10 @@ function FeedbackPage() {
       <Main.Scroll>
         <View className="feedback-page">
           <Text className="feedback-page__hint">
-            请描述问题或想法，并尽量注明场景（如识别 / 推荐 / 试穿），便于我们对照排查。
+            请描述问题或想法，并尽量注明场景（如识别 / 推荐 /
+            试穿），便于我们对照排查。
           </Text>
-          <View className="sw-field-box">
+          <View className="sw-field-textarea">
             <TextArea
               value={content}
               maxLength={MAX_LENGTH}

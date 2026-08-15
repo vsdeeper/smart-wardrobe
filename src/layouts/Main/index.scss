@@ -19,13 +19,11 @@
       var(--nutui-spacing-7) + var(--sw-status-bar-height, 0px) +
         var(--nutui-navbar-height, 44px)
     )
-    var(--nutui-spacing-7) calc(90px + var(--sw-safe-area-bottom, 0px));
+    var(--nutui-spacing-7) calc(80px + var(--sw-safe-area-bottom, 0px));
   box-sizing: border-box;
 
   &--no-tabbar {
-    padding-bottom: calc(
-      var(--nutui-spacing-10) + var(--sw-safe-area-bottom, 0px)
-    );
+    padding-bottom: var(--sw-safe-area-bottom, 0px);
   }
 }
 
