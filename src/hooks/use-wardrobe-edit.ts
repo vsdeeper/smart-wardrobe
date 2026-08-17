@@ -1,4 +1,8 @@
-import { ClothingType, RecognizedPreviewItem, WardrobeItem } from "@/types/wardrobe";
+import {
+  ClothingType,
+  RecognizedPreviewItem,
+  WardrobeItem,
+} from "@/types/wardrobe";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { isWeapp } from "@/utils/platform";
 import Taro, { useLoad } from "@tarojs/taro";
@@ -18,16 +22,17 @@ import {
   setPendingWardrobeListPatch,
 } from "@/services/wardrobe-cache";
 import { afterToastNavigate } from "@/utils/after-toast-navigate";
+import { toUserMessage } from "@/utils/error-message";
 
 function recognitionItemToDisplayItem(
-  preview: RecognizedPreviewItem,
+  preview: RecognizedPreviewItem
 ): WardrobeItem {
   if (preview.imageFileId && preview.imageUrl) {
     putImageUrlCache(
       "wardrobe",
       preview.imageFileId,
       preview.imageUrl,
-      Date.now(),
+      Date.now()
     );
   }
   return {
@@ -124,8 +129,7 @@ export function useWardrobeEdit() {
       Taro.showToast({ title: "已保存", icon: "success" });
       afterToastNavigate(() => Taro.navigateBack());
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "保存失败，请稍后重试";
+      const message = toUserMessage(err, "保存失败，请稍后重试");
       Taro.showToast({ title: message, icon: "none" });
     } finally {
       setSaving(false);
@@ -174,8 +178,7 @@ export function useWardrobeEdit() {
           setClothingTypes(types);
           setItem(recognitionItemToDisplayItem(preview));
         } catch (err) {
-          const message =
-            err instanceof Error ? err.message : "编辑信息加载失败，请稍后重试";
+          const message = toUserMessage(err, "编辑信息加载失败，请稍后重试");
           setError(message);
           Taro.showToast({ title: message, icon: "none" });
         } finally {
@@ -208,8 +211,7 @@ export function useWardrobeEdit() {
         setItem(data);
         setClothingTypes(types);
       } catch (err) {
-        const message =
-          err instanceof Error ? err.message : "编辑信息加载失败，请稍后重试";
+        const message = toUserMessage(err, "编辑信息加载失败，请稍后重试");
         setError(message);
         Taro.showToast({ title: message, icon: "none" });
       } finally {

@@ -2,11 +2,14 @@ import { ClothingType, WardrobeItem } from "@/types/wardrobe";
 import { WARDROBE_PAGE_SIZE } from "@/constants/wardrobe";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { isWeapp } from "@/utils/platform";
+import { toUserMessage } from "@/utils/error-message";
 import Taro, { useDidShow } from "@tarojs/taro";
 
-
 import { resolveCloudFileUrl } from "@/services/cloud-file";
-import { putImageUrlCache, removeImageUrlCache } from "@/services/image-url-cache";
+import {
+  putImageUrlCache,
+  removeImageUrlCache,
+} from "@/services/image-url-cache";
 import {
   deleteWardrobeItem,
   fetchClothingTypes,
@@ -71,8 +74,7 @@ function settleInboundAfterNoCacheLoad(typeId: string | null): void {
 
   if (!signal.typeIds.includes(typeId)) return;
   const typeName =
-    getClothingTypesFromCache().find((type) => type._id === typeId)?.name ??
-    "";
+    getClothingTypesFromCache().find((type) => type._id === typeId)?.name ?? "";
   consumeInboundRefreshTypes({
     typeIds: [typeId],
     typeNames: typeName ? [typeName] : [],
@@ -82,7 +84,7 @@ function settleInboundAfterNoCacheLoad(typeId: string | null): void {
 export function useWardrobeList({ uploadFlowRef }: UseWardrobeListOptions) {
   const [initial] = useState(getInitialWardrobeState);
   const [clothingTypes, setClothingTypes] = useState<ClothingType[]>(
-    initial.clothingTypes,
+    initial.clothingTypes
   );
   const [items, setItems] = useState<WardrobeItem[]>(initial.items);
   const [activeTab, setActiveTab] = useState(initial.activeTab);
@@ -115,7 +117,7 @@ export function useWardrobeList({ uploadFlowRef }: UseWardrobeListOptions) {
       clothingTypes.length > 0
         ? ["全部", ...clothingTypes.map((type) => type.name)]
         : [],
-    [clothingTypes],
+    [clothingTypes]
   );
 
   const showRefreshHint = useMemo(() => {
@@ -151,7 +153,7 @@ export function useWardrobeList({ uploadFlowRef }: UseWardrobeListOptions) {
       options: {
         reset?: boolean;
         typeId?: string | null;
-      } = {},
+      } = {}
     ): Promise<boolean> => {
       if (loadingRef.current) return false;
       loadingRef.current = true;
@@ -185,7 +187,7 @@ export function useWardrobeList({ uploadFlowRef }: UseWardrobeListOptions) {
           setWardrobeTypeBucket(
             typeId,
             { items: nextItems, hasMore: pageHasMore },
-            typesRef.current,
+            typesRef.current
           );
         } else {
           setItems((prev) => [...prev, ...nextItems]);
@@ -195,8 +197,7 @@ export function useWardrobeList({ uploadFlowRef }: UseWardrobeListOptions) {
         return true;
       } catch (err) {
         if (seq !== requestSeqRef.current) return false;
-        const message =
-          err instanceof Error ? err.message : "衣橱加载失败，请稍后重试";
+        const message = toUserMessage(err, "衣橱加载失败，请稍后重试");
         Taro.showToast({ title: message, icon: "none" });
         return false;
       } finally {
@@ -207,7 +208,7 @@ export function useWardrobeList({ uploadFlowRef }: UseWardrobeListOptions) {
         }
       }
     },
-    [activeTypeId],
+    [activeTypeId]
   );
 
   /** 冷启动 / remount：仅当当前分类无缓存时拉取 */
@@ -241,8 +242,7 @@ export function useWardrobeList({ uploadFlowRef }: UseWardrobeListOptions) {
         const ok = await loadItems({ reset: true, typeId });
         if (ok) settleInboundAfterNoCacheLoad(typeId);
       } catch (err) {
-        const message =
-          err instanceof Error ? err.message : "衣橱加载失败，请稍后重试";
+        const message = toUserMessage(err, "衣橱加载失败，请稍后重试");
         Taro.showToast({ title: message, icon: "none" });
         setInitialLoading(false);
       }
@@ -265,7 +265,7 @@ export function useWardrobeList({ uploadFlowRef }: UseWardrobeListOptions) {
         "wardrobe",
         item.imageFileId,
         item.imageUrl,
-        item.imageUrlAt,
+        item.imageUrlAt
       );
     }
     const displayItem: WardrobeItem = { ...item };
@@ -288,7 +288,10 @@ export function useWardrobeList({ uploadFlowRef }: UseWardrobeListOptions) {
       return;
     }
 
-    if (currentKey === previousTypeId && previousTypeId !== displayItem.typeId) {
+    if (
+      currentKey === previousTypeId &&
+      previousTypeId !== displayItem.typeId
+    ) {
       setItems((prev) => prev.filter((entry) => entry._id !== displayItem._id));
       return;
     }
@@ -329,7 +332,7 @@ export function useWardrobeList({ uploadFlowRef }: UseWardrobeListOptions) {
       const ok = await loadItems({ reset: true, typeId });
       if (ok) settleInboundAfterNoCacheLoad(typeId);
     },
-    [clothingTypes, loadItems],
+    [clothingTypes, loadItems]
   );
 
   const handleScrollToLower = useCallback(() => {
@@ -367,7 +370,7 @@ export function useWardrobeList({ uploadFlowRef }: UseWardrobeListOptions) {
         setWardrobeTypeBucket(
           currentTypeId,
           { items: nextItems, hasMore: pageHasMore },
-          typesRef.current,
+          typesRef.current
         );
         const typeName =
           typesRef.current.find((type) => type._id === currentTypeId)?.name ??
@@ -392,14 +395,13 @@ export function useWardrobeList({ uploadFlowRef }: UseWardrobeListOptions) {
         setWardrobeTypeBucket(
           null,
           { items: nextItems, hasMore: pageHasMore },
-          typesRef.current,
+          typesRef.current
         );
         clearInboundRefresh();
       }
     } catch (err) {
       if (seq !== requestSeqRef.current) return;
-      const message =
-        err instanceof Error ? err.message : "衣橱刷新失败，请稍后重试";
+      const message = toUserMessage(err, "衣橱刷新失败，请稍后重试");
       Taro.showToast({ title: message, icon: "none" });
     } finally {
       if (seq === requestSeqRef.current) {
@@ -476,14 +478,13 @@ export function useWardrobeList({ uploadFlowRef }: UseWardrobeListOptions) {
         setItems((prev) => prev.filter((i) => i._id !== item._id));
         Taro.showToast({ title: "已删除", icon: "success" });
       } catch (err) {
-        const message =
-          err instanceof Error ? err.message : "删除失败，请稍后重试";
+        const message = toUserMessage(err, "删除失败，请稍后重试");
         Taro.showToast({ title: message, icon: "none" });
       } finally {
         setDeleting(false);
       }
     },
-    [deleting],
+    [deleting]
   );
 
   const handleActionSelect = useCallback(
@@ -508,7 +509,7 @@ export function useWardrobeList({ uploadFlowRef }: UseWardrobeListOptions) {
           break;
       }
     },
-    [closeActionSheet, handleDeleteItem, handleItemClick, selectedItem],
+    [closeActionSheet, handleDeleteItem, handleItemClick, selectedItem]
   );
 
   return {

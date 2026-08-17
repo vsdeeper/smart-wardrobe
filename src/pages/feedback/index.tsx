@@ -6,6 +6,7 @@ import AppNavbar from "@/components/AppNavbar";
 import SolidButton from "@/components/SolidButton";
 import Main from "@/layouts/Main";
 import { submitFeedback } from "@/services/feedback";
+import { toUserMessage } from "@/utils/error-message";
 import "./index.scss";
 
 const MAX_LENGTH = 500;
@@ -34,10 +35,7 @@ function FeedbackPage() {
         Taro.navigateBack();
       }, 800);
     } catch (err) {
-      const message =
-        err instanceof Error && err.message
-          ? err.message
-          : "提交失败，请稍后重试";
+      const message = toUserMessage(err, "提交失败，请稍后重试");
       Taro.showToast({ title: message, icon: "none" });
     } finally {
       setSubmitting(false);

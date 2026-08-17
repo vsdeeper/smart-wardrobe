@@ -15,6 +15,7 @@ import {
   checkNeedPrivacyAuthorization,
   getMediaPickerErrorToast,
 } from "@/utils/media-picker-error";
+import { toUserMessage } from "@/utils/error-message";
 
 interface UseWardrobeUploadOptions {
   uploadFlowRef: React.MutableRefObject<boolean>;
@@ -34,15 +35,25 @@ export function useWardrobeUpload({
     try {
       uploadFlowRef.current = true;
 
-      const chooseRes = await Taro.chooseMedia({
-        count: WARDROBE_BATCH_UPLOAD_MAX,
-        mediaType: ["image"],
-        sourceType: ["album", "camera"],
-      });
-
-      const filePaths = chooseRes.tempFiles
-        .map((file) => file.tempFilePath)
-        .filter(Boolean);
+      // 选图单独 try/catch：getMediaPickerErrorToast 仅处理 chooseMedia 错误，
+      // 避免云函数/积分失败也被它误判并透传原始英文 errMsg
+      let filePaths: string[];
+      try {
+        const chooseRes = await Taro.chooseMedia({
+          count: WARDROBE_BATCH_UPLOAD_MAX,
+          mediaType: ["image"],
+          sourceType: ["album", "camera"],
+        });
+        filePaths = chooseRes.tempFiles
+          .map((file) => file.tempFilePath)
+          .filter(Boolean);
+      } catch (pickErr) {
+        const toast = getMediaPickerErrorToast(pickErr);
+        if (toast) {
+          Taro.showToast({ title: toast, icon: "none", duration: 3000 });
+        }
+        return;
+      }
 
       if (filePaths.length === 0) return;
 
@@ -70,13 +81,10 @@ export function useWardrobeUpload({
       });
     } catch (err) {
       console.warn("[wardrobe-upload]", err);
-      const toast = getMediaPickerErrorToast(err);
-      if (toast) {
-        Taro.showToast({ title: toast, icon: "none", duration: 3000 });
-      } else {
-        const message = err instanceof Error ? err.message : "上传失败，请稍后重试";
-        Taro.showToast({ title: message, icon: "none" });
-      }
+      Taro.showToast({
+        title: toUserMessage(err, "上传失败，请稍后重试"),
+        icon: "none",
+      });
     } finally {
       uploadFlowRef.current = false;
       setAdding(false);

@@ -1,6 +1,7 @@
 import { WardrobeItem } from "@/types/wardrobe";
 import { useCallback, useState } from "react";
 import { isWeapp } from "@/utils/platform";
+import { toUserMessage } from "@/utils/error-message";
 import Taro, { useLoad } from "@tarojs/taro";
 
 import { fetchWardrobeItemById } from "@/services/wardrobe";
@@ -35,8 +36,7 @@ export function useWardrobeDetail() {
         const data = await fetchWardrobeItemById(id);
         setItem(data);
       } catch (err) {
-        const message =
-          err instanceof Error ? err.message : "衣物详情加载失败，请稍后重试";
+        const message = toUserMessage(err, "衣物详情加载失败，请稍后重试");
         setError(message);
         Taro.showToast({ title: message, icon: "none" });
       } finally {

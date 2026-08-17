@@ -29,6 +29,7 @@ import {
 } from "@/utils/credits";
 import { afterToastNavigate } from "@/utils/after-toast-navigate";
 import { getMediaPickerErrorToast } from "@/utils/media-picker-error";
+import { toUserMessage } from "@/utils/error-message";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Taro from "@tarojs/taro";
 
@@ -49,13 +50,13 @@ export function useMineTryOnModel() {
     if (!genderReady) return [];
     return buildTryOnModelGalleryItems(
       profile.gender!,
-      profile.customTryOnModels ?? [],
+      profile.customTryOnModels ?? []
     );
   }, [genderReady, profile.customTryOnModels, profile.gender]);
 
   const fileIds = useMemo(
     () => galleryItems.map((item) => item.fileId).filter(Boolean),
-    [galleryItems],
+    [galleryItems]
   );
 
   useEffect(() => {
@@ -70,10 +71,7 @@ export function useMineTryOnModel() {
     void (async () => {
       const known = getFreshUrlMap("tryOnModel", fileIds);
       const resolved = await resolveTempFileUrls(fileIds, known);
-      mergeImageUrlCache(
-        "tryOnModel",
-        resolvedUrlMapToEntries(resolved),
-      );
+      mergeImageUrlCache("tryOnModel", resolvedUrlMapToEntries(resolved));
       if (!cancelled) setUrlReady(true);
     })();
 
@@ -87,7 +85,7 @@ export function useMineTryOnModel() {
       galleryItems.map((item) => ({
         src: getCachedImageUrl("tryOnModel", item.fileId) || item.fileId,
       })),
-    [galleryItems],
+    [galleryItems]
   );
 
   const handleSelect = useCallback((item: TryOnModelGalleryItem) => {
@@ -190,8 +188,8 @@ export function useMineTryOnModel() {
         throw new Error(
           resolveCreditsToastMessage(
             result.message || result.error,
-            result.error,
-          ),
+            result.error
+          )
         );
       }
 
@@ -232,7 +230,7 @@ export function useMineTryOnModel() {
         });
       } else {
         Taro.showToast({
-          title: payload.message || "生成失败，请稍后重试",
+          title: toUserMessage(err, "生成失败，请稍后重试"),
           icon: "none",
         });
       }
@@ -261,7 +259,7 @@ export function useMineTryOnModel() {
       if (!res.confirm) return;
 
       const nextCustom = (profile.customTryOnModels ?? []).filter(
-        (entry) => entry.fileId !== item.fileId,
+        (entry) => entry.fileId !== item.fileId
       );
 
       const patch: Partial<typeof profile> = {
@@ -281,11 +279,7 @@ export function useMineTryOnModel() {
 
       Taro.showToast({ title: "已删除", icon: "success" });
     },
-    [
-      profile,
-      selectedKey,
-      updateProfile,
-    ],
+    [profile, selectedKey, updateProfile]
   );
 
   const handleOpenGenderEdit = useCallback(() => {

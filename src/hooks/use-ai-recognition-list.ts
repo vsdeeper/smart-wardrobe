@@ -3,7 +3,6 @@ import { RecognizedPreviewItem } from "@/types/wardrobe";
 import { useCallback, useRef, useState } from "react";
 import Taro, { useDidShow, useLoad, useUnload } from "@tarojs/taro";
 
-
 import {
   clearRecognitionSession,
   getRecognitionSession,
@@ -19,6 +18,7 @@ import { attachImageUrls } from "@/services/cloud-file";
 import { setInboundRefresh } from "@/services/recognition-inbound-cache";
 import { saveWardrobeItems } from "@/services/wardrobe";
 import { afterToastNavigate } from "@/utils/after-toast-navigate";
+import { toUserMessage } from "@/utils/error-message";
 import {
   normalizeRecognitionErrorMessage,
   RECOGNITION_FAIL_MESSAGE,
@@ -39,18 +39,15 @@ export function useAiRecognitionList() {
   const initializedRef = useRef(false);
   const readonlyRef = useRef(false);
 
-  const persistItems = useCallback(
-    async (next: RecognizedPreviewItem[]) => {
-      const batchId = batchIdRef.current;
-      if (!batchId) return;
-      try {
-        await updateRecognitionBatchItems(batchId, next);
-      } catch (err) {
-        console.warn("[ai-recognition] persist items failed", err);
-      }
-    },
-    [],
-  );
+  const persistItems = useCallback(async (next: RecognizedPreviewItem[]) => {
+    const batchId = batchIdRef.current;
+    if (!batchId) return;
+    try {
+      await updateRecognitionBatchItems(batchId, next);
+    } catch (err) {
+      console.warn("[ai-recognition] persist items failed", err);
+    }
+  }, []);
 
   useLoad(async (options) => {
     const batchId =
@@ -73,7 +70,7 @@ export function useAiRecognitionList() {
           batch.status === "processing"
             ? "识别中，请稍候"
             : normalizeRecognitionErrorMessage(
-                batch.errorMessage || RECOGNITION_FAIL_MESSAGE,
+                batch.errorMessage || RECOGNITION_FAIL_MESSAGE
               );
         Taro.showToast({ title, icon: "none" });
         afterToastNavigate(() => Taro.navigateBack());
@@ -104,8 +101,7 @@ export function useAiRecognitionList() {
       setItems(withUrls);
       setInitialized(true);
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "识别结果加载失败，请稍后重试";
+      const message = toUserMessage(err, "识别结果加载失败，请稍后重试");
       Taro.showToast({ title: message, icon: "none" });
       afterToastNavigate(() => Taro.navigateBack());
     }
@@ -135,7 +131,7 @@ export function useAiRecognitionList() {
         return next;
       });
     },
-    [persistItems, readonly],
+    [persistItems, readonly]
   );
 
   const handleEdit = useCallback(
@@ -145,7 +141,7 @@ export function useAiRecognitionList() {
         url: `/pages/wardrobe-edit/index?source=recognition&tempId=${tempId}`,
       });
     },
-    [readonly],
+    [readonly]
   );
 
   const handleBack = useCallback(() => {
@@ -173,8 +169,7 @@ export function useAiRecognitionList() {
             clearRecognitionSession();
             Taro.navigateBack();
           } catch (err) {
-            const message =
-              err instanceof Error ? err.message : "操作没能完成，请稍后重试";
+            const message = toUserMessage(err, "操作没能完成，请稍后重试");
             Taro.showToast({ title: message, icon: "none" });
           } finally {
             setSubmitting(false);
@@ -213,15 +208,15 @@ export function useAiRecognitionList() {
         });
       } else {
         Taro.showToast({
-          title: saved.length === 1 ? "已加入衣橱" : `已加入 ${saved.length} 件`,
+          title:
+            saved.length === 1 ? "已加入衣橱" : `已加入 ${saved.length} 件`,
           icon: "success",
         });
       }
 
       Taro.navigateBack();
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "没能加入衣橱，请稍后重试";
+      const message = toUserMessage(err, "没能加入衣橱，请稍后重试");
       Taro.showToast({ title: message, icon: "none" });
     } finally {
       setSubmitting(false);

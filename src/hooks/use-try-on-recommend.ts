@@ -5,7 +5,6 @@ import { isGenderSet, isMetricsSet } from "@/utils/profile";
 import { useCallback, useRef, useState } from "react";
 import { useDidShow } from "@tarojs/taro";
 
-
 import { resolveTempFileUrls } from "@/services/cloud-file";
 import {
   getFreshUrlMap,
@@ -30,6 +29,7 @@ import { consumeTryOnDraft } from "@/services/try-on-draft";
 import { fetchWardrobeItemsGroupedByType } from "@/services/wardrobe";
 import { getCurrentSeason, getDateKey } from "@/utils/season";
 import { parseDateKey } from "@/utils/wear-date";
+import { toUserMessage } from "@/utils/error-message";
 
 export interface SavedReturnMeta {
   piecesChanged: boolean;
@@ -47,13 +47,13 @@ function stripPieceImageUrls(pieces: WardrobeItem[]): WardrobeItem[] {
 
 /** 解析选品临时链并写入 imageUrlCache；返回不含 URL 的 pieces */
 async function resolveAndCachePieceUrls(
-  pieces: WardrobeItem[],
+  pieces: WardrobeItem[]
 ): Promise<WardrobeItem[]> {
   if (pieces.length === 0) return pieces;
   const fileIds = pieces.map((piece) => piece.imageFileId);
   const urlMap = await resolveTempFileUrls(
     fileIds,
-    getFreshUrlMap("wardrobe", fileIds),
+    getFreshUrlMap("wardrobe", fileIds)
   );
   mergeImageUrlCache("wardrobe", resolvedUrlMapToEntries(urlMap));
   return stripPieceImageUrls(pieces);
@@ -91,17 +91,15 @@ export function useTryOnRecommend() {
     useState(initialWearDateKey);
   const [status, setStatus] = useState<TryOnRecommendStatus>(initial.status);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [recommendation, setRecommendation] = useState<TryOnRecommendation | null>(
-    initial.recommendation,
-  );
+  const [recommendation, setRecommendation] =
+    useState<TryOnRecommendation | null>(initial.recommendation);
   const [selectedPieces, setSelectedPieces] = useState<WardrobeItem[]>(
-    initial.selectedPieces,
+    initial.selectedPieces
   );
   const [fromCache, setFromCache] = useState(initial.fromCache);
   const [savedReturn, setSavedReturn] = useState<SavedReturnMeta | null>(null);
-  const [weatherSnapshot, setWeatherSnapshot] = useState<WeatherSnapshot | null>(
-    initial.weatherSnapshot,
-  );
+  const [weatherSnapshot, setWeatherSnapshot] =
+    useState<WeatherSnapshot | null>(initial.weatherSnapshot);
   const loadingRef = useRef(false);
   const manualDraftRef = useRef<{
     selectedPieces: WardrobeItem[];
@@ -116,7 +114,7 @@ export function useTryOnRecommend() {
       setRecommendation(rec);
       setSelectedPieces(pieces);
     },
-    [],
+    []
   );
 
   const fetchWeatherForCurrentWearDate = useCallback(
@@ -143,7 +141,7 @@ export function useTryOnRecommend() {
         };
       }
     },
-    [],
+    []
   );
 
   const restoreFromCache = useCallback(async (wearDateKey: string) => {
@@ -191,7 +189,7 @@ export function useTryOnRecommend() {
       setFromCache(false);
       setStatus("ready");
     },
-    [restoreFromCache],
+    [restoreFromCache]
   );
 
   const loadFresh = useCallback(
@@ -237,7 +235,7 @@ export function useTryOnRecommend() {
 
         const weather = await fetchWeatherForCurrentWearDate(
           wearDateKey,
-          force,
+          force
         );
         setWeatherSnapshot(weather);
 
@@ -261,26 +259,25 @@ export function useTryOnRecommend() {
             weatherSnapshot: weather,
             wearConfirmed: false,
           },
-          { clearHero: true, clearManual: true },
+          { clearHero: true, clearManual: true }
         );
         setStatus("success");
       } catch (err) {
-        const message =
-          err instanceof Error ? err.message : "没能生成推荐，请稍后重试";
+        const message = toUserMessage(err, "没能生成推荐，请稍后重试");
         setErrorMessage(message);
         setStatus("error");
       } finally {
         loadingRef.current = false;
       }
     },
-    [applyRecommendation, fetchWeatherForCurrentWearDate],
+    [applyRecommendation, fetchWeatherForCurrentWearDate]
   );
 
   const loadManual = useCallback(
     async (
       piecesFromDraft: WardrobeItem[],
       piecesChanged: boolean,
-      wearDateKey: string,
+      wearDateKey: string
     ) => {
       if (loadingRef.current) return;
       loadingRef.current = true;
@@ -333,19 +330,18 @@ export function useTryOnRecommend() {
             weatherSnapshot: weather,
             wearConfirmed: false,
           },
-          { clearHero: true },
+          { clearHero: true }
         );
         setStatus("success");
       } catch (err) {
-        const message =
-          err instanceof Error ? err.message : "没能生成评价，请稍后重试";
+        const message = toUserMessage(err, "没能生成评价，请稍后重试");
         setErrorMessage(message);
         setStatus("error");
       } finally {
         loadingRef.current = false;
       }
     },
-    [applyRecommendation, fetchWeatherForCurrentWearDate],
+    [applyRecommendation, fetchWeatherForCurrentWearDate]
   );
 
   const handleShow = useCallback(async () => {
@@ -360,7 +356,7 @@ export function useTryOnRecommend() {
       void loadManual(
         draft.selectedPieces,
         draft.piecesChanged === true,
-        wearDateKey,
+        wearDateKey
       );
       return;
     }
@@ -407,7 +403,7 @@ export function useTryOnRecommend() {
       void loadManual(
         manualDraft.selectedPieces,
         manualDraft.piecesChanged,
-        wearDateKeyRef.current,
+        wearDateKeyRef.current
       );
       return;
     }

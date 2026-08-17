@@ -4,10 +4,10 @@ import { TryOnRecommendation } from "@/types/try-on";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Taro from "@tarojs/taro";
 
-
 import { getInitialTryOnCache, writeWearCache } from "@/services/try-on-cache";
 import { saveVisualDiaryEntry } from "@/services/visual-diary";
 import { formatWearOutfitTitle } from "@/utils/wear-date";
+import { toUserMessage } from "@/utils/error-message";
 
 interface UseTryOnWearOptions {
   plannedWearDateKey: string;
@@ -20,7 +20,7 @@ interface UseTryOnWearOptions {
 
 function getOutfitKey(
   selectedPieces: WardrobeItem[],
-  heroCoverFileId: string | null,
+  heroCoverFileId: string | null
 ): string {
   return `${heroCoverFileId ?? ""}:${selectedPieces.map((piece) => piece._id).join(",")}`;
 }
@@ -47,10 +47,7 @@ export function useTryOnWear({
     const cache = getInitialTryOnCache(plannedWearDateKey);
     if (cache?.wearConfirmed) {
       setConfirmedOutfitKey(
-        getOutfitKey(
-          cache.selectedPieces ?? [],
-          cache.heroCoverFileId ?? null,
-        ),
+        getOutfitKey(cache.selectedPieces ?? [], cache.heroCoverFileId ?? null)
       );
     } else {
       setConfirmedOutfitKey(null);
@@ -117,13 +114,12 @@ export function useTryOnWear({
           weatherSnapshot: weatherSnapshot ?? undefined,
           wearConfirmed: true,
         },
-        { clearHero: cache?.heroCoverFileId !== heroCoverFileId },
+        { clearHero: cache?.heroCoverFileId !== heroCoverFileId }
       );
       setConfirmedOutfitKey(outfitKey);
       Taro.showToast({ title: "已记录到视觉日记", icon: "success" });
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "保存失败，请稍后重试";
+      const message = toUserMessage(err, "保存失败，请稍后重试");
       Taro.showToast({ title: message, icon: "none" });
     } finally {
       savingRef.current = false;

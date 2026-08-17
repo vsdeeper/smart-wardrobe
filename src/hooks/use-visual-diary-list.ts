@@ -3,12 +3,12 @@ import { VISUAL_DIARY_PAGE_SIZE } from "@/constants/try-on";
 import { useCallback, useRef, useState } from "react";
 import Taro, { useDidShow } from "@tarojs/taro";
 
-
 import {
   deleteVisualDiaryEntry,
   fetchVisualDiaryEntries,
 } from "@/services/visual-diary";
 import { syncVisualDiaryPreviewFromList } from "@/services/visual-diary-cache";
+import { toUserMessage } from "@/utils/error-message";
 
 export function useVisualDiaryList() {
   const [entries, setEntries] = useState<VisualDiaryEntry[]>([]);
@@ -48,8 +48,7 @@ export function useVisualDiaryList() {
       });
       setHasMore(nextEntries.length >= VISUAL_DIARY_PAGE_SIZE);
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "穿搭日记加载失败，请稍后重试";
+      const message = toUserMessage(err, "穿搭日记加载失败，请稍后重试");
       Taro.showToast({ title: message, icon: "none" });
     } finally {
       loadingRef.current = false;
@@ -99,14 +98,13 @@ export function useVisualDiaryList() {
         });
         Taro.showToast({ title: "已删除", icon: "success" });
       } catch (err) {
-        const message =
-          err instanceof Error ? err.message : "删除失败，请稍后重试";
+        const message = toUserMessage(err, "删除失败，请稍后重试");
         Taro.showToast({ title: message, icon: "none" });
       } finally {
         setDeleting(false);
       }
     },
-    [deleting, hasMore, loadEntries],
+    [deleting, hasMore, loadEntries]
   );
 
   return {

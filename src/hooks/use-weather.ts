@@ -1,5 +1,6 @@
 import { buildWeatherCardView } from "@/utils/weather";
 import { type WeatherCardViewModel } from "@/types/weather";
+import { toUserMessage } from "@/utils/error-message";
 import { useCallback, useRef, useState } from "react";
 import Taro, { useDidShow } from "@tarojs/taro";
 
@@ -38,8 +39,7 @@ export function useWeather() {
         return;
       }
 
-      const message =
-        err instanceof Error ? err.message : "天气信息暂时获取不到，请稍后重试";
+      const message = toUserMessage(err, "天气信息暂时获取不到，请稍后重试");
       setViewModel(null);
       setStatus("error");
       setErrorMessage(message);

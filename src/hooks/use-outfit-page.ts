@@ -3,7 +3,6 @@ import { WARDROBE_PAGE_SIZE } from "@/constants/wardrobe";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Taro, { useDidShow } from "@tarojs/taro";
 
-
 import {
   consumeInboundRefreshTypes,
   getInboundRefresh,
@@ -30,6 +29,7 @@ import {
 import { getDateKey } from "@/utils/season";
 import { isWeapp } from "@/utils/platform";
 import { arePieceSelectionsEqual, getPieceIds } from "@/utils/outfit-selection";
+import { toUserMessage } from "@/utils/error-message";
 
 function isSameTypes(a: ClothingType[], b: ClothingType[]): boolean {
   if (a.length !== b.length) return false;
@@ -72,13 +72,13 @@ function settleInboundAfterNoCacheLoad(typeId: string | null): void {
 export function useOutfitPage() {
   const [initial] = useState(getInitialOutfitState);
   const [clothingTypes, setClothingTypes] = useState<ClothingType[]>(
-    initial.clothingTypes,
+    initial.clothingTypes
   );
   const [activeTypeId, setActiveTypeId] = useState<string | null>(
-    initial.activeTypeId,
+    initial.activeTypeId
   );
   const [activeCategoryIndex, setActiveCategoryIndex] = useState(
-    initial.activeCategoryIndex,
+    initial.activeCategoryIndex
   );
   const [items, setItems] = useState<WardrobeItem[]>(initial.items);
   const [hasMore, setHasMore] = useState(initial.hasMore);
@@ -91,7 +91,7 @@ export function useOutfitPage() {
     !(
       initial.hasCache ||
       (initial.wardrobeEmpty && initial.clothingTypes.length > 0)
-    ),
+    )
   );
   const [listLoading, setListLoading] = useState(false);
   const [wardrobeEmpty, setWardrobeEmpty] = useState(initial.wardrobeEmpty);
@@ -111,7 +111,7 @@ export function useOutfitPage() {
 
   const typeNames = useMemo(
     () => clothingTypes.map((type) => type.name).filter(Boolean),
-    [clothingTypes],
+    [clothingTypes]
   );
 
   const showRefreshHint = useMemo(() => {
@@ -144,7 +144,7 @@ export function useOutfitPage() {
       options: {
         reset?: boolean;
         typeId?: string | null;
-      } = {},
+      } = {}
     ): Promise<boolean> => {
       if (loadingRef.current) return false;
       const typeId =
@@ -179,7 +179,7 @@ export function useOutfitPage() {
           setWardrobeTypeBucket(
             typeId,
             { items: nextItems, hasMore: pageHasMore },
-            typesRef.current,
+            typesRef.current
           );
         } else {
           setItems((prev) => [...prev, ...nextItems]);
@@ -189,8 +189,7 @@ export function useOutfitPage() {
         return true;
       } catch (err) {
         if (seq !== requestSeqRef.current) return false;
-        const message =
-          err instanceof Error ? err.message : "搭配列表加载失败，请稍后重试";
+        const message = toUserMessage(err, "搭配列表加载失败，请稍后重试");
         Taro.showToast({ title: message, icon: "none" });
         return false;
       } finally {
@@ -201,7 +200,7 @@ export function useOutfitPage() {
         }
       }
     },
-    [],
+    []
   );
 
   const applyCategoryState = useCallback(
@@ -211,7 +210,7 @@ export function useOutfitPage() {
       setOutfitActiveTypeKey(typeId);
       activeTypeIdRef.current = typeId;
     },
-    [],
+    []
   );
 
   /** 冷启动 / remount：仅当当前分类无缓存时拉取 */
@@ -272,8 +271,7 @@ export function useOutfitPage() {
         const ok = await loadItems({ reset: true, typeId });
         if (ok) settleInboundAfterNoCacheLoad(typeId);
       } catch (err) {
-        const message =
-          err instanceof Error ? err.message : "搭配列表加载失败，请稍后重试";
+        const message = toUserMessage(err, "搭配列表加载失败，请稍后重试");
         Taro.showToast({ title: message, icon: "none" });
         setInitialLoading(false);
       }
@@ -289,7 +287,7 @@ export function useOutfitPage() {
       });
       setOutfitByCategory(byCat);
       setBaselinePieceIds(
-        draft.baselinePieceIds ?? getPieceIds(draft.selectedPieces),
+        draft.baselinePieceIds ?? getPieceIds(draft.selectedPieces)
       );
       setFromTryOnEdit(true);
     } else {
@@ -333,7 +331,7 @@ export function useOutfitPage() {
 
   const outfitPieces = useMemo(
     () => typeNames.map((cat) => outfitByCategory[cat]).filter(Boolean),
-    [typeNames, outfitByCategory],
+    [typeNames, outfitByCategory]
   );
 
   const handleToggleItem = useCallback((item: WardrobeItem) => {
@@ -369,7 +367,7 @@ export function useOutfitPage() {
     if (fromTryOnEdit) {
       const piecesChanged = !arePieceSelectionsEqual(
         baselinePieceIds,
-        currentIds,
+        currentIds
       );
       setTryOnDraft({
         mode: "saved",
@@ -420,7 +418,7 @@ export function useOutfitPage() {
       const ok = await loadItems({ reset: true, typeId: type._id });
       if (ok) settleInboundAfterNoCacheLoad(type._id);
     },
-    [applyCategoryState, clothingTypes, loadItems],
+    [applyCategoryState, clothingTypes, loadItems]
   );
 
   const handleScrollToLower = useCallback(() => {
@@ -459,7 +457,7 @@ export function useOutfitPage() {
       setWardrobeTypeBucket(
         currentTypeId,
         { items: nextItems, hasMore: pageHasMore },
-        typesRef.current,
+        typesRef.current
       );
 
       const typeName =
@@ -470,8 +468,7 @@ export function useOutfitPage() {
       });
     } catch (err) {
       if (seq !== requestSeqRef.current) return;
-      const message =
-        err instanceof Error ? err.message : "搭配列表刷新失败，请稍后重试";
+      const message = toUserMessage(err, "搭配列表刷新失败，请稍后重试");
       Taro.showToast({ title: message, icon: "none" });
     } finally {
       if (seq === requestSeqRef.current) {

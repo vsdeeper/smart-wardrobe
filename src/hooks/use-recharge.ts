@@ -8,6 +8,7 @@ import {
 import { fetchCreditBalance } from "@/services/credits";
 import { runRechargeFlow } from "@/services/recharge";
 import { parseYuanToFen } from "@/utils/recharge";
+import { toUserMessage } from "@/utils/error-message";
 
 /**
  * 积分充值：金额输入、下单支付、刷新余额。
@@ -17,10 +18,7 @@ export function useRecharge() {
   const [paying, setPaying] = useState(false);
   const [availableCredits, setAvailableCredits] = useState<number | null>(null);
 
-  const amountFen = useMemo(
-    () => parseYuanToFen(amountYuan),
-    [amountYuan],
-  );
+  const amountFen = useMemo(() => parseYuanToFen(amountYuan), [amountYuan]);
 
   const previewCredits = amountFen ?? 0;
 
@@ -68,8 +66,7 @@ export function useRecharge() {
       });
       setAmountYuan("");
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "充值失败，请稍后重试";
+      const message = toUserMessage(err, "充值失败，请稍后重试");
       Taro.showToast({
         title: message.includes("即将开放")
           ? RECHARGE_PAY_NOT_READY_TOAST

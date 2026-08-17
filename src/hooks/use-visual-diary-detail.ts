@@ -3,9 +3,9 @@ import { VisualDiaryEntry } from "@/types/try-on";
 import { useCallback, useState } from "react";
 import Taro, { useDidShow, useRouter } from "@tarojs/taro";
 
-
 import { fetchWardrobeItemsByIds } from "@/services/wardrobe";
 import { fetchVisualDiaryEntryById } from "@/services/visual-diary";
+import { toUserMessage } from "@/utils/error-message";
 
 export function useVisualDiaryDetail() {
   const router = useRouter();
@@ -32,8 +32,7 @@ export function useVisualDiaryDetail() {
       setEntry(diaryEntry);
       setPieces(wardrobePieces);
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "穿搭记录加载失败，请稍后重试";
+      const message = toUserMessage(err, "穿搭记录加载失败，请稍后重试");
       setError(message);
       setEntry(null);
       setPieces([]);

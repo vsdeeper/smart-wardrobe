@@ -4,7 +4,6 @@ import { TryOnPreviewStatus } from "@/types/try-on";
 import { isGenderSet, isMetricsSet } from "@/utils/profile";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-
 import { resolveCloudFileUrl } from "@/services/cloud-file";
 import { putImageUrlCache } from "@/services/image-url-cache";
 import { fetchUserProfile } from "@/services/profile";
@@ -16,6 +15,7 @@ import {
 } from "@/services/try-on-cache";
 import type { SavedReturnMeta } from "@/hooks/use-try-on-recommend";
 import { isEphemeralExternalImageUrl } from "@/utils/image-url";
+import { toUserMessage } from "@/utils/error-message";
 
 interface UseTryOnPreviewOptions {
   plannedWearDateKey: string;
@@ -37,17 +37,17 @@ export function useTryOnPreview({
   const initialCache = getInitialTryOnCache(plannedWearDateKey);
   const initialHeroUrl = getTryOnHeroImageUrl(initialCache?.heroCoverFileId);
   const [status, setStatus] = useState<TryOnPreviewStatus>(
-    initialHeroUrl ? "success" : "idle",
+    initialHeroUrl ? "success" : "idle"
   );
   const [heroImageUrl, setHeroImageUrl] = useState<string | null>(
-    initialHeroUrl || null,
+    initialHeroUrl || null
   );
   const [heroCoverFileId, setHeroCoverFileId] = useState<string | null>(
-    initialCache?.heroCoverFileId ?? null,
+    initialCache?.heroCoverFileId ?? null
   );
   const [heroFromCache, setHeroFromCache] = useState(!!initialHeroUrl);
   const [previewErrorMessage, setPreviewErrorMessage] = useState<string | null>(
-    null,
+    null
   );
   const loadingRef = useRef(false);
   const handledKeyRef = useRef<string | null>(null);
@@ -60,14 +60,14 @@ export function useTryOnPreview({
       setHeroFromCache(cached);
       setStatus(url || fileId ? "success" : "error");
     },
-    [],
+    []
   );
 
   const persistHeroUrl = useCallback(
     (coverFileId: string, url: string, at: number = Date.now()) => {
       putImageUrlCache("visualDiary", coverFileId, url, at);
     },
-    [],
+    []
   );
 
   const loadHeroFromCache = useCallback(async () => {
@@ -167,8 +167,7 @@ export function useTryOnPreview({
         });
       }
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "试穿图生成失败，请稍后重试";
+      const message = toUserMessage(err, "试穿图生成失败，请稍后重试");
       setPreviewErrorMessage(message);
       applyHero(null, null, false);
     } finally {
