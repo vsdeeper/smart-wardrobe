@@ -2,6 +2,7 @@ import { Gender } from "@/types/profile";
 import { View, Text } from "@tarojs/components";
 import GenderSetupChoices from "@/components/GenderSetupChoices";
 import OutlineButton from "@/components/OutlineButton";
+import SolidButton from "@/components/SolidButton";
 import WearDateSelector from "../WearDateSelector";
 
 import "./index.scss";
@@ -48,9 +49,9 @@ function TryOnEmptyState(props: TryOnEmptyStateProps) {
           onChange={props.onWearDateChange}
         />
         <View className="try-on-empty__actions">
-          <View className="try-on-empty__cta" onClick={props.onRecommend}>
-            <Text className="try-on-empty__cta-text">推荐穿搭</Text>
-          </View>
+          <SolidButton block onClick={props.onRecommend}>
+            推荐穿搭
+          </SolidButton>
           <OutlineButton block onClick={props.onGoOutfit}>
             我要搭配
           </OutlineButton>
@@ -66,9 +67,7 @@ function TryOnEmptyState(props: TryOnEmptyStateProps) {
         <Text className="try-on-empty__desc">
           上传衣物后，AI 将根据天气与场景为您推荐穿搭
         </Text>
-        <View className="try-on-empty__cta" onClick={props.onGoWardrobe}>
-          <Text className="try-on-empty__cta-text">去上传衣物</Text>
-        </View>
+        <SolidButton onClick={props.onGoWardrobe}>去上传衣物</SolidButton>
       </View>
     );
   }
@@ -77,9 +76,7 @@ function TryOnEmptyState(props: TryOnEmptyStateProps) {
     <View className="try-on-empty">
       <Text className="try-on-empty__title">这次没推荐成功</Text>
       <Text className="try-on-empty__desc">{props.errorMessage}</Text>
-      <View className="try-on-empty__cta" onClick={props.onRetry}>
-        <Text className="try-on-empty__cta-text">重试</Text>
-      </View>
+      <SolidButton onClick={props.onRetry}>重试</SolidButton>
     </View>
   );
 }

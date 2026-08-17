@@ -8,8 +8,8 @@ import OutfitHero from "@/components/OutfitHero";
 import OutfitMeta from "@/components/OutfitMeta";
 import OutfitPieceList from "@/components/OutfitPieceList";
 import OutlineButton from "@/components/OutlineButton";
+import SolidButton from "@/components/SolidButton";
 import WearDateSelector from "../WearDateSelector";
-import WearCta from "../WearCta";
 
 import "./index.scss";
 
@@ -88,15 +88,17 @@ function TryOnResult({
         <OutfitPieceList pieces={selectedPieces} />
       </OutfitCard>
       <View className="try-on-actions">
-        <WearCta
-          confirmed={wearConfirmed}
+        <SolidButton
+          block
           loading={saving}
           disabled={
             !wearConfirmed &&
             (previewStatus === "loading" || previewStatus === "error")
           }
-          onWear={onWearOutfit}
-        />
+          onClick={onWearOutfit}
+        >
+          {wearConfirmed ? "我要搭配" : "穿上这身"}
+        </SolidButton>
         <OutlineButton
           block
           disabled={saving || previewStatus === "loading"}

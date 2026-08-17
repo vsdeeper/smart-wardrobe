@@ -41,23 +41,4 @@
     font-size: var(--nutui-font-size-3);
     color: var(--nutui-gray-5);
   }
-
-  &__cta {
-    margin-top: var(--nutui-spacing-3);
-    padding: 12px 28px;
-    border-radius: var(--sw-radius-pill);
-    background: var(--nutui-brand-6);
-    box-shadow: var(--sw-shadow-fab);
-
-    &:active {
-      opacity: 0.92;
-      transform: scale(0.98);
-    }
-  }
-
-  &__cta-text {
-    font-size: var(--nutui-font-size-4);
-    font-weight: 500;
-    color: var(--nutui-color-primary-text);
-  }
 }
