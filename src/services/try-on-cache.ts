@@ -2,7 +2,6 @@ import { WardrobeItem } from "@/types/wardrobe";
 import { TryOnCacheStore, TryOnWearCacheEntry } from "@/types/try-on";
 import Taro from "@tarojs/taro";
 
-
 import { isImageUrlFresh } from "@/services/cloud-file";
 import {
   getCachedImageUrl,
@@ -13,7 +12,6 @@ import {
 import { getDateKey } from "@/utils/season";
 
 const CACHE_KEY = "sw_tryon_wear_cache";
-const LEGACY_CACHE_KEY = "sw_tryon_daily_cache";
 
 export type TryOnAiCache = TryOnWearCacheEntry &
   Required<Pick<TryOnWearCacheEntry, "recommendation" | "selectedPieces">>;
@@ -27,21 +25,23 @@ function withoutImageUrl(item: WardrobeItem): WardrobeItem {
 }
 
 function withoutImageUrls(
-  items: WardrobeItem[] | undefined,
+  items: WardrobeItem[] | undefined
 ): WardrobeItem[] | undefined {
   if (!items) return undefined;
   return items.map(withoutImageUrl);
 }
 
 /** 将选品上残留的临时链接迁入 imageUrlCache（wardrobe 域） */
-function migratePieceUrlsToImageCache(pieces: WardrobeItem[] | undefined): void {
+function migratePieceUrlsToImageCache(
+  pieces: WardrobeItem[] | undefined
+): void {
   if (!pieces?.length) return;
   const entries = pieces
     .filter(
       (piece) =>
         !!piece.imageFileId &&
         !!piece.imageUrl &&
-        isImageUrlFresh(piece.imageUrlAt),
+        isImageUrlFresh(piece.imageUrlAt)
     )
     .map((piece) => ({
       fileId: piece.imageFileId,
@@ -55,7 +55,6 @@ function migratePieceUrlsToImageCache(pieces: WardrobeItem[] | undefined): void 
 
 function createEmptyStore(activeWearDateKey = getDateKey()): TryOnCacheStore {
   return {
-    version: 2,
     activeWearDateKey,
     entries: {},
   };
@@ -76,7 +75,6 @@ export function readTryOnCacheStore(): TryOnCacheStore {
     if (
       !raw ||
       typeof raw !== "object" ||
-      raw.version !== 2 ||
       typeof raw.activeWearDateKey !== "string" ||
       !raw.entries ||
       typeof raw.entries !== "object"
@@ -99,9 +97,7 @@ export function setActiveWearDateKey(wearDateKey: string): void {
   persistStore(store);
 }
 
-export function readWearCache(
-  wearDateKey: string,
-): TryOnWearCacheEntry | null {
+export function readWearCache(wearDateKey: string): TryOnWearCacheEntry | null {
   const entry = readTryOnCacheStore().entries[wearDateKey];
   if (!entry) return null;
 
@@ -137,15 +133,9 @@ export function allPieceUrlsFresh(pieces: WardrobeItem[]): boolean {
  * 页面首帧可直接使用的 wearDate 分桶缓存。
  * 临时链不落在分桶中，展示用 getCachedImageUrl。
  */
-export function getInitialTryOnCache(
-  wearDateKey: string,
-): TryOnAiCache | null {
+export function getInitialTryOnCache(wearDateKey: string): TryOnAiCache | null {
   const cache = readWearCache(wearDateKey);
-  if (
-    !cache ||
-    !cache.recommendation ||
-    !Array.isArray(cache.selectedPieces)
-  ) {
+  if (!cache || !cache.recommendation || !Array.isArray(cache.selectedPieces)) {
     return null;
   }
 
@@ -165,12 +155,14 @@ export function getTryOnHeroImageUrl(heroCoverFileId?: string | null): string {
 
 export function writeWearCache(
   wearDateKey: string,
-  partial: Partial<Omit<TryOnWearCacheEntry, "plannedWearDateKey" | "cachedAt">> &
+  partial: Partial<
+    Omit<TryOnWearCacheEntry, "plannedWearDateKey" | "cachedAt">
+  > &
     Partial<Pick<TryOnWearCacheEntry, "cachedAt">> & {
       heroImageUrl?: string;
       heroImageUrlAt?: number;
     },
-  options: { clearHero?: boolean; clearManual?: boolean } = {},
+  options: { clearHero?: boolean; clearManual?: boolean } = {}
 ): void {
   const store = readTryOnCacheStore();
   const existing = store.entries[wearDateKey] ?? null;
@@ -190,7 +182,7 @@ export function writeWearCache(
       "visualDiary",
       heroCoverFileId,
       partial.heroImageUrl,
-      partial.heroImageUrlAt,
+      partial.heroImageUrlAt
     );
   }
 
@@ -222,7 +214,6 @@ export function writeWearCache(
 export function clearTryOnCache(): void {
   try {
     Taro.removeStorageSync(CACHE_KEY);
-    Taro.removeStorageSync(LEGACY_CACHE_KEY);
   } catch {
     // ignore
   }

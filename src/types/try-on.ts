@@ -38,7 +38,6 @@ export interface TryOnWearCacheEntry {
 }
 
 export interface TryOnCacheStore {
-  version: 2;
   activeWearDateKey: string;
   entries: Record<string, TryOnWearCacheEntry>;
 }
